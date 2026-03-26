@@ -43,52 +43,52 @@ st.markdown("""
         width: 100%;
     }
 
-    /* --- ESTÉTICA DEL CHAT MODERNO --- */
+    /* --- CHAT TODO A LA IZQUIERDA --- */
     .chat-container {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 15px;
         padding: 10px;
     }
 
     .chat-row {
         display: flex;
         width: 100%;
-        margin-bottom: 10px;
+        justify-content: flex-start; /* Todo a la izquierda */
+        margin-bottom: 5px;
     }
-
-    .row-user { justify-content: flex-end; }
-    .row-ai { justify-content: flex-start; }
 
     .bubble {
         padding: 15px 20px;
-        border-radius: 20px;
-        max-width: 80%;
+        border-radius: 15px;
+        max-width: 85%;
         font-size: 15px;
-        line-height: 1.5;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
-
-    .user-bubble {
-        background-color: #007bff;
-        color: white;
-        border-bottom-right-radius: 2px;
-    }
-
-    .ai-bubble {
-        background-color: #f8f9fa;
-        color: #1a1a1a;
-        border: 1px solid #e9ecef;
+        line-height: 1.6;
         border-bottom-left-radius: 2px;
     }
 
-    .chat-label {
-        font-size: 11px;
-        font-weight: 700;
-        margin-bottom: 4px;
-        color: #6c757d;
-        text-transform: uppercase;
+    .user-bubble {
+        background-color: #f1f3f5;
+        color: #1a1a1a;
+        border: 1px solid #dee2e6;
     }
+
+    .ai-bubble {
+        background-color: #e7f3ff;
+        color: #0c4a6e;
+        border: 1px solid #bae6fd;
+    }
+
+    .chat-label {
+        font-size: 10px;
+        font-weight: 800;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .label-user { color: #6c757d; }
+    .label-ai { color: #0284c7; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -97,23 +97,37 @@ languages = {
     "Español": { 
         "title":"INVESTIA ELITE", "lang_lab":"Idioma", "cap":"Presupuesto", "risk_lab":"Riesgo", "ass_lab":"Ticker", 
         "btn":"EJECUTAR ANÁLISIS", "wait":"Procesando...", "price":"Precio Actual", "target":"Objetivo 30d", 
-        "shares":"Capacidad Compra", "analysis":"Estrategia Institucional", "hist_t":"Gráfica de Velas (Histórico)", 
+        "shares":"Capacidad Compra", "analysis":"Recomendación Personalizada", "hist_t":"Gráfica de Velas (Histórico)", 
         "pred_t":"Gráfica de Rayas (Proyección IA)", "chat_placeholder":"Pregunta sobre inversiones..."
     },
     "English": { 
         "title":"INVESTIA ELITE", "lang_lab":"Language", "cap":"Budget", "risk_lab":"Risk Profile", "ass_lab":"Asset Ticker", 
         "btn":"EXECUTE ANALYSIS", "wait":"Processing...", "price":"Current Price", "target":"30-Day Target", 
-        "shares":"Buying Capacity", "analysis":"Institutional Strategy", "hist_t":"Historical Candlestick", 
+        "shares":"Buying Capacity", "analysis":"Personalized Recommendation", "hist_t":"Historical Candlestick", 
         "pred_t":"AI Line Projection (30 Days)", "chat_placeholder":"Ask about investments..."
     }
 }
 
-# --- IA ---
+# --- IA MEJORADA (RECOMENDACIÓN) ---
 def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
-        contexto = f"Activo: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€ ({cambio:.2f}%)."
-        prompt = f"Asesor Senior. RESPONDE EN {lang}. Perfil: {perfil}. Capital: {capital}€. {contexto} Pregunta: {pregunta if pregunta else 'Informe institucional.'}"
+        contexto = f"Activo: {ticket}. Precio: {p_act}€. Predicción IA a 30 días: {p_fut}€ ({cambio:.2f}%)."
+        
+        prompt = f"""
+        Actúa como un Asesor Financiero Senior. Tu objetivo es dar una RECOMENDACIÓN DIRECTA basándote en:
+        1. Datos: {contexto}
+        2. Perfil del cliente: {perfil} (Capital: {capital}€).
+        
+        Instrucciones:
+        - Di claramente si recomiendas comprar, esperar o vender según su perfil de riesgo.
+        - Describe qué pasará en el futuro si el usuario sigue tu consejo basándote en la tendencia.
+        - Sé empático pero profesional.
+        - Idioma de respuesta: {lang}.
+        
+        Pregunta adicional del usuario: {pregunta if pregunta else "Dame tu recomendación general para este activo."}
+        """
+        
         response = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
             model="llama-3.3-70b-versatile"
@@ -127,7 +141,7 @@ if "lang" not in st.session_state: st.session_state.lang = "Español"
 if "analizado" not in st.session_state: st.session_state.analizado = False
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
-# --- SIDEBAR (MANTENIDO) ---
+# --- SIDEBAR ---
 with st.sidebar:
     st.markdown(f'<p class="field-title">{languages[st.session_state.lang]["lang_lab"]}</p>', unsafe_allow_html=True)
     lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
@@ -152,7 +166,6 @@ with tab1:
         with st.spinner(t["wait"]):
             data = yf.download(ticket, period="2y", interval="1d")
             if not data.empty:
-                # Limpieza de MultiIndex si existe (yfinance v3+)
                 if isinstance(data.columns, pd.MultiIndex):
                     data.columns = data.columns.get_level_values(0)
 
@@ -182,7 +195,6 @@ with tab1:
                 st.error("Ticker no válido")
 
     if st.session_state.analizado:
-        # --- GRÁFICA DE VELAS ---
         st.markdown(f"### 🕯️ {t['hist_t']}")
         fig_candles = go.Figure(data=[go.Candlestick(
             x=st.session_state.full_data.index,
@@ -195,7 +207,6 @@ with tab1:
         fig_candles.update_layout(xaxis_rangeslider_visible=False, template="plotly_white", height=500)
         st.plotly_chart(fig_candles, use_container_width=True)
 
-        # --- GRÁFICA DE RAYAS (PROYECCIÓN) ---
         st.markdown(f"### 📈 {t['pred_t']}")
         fig_line = go.Figure()
         fig_line.add_trace(go.Scatter(x=st.session_state.df_prophet['ds'], y=st.session_state.df_prophet['y'], name="Histórico", line=dict(color='#1a1a1a')))
@@ -206,19 +217,19 @@ with tab1:
         st.markdown(f"### 📊 {t['analysis']}")
         st.info(st.session_state.get("analisis", ""))
 
-# --- CHAT ---
+# --- CHAT IZQUIERDA ---
 with tab2:
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
     for msg in st.session_state.chat_history:
         is_user = msg['role'] == "user"
-        row_class = "row-user" if is_user else "row-ai"
         bubble_class = "user-bubble" if is_user else "ai-bubble"
+        label_class = "label-user" if is_user else "label-ai"
         label = "Tú" if is_user else "Asesor IA"
         
         st.markdown(f"""
-            <div class="chat-row {row_class}">
+            <div class="chat-row">
                 <div class="bubble {bubble_class}">
-                    <div class="chat-label">{label}</div>
+                    <div class="chat-label {label_class}">{label}</div>
                     {msg['content']}
                 </div>
             </div>
@@ -241,3 +252,4 @@ with tab2:
 
         st.session_state.chat_history.append({"role": "assistant", "content": respuesta})
         st.rerun()
+
