@@ -6,7 +6,7 @@ from groq import Groq
 import plotly.graph_objects as go
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="InvestIA Elite", page_icon="💎", layout="wide")
+st.set_page_config(page_title="Investia Elite", page_icon="💎", layout="wide")
 
 # --- ⚠️ CONFIGURACIÓN API ---
 GROQ_API_KEY = "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"
