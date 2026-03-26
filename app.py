@@ -65,27 +65,27 @@ st.markdown("""
 languages = {
     "Español": {
         "title": "InvestMind AI Elite", "ajust": "⚙️ AJUSTES", "lang_lab": "IDIOMA",
-        "conf": "🛠️ CONFIGURACIÓN", "curr": "DIVISA DE CUENTA", "cap": "PRESUPUESTO TOTAL", 
+        "conf": "🛠️ CONFIGURACIÓN", "cap": "PRESUPUESTO TOTAL", 
         "risk_lab": "PERFIL DE RIESGO", "ass_lab": "ACTIVO A ANALIZAR", "btn": "EJECUTAR ANÁLISIS", 
         "diag": "Consultoría Estratégica", "just": "Justificación Técnica", 
-        "wait": "Analizando Big Data...", "price": "Precio Actual", "target": "Objetivo IA (30d)", 
-        "shares": "Acciones Comprables", "disclaimer": "Simulación 2026. Riesgo de capital."
+        "wait": "Analizando Big Data...", "price": "Precio actual", "target": "Precio predicho (30 días)", 
+        "shares": "Acciones comprables", "disclaimer": "Simulación 2026. Riesgo de capital."
     },
     "English": {
         "title": "InvestMind AI Elite", "ajust": "⚙️ SETTINGS", "lang_lab": "LANGUAGE",
-        "conf": "🛠️ CONFIGURATION", "curr": "ACCOUNT CURRENCY", "cap": "TOTAL BUDGET", 
+        "conf": "🛠️ CONFIGURATION", "cap": "TOTAL BUDGET", 
         "risk_lab": "RISK PROFILE", "ass_lab": "ASSET TO ANALYZE", "btn": "EXECUTE ANALYSIS", 
         "diag": "Strategic Consultancy", "just": "Technical Justification", 
-        "wait": "Analyzing Big Data...", "price": "Current Price", "target": "AI Target (30d)", 
+        "wait": "Analyzing Big Data...", "price": "Current Price", "target": "Predicted Price (30d)", 
         "shares": "Shares to Buy", "disclaimer": "2026 Simulation. Capital risk."
     },
     "Català": {
         "title": "InvestMind AI Elite", "ajust": "⚙️ AJUSTOS", "lang_lab": "IDIOMA",
-        "conf": "🛠️ CONFIGURACIÓ", "curr": "MONEDA DEL COMPTE", "cap": "PRESSUPOST TOTAL", 
+        "conf": "🛠️ CONFIGURACIÓ", "cap": "PRESSUPOST TOTAL", 
         "risk_lab": "PERFIL DE RISC", "ass_lab": "ACTIU A ANALITZAR", "btn": "EXECUTAR ANÀLISI", 
         "diag": "Consultoria Estratègica", "just": "Justificació Tècnica", 
-        "wait": "Analitzant Big Data...", "price": "Preu Actual", "target": "Objectiu IA (30d)", 
-        "shares": "Accions a Comprar", "disclaimer": "Simulació 2026. Risc de capital."
+        "wait": "Analitzant Big Data...", "price": "Preu actual", "target": "Preu previst (30d)", 
+        "shares": "Accions a comprar", "disclaimer": "Simulació 2026. Risc de capital."
     }
 }
 
@@ -98,7 +98,7 @@ if 'lang' not in st.session_state: st.session_state.lang = "Español"
 if 'p_act' not in st.session_state: st.session_state.p_act = 0.0
 if 'p_pre' not in st.session_state: st.session_state.p_pre = 0.0
 
-# 4. BARRA LATERAL (AJUSTES, CONFIGURACIÓN Y DIVISA)
+# 4. BARRA LATERAL (AJUSTES Y CONFIGURACIÓN)
 with st.sidebar:
     # --- AJUSTES ---
     curr_t = languages[st.session_state.lang]
@@ -111,10 +111,6 @@ with st.sidebar:
     # --- CONFIGURACIÓN ---
     st.markdown(f'<p class="sidebar-header">{t["conf"]}</p>', unsafe_allow_html=True)
     
-    st.markdown(f'<p class="field-title">{t["curr"]}</p>', unsafe_allow_html=True)
-    moneda_sel = st.radio("", ["Dólar ($)", "Euro (€)"], horizontal=True)
-    simbolo = "$" if "Dólar" in moneda_sel else "€"
-    
     st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
     capital = st.number_input("", min_value=1.0, value=1000.0)
     
@@ -125,16 +121,14 @@ with st.sidebar:
     st.markdown(f'<p class="sidebar-header">{t["ass_lab"]}</p>', unsafe_allow_html=True)
     ticket = st.text_input("", value="AAPL").upper().strip()
 
-# 5. MOTOR IA (CORREGIDA LA COMILLA QUE FALTABA)
+# 5. MOTOR IA
 def hablar_con_ia_real(pregunta, lang, ticket, cambio, perfil):
-    # La clave ahora tiene su comilla de cierre correctamente
-    api_key = "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" 
-    
+    api_key = "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"
     try:
         client = Groq(api_key=api_key)
         prompt = f"Eres InvestMind AI (2026). Perfil: {perfil}, Activo: {ticket}, Tendencia: {cambio:.2f}%. Responde en {lang}."
         completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile", 
+            model="llama-3.3-70b-versatile",
             messages=[{"role": "system", "content": prompt}, {"role": "user", "content": pregunta}]
         )
         return completion.choices[0].message.content
@@ -161,28 +155,27 @@ with tab1:
                 st.session_state.analizado = True
                 st.session_state.ticket_act = ticket
 
-                # --- MÉTRICAS CON NOMBRES CLAROS Y TRADUCIDOS ---
+                # --- MÉTRICAS CLARAS ENCIMA DE LA GRÁFICA ---
                 col1, col2, col3 = st.columns(3)
+                simbolo = "€"  # Fijamos siempre euros
 
                 col1.metric(
                     label=f"💰 {t['price']}",
                     value=f"{st.session_state.p_act:.2f}{simbolo}"
                 )
-
                 col2.metric(
                     label=f"📈 {t['target']}",
                     value=f"{st.session_state.p_pre:.2f}{simbolo}",
                     delta=f"{st.session_state.cambio:.2f}%"
                 )
-
                 col3.metric(
                     label=f"🧮 {t['shares']}",
                     value=f"{(capital/st.session_state.p_act):.4f}"
                 )
-                
+
                 st.line_chart(datos['Close'])
 
-                # --- CONSULTORÍA ESTRATÉGICA DEBAJO DE LA GRÁFICA ---
+                # --- CONSULTORÍA DEBAJO DE LA GRÁFICA ---
                 st.divider()
                 st.header(f"💼 {t['diag']}")
                 st.subheader(f"📊 {t['just']}")
@@ -195,7 +188,8 @@ with tab1:
                 st.write(just_txt[st.session_state.lang], unsafe_allow_html=True)
                 st.caption(t["disclaimer"])
                 s.update(label="OK", state="complete")
-            else: st.error("Ticker Error.")
+            else: 
+                st.error("Ticker Error.")
 
 with tab2:
     st.subheader(t["diag"])
