@@ -15,31 +15,24 @@ GROQ_API_KEY = "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"
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com');
-    
     .stApp { background-color: #ffffff; color: #1a1a1a; }
     * { font-family: 'Inter', sans-serif; }
-    
-    /* Regreso al Menú Lateral Oscuro */
     [data-testid="stSidebar"] {
         background-color: #0a192f !important;
         border-right: 1px solid rgba(255,255,255,0.1);
     }
-    
     .field-title { 
         color: #64ffda; font-size: 11px; font-weight: 700;
         letter-spacing: 1.2px; text-transform: uppercase;
         margin-bottom: 8px; margin-top: 15px;
     }
-
     .stTabs [data-baseweb="tab-list"] { gap: 10px; border-bottom: 1px solid #dee2e6; }
     .stTabs [data-baseweb="tab"] { background-color: transparent; color: #6c757d; font-weight: 500; padding: 10px 20px; }
     .stTabs [aria-selected="true"] { color: #000000 !important; border-bottom: 2px solid #000000 !important; }
-
     .stButton>button { 
         border: none; border-radius: 8px; background-color: #1a1a1a;
         color: #ffffff !important; font-weight: 600; height: 45px; transition: all 0.2s ease;
     }
-    
     .metric-card {
         background: #ffffff; border: 1px solid #e9ecef;
         border-radius: 12px; padding: 20px; text-align: center;
@@ -47,7 +40,6 @@ st.markdown("""
     }
     .metric-label { font-size: 11px; color: #adb5bd; text-transform: uppercase; font-weight: 600; }
     .metric-value { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-top: 5px; }
-
     .chat-row { display: flex; margin-bottom: 25px; justify-content: flex-start; }
     .bubble { 
         padding: 20px; border-radius: 12px; max-width: 85%; font-size: 15px;
@@ -72,14 +64,9 @@ def generar_analisis_ia(lang, ticket=None, p_act=None, p_fut=None, cambio=None, 
         client = Groq(api_key=GROQ_API_KEY)
         contexto = f"Activo: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€ ({cambio:.2f}%)." if ticket else ""
         prompt = f"Asesor Senior. Idioma: {lang}. Perfil: {perfil}. Capital: {capital}€. {contexto} Pregunta: {pregunta if pregunta else 'Informe detallado.'}"
-        
-        response = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}], 
-            model="llama-3.3-70b-versatile"
-        )
+        response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile")
         return response.choices[0].message.content
-    except Exception as e: 
-        return f"Error: {e}"
+    except Exception as e: return f"Error: {e}"
 
 # --- GESTIÓN DE SESIÓN ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
@@ -92,39 +79,28 @@ with st.sidebar:
     st.markdown(f'<p class="field-title">{languages[st.session_state.lang]["lang_lab"]}</p>', unsafe_allow_html=True)
     lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
     
-    # Si el idioma cambia, regeneramos el informe si ya se había analizado algo
     if lang_temp != st.session_state.lang:
         st.session_state.lang = lang_temp
-        if st.session_state.analizado:
-            st.session_state.ultimo_informe = generar_analisis_ia(
-                st.session_state.lang, 
-                st.session_state.ticket_act, 
-                st.session_state.p_act, 
-                st.session_state.p_pre, 
-                st.session_state.cambio, 
-                st.session_state.perfil_act, 
-                st.session_state.cap_act
-            )
+        if st.session_state.analizado: # Regenerar informe en el nuevo idioma
+            st.session_state.ultimo_informe = generar_analisis_ia(st.session_state.lang, st.session_state.ticket_act, st.session_state.p_act, st.session_state.p_pre, st.session_state.cambio, st.session_state.perfil_act, st.session_state.cap_act)
         st.rerun()
 
     t = languages[st.session_state.lang]
     st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
-    capital = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
+    capital_input = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
     st.markdown(f'<p class="field-title">{t["risk_lab"]}</p>', unsafe_allow_html=True)
-    perfil = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"], label_visibility="collapsed")
+    perfil_input = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"], label_visibility="collapsed")
     st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
-    ticket = st.text_input("", value="AAPL", label_visibility="collapsed").upper()
+    ticket_input = st.text_input("", value="AAPL", label_visibility="collapsed").upper()
 
 # --- CUERPO ---
 st.markdown(f"<h1 style='text-align: center; font-weight: 800; color: #1a1a1a; margin-top: 20px;'>{t['title']}</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #adb5bd; font-weight: 500; font-size: 12px; letter-spacing: 2px; margin-bottom: 50px;'>QUANTITATIVE INTELLIGENCE TERMINAL</p>", unsafe_allow_html=True)
-
 tab1, tab2 = st.tabs([f"📊 {t['btn']}", "💬 AI ADVISOR"])
 
 with tab1:
     if st.button(t["btn"]):
         with st.status(t["wait"]):
-            data = yf.download(ticket, period="2y", interval="1d")
+            data = yf.download(ticket_input, period="2y", interval="1d")
             if not data.empty:
                 data.columns = data.columns.get_level_values(0)
                 df_p = data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
@@ -134,17 +110,16 @@ with tab1:
                 p_act, p_fut = float(df_p['y'].iloc[-1]), float(forecast['yhat'].iloc[-1])
                 cambio = ((p_fut - p_act) / p_act) * 100
                 
-                # Generamos el informe inicial
-                informe_ia = generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)
+                informe_ia = generar_analisis_ia(st.session_state.lang, ticket_input, p_act, p_fut, cambio, perfil_input, capital_input)
                 
                 st.session_state.update({
                     "p_act": p_act, "p_pre": p_fut, "cambio": cambio, 
-                    "ticket_act": ticket, "perfil_act": perfil, "cap_act": capital,
+                    "ticket_act": ticket_input, "perfil_act": perfil_input, "cap_act": capital_input,
                     "analizado": True, "ultimo_informe": informe_ia, "data_plot": data
                 })
-            else:
-                st.error("Asset not found.")
+            else: st.error("Asset not found.")
 
+    # SOLO MOSTRAR SI YA HAY DATOS
     if st.session_state.analizado:
         m1, m2, m3 = st.columns(3)
         with m1: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['price']}</div><div class='metric-value'>{st.session_state.p_act:.2f}€</div></div>", unsafe_allow_html=True)
@@ -164,7 +139,7 @@ with tab2:
 
     if prompt_user := st.chat_input(t["chat_placeholder"]):
         st.session_state.chat_history.append({"role": "user", "content": prompt_user})
-        res = generar_analisis_ia(st.session_state.lang, st.session_state.get("ticket_act"), st.session_state.get("p_act"), st.session_state.get("p_pre"), st.session_state.get("cambio"), perfil, capital, prompt_user)
+        res = generar_analisis_ia(st.session_state.lang, st.session_state.get("ticket_act"), st.session_state.get("p_act"), st.session_state.get("p_pre"), st.session_state.get("cambio"), perfil_input, capital_input, prompt_user)
         st.session_state.chat_history.append({"role": "assistant", "content": res})
         st.rerun()
 
