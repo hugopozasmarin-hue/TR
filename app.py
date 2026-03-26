@@ -14,14 +14,19 @@ st.markdown("""
 
 [data-testid="stSidebar"] { background: linear-gradient(180deg, #0a0c10 0%, #161821 100%); border-right: 1px solid rgba(255,255,255,0.1); }
 label { display: none !important; }
+
 .field-title { color: #818cf8; font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-top: 25px; margin-bottom: 8px; display: block; opacity: 0.9; border-bottom: 1px solid rgba(129, 140, 248, 0.2); padding-bottom: 4px; }
+
 .stNumberInput input, .stSelectbox [data-baseweb="select"], .stTextInput input { background-color: #262730 !important; color: #ffffff !important; border: 1px solid #444 !important; border-radius: 10px !important; height: 48px !important; }
 .stSelectbox div[role="button"] { background-color: #262730 !important; height: 48px !important; }
+
 .stButton>button { width: 100%; border-radius: 12px; background: linear-gradient(90deg, #6366f1, #00d4ff); color: white !important; font-weight: 800; border: none; padding: 15px; transition: all 0.4s ease; margin-top: 20px; }
 .stButton>button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(99,102,241,0.4); }
+
 .bubble { padding: 18px 22px; border-radius: 18px; margin-bottom: 12px; max-width: 85%; font-size: 15px; }
 .user-bubble { background: #6366f1; color: white !important; margin-left: auto; border-bottom-right-radius: 2px; }
 .assistant-bubble { background: #262730; border: 1px solid #444; color: #eee !important; border-bottom-left-radius: 2px; }
+
 .highlight { color: #00ffcc; font-weight: 800; }
 </style>
 """, unsafe_allow_html=True)
@@ -54,8 +59,11 @@ if 'p_pre' not in st.session_state: st.session_state.p_pre=0.0
 
 # BARRA LATERAL
 with st.sidebar:
-    st.session_state.lang = st.selectbox("🌐", ["Español", "English", "Català"], index=["Español","English","Català"].index(st.session_state.lang))
+    # --- TÍTULO DE IDIOMA ---
     t = languages[st.session_state.lang]
+    st.markdown(f'<p class="field-title">{t["lang_lab"]}</p>', unsafe_allow_html=True)
+    st.session_state.lang = st.selectbox("", ["Español","English","Català"], index=["Español","English","Català"].index(st.session_state.lang))
+    t = languages[st.session_state.lang]  # actualizar idioma después del selectbox
 
     st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
     capital = st.number_input("", min_value=1.0, value=1000.0)
@@ -63,7 +71,8 @@ with st.sidebar:
     st.markdown(f'<p class="field-title">{t["risk_lab"]}</p>', unsafe_allow_html=True)
     perfil = st.selectbox("", ["Conservador","Moderado","Arriesgado"])
 
-    st.markdown(f'<p class="sidebar-header">{t["ass_lab"]}</p>', unsafe_allow_html=True)
+    # --- ACTIVO A ANALIZAR ---
+    st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
     ticket = st.text_input("", value="AAPL").upper().strip()
 
 def hablar_con_ia_real(pregunta, lang, ticket, cambio, perfil):
@@ -98,10 +107,10 @@ with tab1:
                 st.session_state.analizado = True
                 st.session_state.ticket_act = ticket
 
-                # --- Títulos de métricas explícitos ---
                 col1, col2, col3 = st.columns(3)
                 simbolo="€"
 
+                # títulos encima de métricas
                 col1.markdown(f"### {t['price']}")
                 col1.metric(label="", value=f"{st.session_state.p_act:.2f}{simbolo}")
 
@@ -116,10 +125,12 @@ with tab1:
                 st.divider()
                 st.header(f"💼 {t['diag']}")
                 st.subheader(f"📊 {t['just']}")
+
+                # Consultoría más larga y recomendativa
                 just_txt = {
-                    "Español": f"La proyección de <span class='highlight'>{st.session_state.cambio:.2f}%</span> para **{ticket}** se justifica por la inercia de 1,260 sesiones y la convergencia de soportes institucionales en {st.session_state.p_act:.2f}{simbolo}.",
-                    "English": f"The <span class='highlight'>{st.session_state.cambio:.2f}%</span> projection for **{ticket}** is justified by 1,260-session inertia and institutional support convergence at {st.session_state.p_act:.2f}{simbolo}.",
-                    "Català": f"La projecció de <span class='highlight'>{st.session_state.cambio:.2f}%</span> per a **{ticket}** es justifica per la inèrcia de 1.260 sessions i la convergència de suports institucionals als {st.session_state.p_act:.2f}{simbolo}."
+                    "Español": f"La proyección de <span class='highlight'>{st.session_state.cambio:.2f}%</span> para **{ticket}** se basa en los últimos 1,260 cierres y soportes institucionales en {st.session_state.p_act:.2f}{simbolo}. Se recomienda al inversor diversificar su cartera y considerar la volatilidad prevista. Además, monitorizar noticias económicas y ajustar la exposición según el perfil de riesgo. La inversión gradual y la revisión periódica aumentan la probabilidad de resultados positivos.",
+                    "English": f"The <span class='highlight'>{st.session_state.cambio:.2f}%</span> projection for **{ticket}** is based on the last 1,260 closes and institutional supports at {st.session_state.p_act:.2f}{simbolo}. Investors are advised to diversify their portfolio and consider forecasted volatility. Additionally, monitor economic news and adjust exposure according to risk profile. Gradual investing and regular review increase the likelihood of positive outcomes.",
+                    "Català": f"La projecció de <span class='highlight'>{st.session_state.cambio:.2f}%</span> per a **{ticket}** es basa en els últims 1.260 tancaments i suports institucionals als {st.session_state.p_act:.2f}{simbolo}. Es recomana diversificar la cartera i tenir en compte la volatilitat prevista. A més, cal monitoritzar notícies econòmiques i ajustar l'exposició segons el perfil de risc. La inversió gradual i la revisió periòdica augmenten la probabilitat d'obtenir resultats positius."
                 }
                 st.write(just_txt[st.session_state.lang], unsafe_allow_html=True)
                 st.caption(t["disclaimer"])
