@@ -76,8 +76,17 @@ with st.sidebar:
     
     if lang_temp != st.session_state.lang:
         st.session_state.lang = lang_temp
-        # Limpiar informe para forzar actualización de idioma en el próximo renderizado
-        st.session_state.ultimo_informe = "" 
+        # CORRECCIÓN DE ERROR Y DE IDIOMA: Regenerar informe solo si las llaves existen
+        if st.session_state.analizado and "ticket_act" in st.session_state:
+            st.session_state.ultimo_informe = generar_analisis_ia(
+                st.session_state.lang, 
+                st.session_state.ticket_act, 
+                st.session_state.p_act, 
+                st.session_state.p_pre, 
+                st.session_state.cambio, 
+                st.session_state.perfil_act, 
+                st.session_state.cap_act
+            )
         st.rerun()
 
     t = languages[st.session_state.lang]
@@ -111,15 +120,10 @@ with tab1:
                     "ticket_act": ticket_in, "perfil_act": perfil_in, "cap_act": capital_in,
                     "analizado": True, "data_plot": data, "forecast_plot": forecast, "df_p": df_p
                 })
-                # Generar informe en el idioma actual
                 st.session_state.ultimo_informe = generar_analisis_ia(st.session_state.lang, ticket_in, p_act, p_fut, cambio, perfil_in, capital_in)
             else: st.error("Asset not found.")
 
     if st.session_state.analizado:
-        # Si el informe está vacío (por cambio de idioma), se regenera automáticamente
-        if st.session_state.ultimo_informe == "":
-            st.session_state.ultimo_informe = generar_analisis_ia(st.session_state.lang, st.session_state.ticket_act, st.session_state.p_act, st.session_state.p_pre, st.session_state.cambio, st.session_state.perfil_act, st.session_state.cap_act)
-
         m1, m2, m3 = st.columns(3)
         with m1: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['price']}</div><div class='metric-value'>{st.session_state.p_act:.2f}€</div></div>", unsafe_allow_html=True)
         with m2: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['target']}</div><div class='metric-value'>{st.session_state.p_pre:.2f}€ ({st.session_state.cambio:+.2f}%)</div></div>", unsafe_allow_html=True)
@@ -151,4 +155,5 @@ with tab2:
         res = generar_analisis_ia(st.session_state.lang, st.session_state.get("ticket_act"), st.session_state.get("p_act"), st.session_state.get("p_pre"), st.session_state.get("cambio"), perfil_in, capital_in, prompt_u)
         st.session_state.chat_history.append({"role": "assistant", "content": res})
         st.rerun()
+
 
