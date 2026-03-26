@@ -28,16 +28,16 @@ st.markdown("""
     color: #0a192f !important; font-weight: 800; border: none;
 }
 
-/* Estilos de Chat Moderno */
-.chat-row { display: flex; margin-bottom: 10px; width: 100%; }
-.row-user { justify-content: flex-end; }
-.row-ai { justify-content: flex-start; }
+/* Estilos de Chat Unificado a la Izquierda */
+.chat-row { display: flex; margin-bottom: 12px; width: 100%; justify-content: flex-start; }
 .bubble { 
     padding: 12px 16px; border-radius: 18px; 
-    max-width: 80%; font-size: 14px; line-height: 1.4;
+    max-width: 85%; font-size: 14px; line-height: 1.5;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
-.user-bubble { background: #005c4b; color: white; border-bottom-right-radius: 2px; }
-.ai-bubble { background: #202c33; color: #e9edef; border-bottom-left-radius: 2px; border: 1px solid #3b4a54; }
+.user-bubble { background: #004d40; color: #e0f2f1; border-bottom-left-radius: 2px; border-left: 4px solid #64ffda; }
+.ai-bubble { background: #1c2533; color: #cbd5e0; border-bottom-left-radius: 2px; border-left: 4px solid #48cae4; }
+.chat-label { font-size: 10px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; display: block; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -80,14 +80,16 @@ if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
 # --- SIDEBAR ---
 with st.sidebar:
-    # Selector de idioma
+    # Título de idioma arriba de la caja
+    t_temp = languages[st.session_state.lang]
+    st.markdown(f'<p class="field-title">{t_temp["lang_lab"]}</p>', unsafe_allow_html=True)
+    
     lang_temp = st.selectbox("Select Language", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
     if lang_temp != st.session_state.lang:
         st.session_state.lang = lang_temp
-        st.rerun() # Forzamos recarga para que el título cambie al instante
+        st.rerun()
 
     t = languages[st.session_state.lang]
-    st.markdown(f'<p class="field-title">{t["lang_lab"]}</p>', unsafe_allow_html=True)
     
     st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
     capital = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
@@ -108,7 +110,7 @@ with tab1:
             data = yf.download(ticket, period="2y", interval="1d")
             if not data.empty:
                 data.columns = data.columns.get_level_values(0)
-                df_prophet = data.reset_index()[['Date','Close']].rename(columns={'Date':'ds','Close':'y'})
+                df_prophet = data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
                 df_prophet['ds'] = df_prophet['ds'].dt.tz_localize(None)
                 model = Prophet(daily_seasonality=True).fit(df_prophet)
                 forecast = model.predict(model.make_future_dataframe(periods=30))
@@ -139,15 +141,20 @@ with tab1:
             else: st.error("No data found.")
 
 with tab2:
-    st.container()
     for chat in st.session_state.chat_history:
-        role_class = "row-user" if chat["role"] == "user" else "row-ai"
         bubble_class = "user-bubble" if chat["role"] == "user" else "ai-bubble"
-        st.markdown(f'<div class="chat-row {role_class}"><div class="bubble {bubble_class}">{chat["content"]}</div></div>', unsafe_allow_html=True)
+        label = "YOU" if chat["role"] == "user" else "IA ADVISOR"
+        st.markdown(f'''
+            <div class="chat-row">
+                <div class="bubble {bubble_class}">
+                    <span class="chat-label">{label}</span>
+                    {chat["content"]}
+                </div>
+            </div>
+        ''', unsafe_allow_html=True)
 
     if prompt_user := st.chat_input(t["chat_placeholder"]):
         st.session_state.chat_history.append({"role": "user", "content": prompt_user})
-        # Llamada a la IA con contexto de sesión
         r = generar_analisis_ia(st.session_state.lang, st.session_state.get("ticket_act"), st.session_state.get("p_act"), st.session_state.get("p_pre"), st.session_state.get("cambio"), perfil, capital, prompt_user)
         st.session_state.chat_history.append({"role": "assistant", "content": r})
         st.rerun()
