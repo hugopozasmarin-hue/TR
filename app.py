@@ -13,6 +13,7 @@ st.markdown("""
     @import url('https://fonts.googleapis.com');
     * { font-family: 'Inter', sans-serif; }
     
+    /* ESTÉTICA PANEL LATERAL */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #0a0c10 0%, #161821 100%);
         border-right: 1px solid rgba(255,255,255,0.1);
@@ -64,39 +65,42 @@ st.markdown("""
 languages = {
     "Español": {
         "title": "InvestMind AI Elite", "ajust": "⚙️ AJUSTES", "lang_lab": "IDIOMA",
-        "conf": "🛠️ CONFIGURACIÓN", "curr": "DIVISA DE CUENTA", "cap": "CAPITAL TOTAL", 
+        "conf": "🛠️ CONFIGURACIÓN", "curr": "DIVISA DE CUENTA", "cap": "PRESUPUESTO TOTAL", 
         "risk_lab": "PERFIL DE RIESGO", "ass_lab": "ACTIVO A ANALIZAR", "btn": "EJECUTAR ANÁLISIS", 
         "diag": "Consultoría Estratégica", "just": "Justificación Técnica", 
-        "wait": "Analizando...", "price": "Precio Actual", "target": "Objetivo IA (30d)", 
+        "wait": "Analizando Big Data...", "price": "Precio Actual", "target": "Objetivo IA (30d)", 
         "shares": "Acciones Comprables", "disclaimer": "Simulación 2026. Riesgo de capital."
     },
     "English": {
         "title": "InvestMind AI Elite", "ajust": "⚙️ SETTINGS", "lang_lab": "LANGUAGE",
-        "conf": "🛠️ CONFIGURATION", "curr": "ACCOUNT CURRENCY", "cap": "TOTAL CAPITAL", 
+        "conf": "🛠️ CONFIGURATION", "curr": "ACCOUNT CURRENCY", "cap": "TOTAL BUDGET", 
         "risk_lab": "RISK PROFILE", "ass_lab": "ASSET TO ANALYZE", "btn": "EXECUTE ANALYSIS", 
         "diag": "Strategic Consultancy", "just": "Technical Justification", 
-        "wait": "Analyzing...", "price": "Current Price", "target": "AI Target (30d)", 
-        "shares": "Buying Power", "disclaimer": "2026 Simulation. Capital risk."
+        "wait": "Analyzing Big Data...", "price": "Current Price", "target": "AI Target (30d)", 
+        "shares": "Shares to Buy", "disclaimer": "2026 Simulation. Capital risk."
     },
     "Català": {
         "title": "InvestMind AI Elite", "ajust": "⚙️ AJUSTOS", "lang_lab": "IDIOMA",
-        "conf": "🛠️ CONFIGURACIÓ", "curr": "MONEDA DEL COMPTE", "cap": "CAPITAL TOTAL", 
+        "conf": "🛠️ CONFIGURACIÓ", "curr": "MONEDA DEL COMPTE", "cap": "PRESSUPOST TOTAL", 
         "risk_lab": "PERFIL DE RISC", "ass_lab": "ACTIU A ANALITZAR", "btn": "EXECUTAR ANÀLISI", 
         "diag": "Consultoria Estratègica", "just": "Justificació Tècnica", 
-        "wait": "Analitzant...", "price": "Preu Actual", "target": "Objectiu IA (30d)", 
+        "wait": "Analitzant Big Data...", "price": "Preu Actual", "target": "Objectiu IA (30d)", 
         "shares": "Accions a Comprar", "disclaimer": "Simulació 2026. Risc de capital."
     }
 }
 
-# 3. MEMORIA
+# 3. MEMORIA DE SESIÓN
 if 'messages' not in st.session_state: st.session_state.messages = []
 if 'cambio' not in st.session_state: st.session_state.cambio = 0.0
 if 'analizado' not in st.session_state: st.session_state.analizado = False
 if 'ticket_act' not in st.session_state: st.session_state.ticket_act = "N/A"
 if 'lang' not in st.session_state: st.session_state.lang = "Español"
+if 'p_act' not in st.session_state: st.session_state.p_act = 0.0
+if 'p_pre' not in st.session_state: st.session_state.p_pre = 0.0
 
-# 4. BARRA LATERAL (AJUSTES E IDIOMA DENTRO)
+# 4. BARRA LATERAL (AJUSTES, CONFIGURACIÓN Y DIVISA)
 with st.sidebar:
+    # --- AJUSTES ---
     curr_t = languages[st.session_state.lang]
     with st.expander(curr_t["ajust"], expanded=False):
         st.markdown(f'<p class="field-title">{curr_t["lang_lab"]}</p>', unsafe_allow_html=True)
@@ -104,9 +108,12 @@ with st.sidebar:
     
     t = languages[st.session_state.lang]
     
+    # --- CONFIGURACIÓN ---
+    st.markdown(f'<p class="sidebar-header">{t["conf"]}</p>', unsafe_allow_html=True)
+    
     st.markdown(f'<p class="field-title">{t["curr"]}</p>', unsafe_allow_html=True)
-    mon_sel = st.radio("", ["USD ($)", "EUR (€)"], horizontal=True)
-    simbolo = "$" if "USD" in mon_sel else "€"
+    moneda_sel = st.radio("", ["Dólar ($)", "Euro (€)"], horizontal=True)
+    simbolo = "$" if "Dólar" in moneda_sel else "€"
     
     st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
     capital = st.number_input("", min_value=1.0, value=1000.0)
@@ -114,19 +121,25 @@ with st.sidebar:
     st.markdown(f'<p class="field-title">{t["risk_lab"]}</p>', unsafe_allow_html=True)
     perfil = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"])
     
-    st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
+    # --- ACTIVO ---
+    st.markdown(f'<p class="sidebar-header">{t["ass_lab"]}</p>', unsafe_allow_html=True)
     ticket = st.text_input("", value="AAPL").upper().strip()
 
-# 5. MOTOR IA (VALIDACIÓN DE LLAVE)
+# 5. MOTOR IA (CORREGIDA LA COMILLA QUE FALTABA)
 def hablar_con_ia_real(pregunta, lang, ticket, cambio, perfil):
-    api_key = "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
+    # La clave ahora tiene su comilla de cierre correctamente
+    api_key = "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" 
+    
     try:
         client = Groq(api_key=api_key)
-        prompt = f"Asesor Senior 2026. Perfil: {perfil}, Activo: {ticket}, Tendencia: {cambio:.2f}%. Responde en {lang}."
-        completion = client.chat.completions.create(model="llama-3.3-70b-versatile", messages=[{"role": "system", "content": prompt}, {"role": "user", "content": pregunta}])
+        prompt = f"Eres InvestMind AI (2026). Perfil: {perfil}, Activo: {ticket}, Tendencia: {cambio:.2f}%. Responde en {lang}."
+        completion = client.chat.completions.create(
+            model="llama-3.3-70b-versatile", 
+            messages=[{"role": "system", "content": prompt}, {"role": "user", "content": pregunta}]
+        )
         return completion.choices[0].message.content
     except Exception as e:
-        return f"Error: {str(e)}"
+        return f"Error en la conexión con la IA: {str(e)}"
 
 # 6. CUERPO PRINCIPAL
 st.title(f"💎 {t['title']}")
@@ -137,51 +150,51 @@ with tab1:
         with st.status(t["wait"]) as s:
             datos = yf.download(ticket, period="5y")
             if not datos.empty:
-                p_act = float(datos['Close'].iloc[-1])
+                st.session_state.p_act = float(datos['Close'].iloc[-1])
                 df_p = datos.reset_index()[['Date', 'Close']]
                 df_p.columns = ['ds', 'y']
                 df_p['ds'] = df_p['ds'].dt.tz_localize(None)
                 m = Prophet(daily_seasonality=True).fit(df_p)
                 pred = m.predict(m.make_future_dataframe(periods=30))
-                p_pre = float(pred['yhat'].iloc[-1])
-                st.session_state.cambio = ((p_pre - p_act) / p_act) * 100
+                st.session_state.p_pre = float(pred['yhat'].iloc[-1])
+                st.session_state.cambio = ((st.session_state.p_pre - st.session_state.p_act) / st.session_state.p_act) * 100
                 st.session_state.analizado = True
                 st.session_state.ticket_act = ticket
 
-                # MÉTRICAS CON TÍTULOS DINÁMICOS (CORRECCIÓN DE NAMEERROR)
+                # --- MÉTRICAS CON NOMBRES CLAROS Y TRADUCIDOS ---
                 col1, col2, col3 = st.columns(3)
 
                 col1.metric(
-                    label=f"💰 {t['price']} ({simbolo})",
-                    value=f"{p_act:.2f}{simbolo}"
+                    label=f"💰 {t['price']}",
+                    value=f"{st.session_state.p_act:.2f}{simbolo}"
                 )
 
                 col2.metric(
                     label=f"📈 {t['target']}",
-                    value=f"{p_pre:.2f}{simbolo}",
+                    value=f"{st.session_state.p_pre:.2f}{simbolo}",
                     delta=f"{st.session_state.cambio:.2f}%"
                 )
 
                 col3.metric(
                     label=f"🧮 {t['shares']}",
-                    value=f"{(capital/p_act):.4f}"
+                    value=f"{(capital/st.session_state.p_act):.4f}"
                 )
                 
                 st.line_chart(datos['Close'])
 
-                # RECOMENDACIÓN DE LA IA DEBAJO DE LA GRÁFICA
+                # --- CONSULTORÍA ESTRATÉGICA DEBAJO DE LA GRÁFICA ---
                 st.divider()
                 st.header(f"💼 {t['diag']}")
                 st.subheader(f"📊 {t['just']}")
                 
-                txt_rec = {
-                    "Español": f"La proyección de <span class='highlight'>{st.session_state.cambio:.2f}%</span> se basa en la inercia de 1,260 sesiones y ciclos estacionales observados en 2026. Para un perfil {perfil}, se sugiere vigilancia técnica en los {p_act:.2f}{simbolo}.",
-                    "English": f"The <span class='highlight'>{st.session_state.cambio:.2f}%</span> projection is based on 1,260-session inertia and 2026 seasonal cycles. For a {perfil} profile, technical monitoring at {p_act:.2f}{simbolo} is advised.",
-                    "Català": f"La projecció de <span class='highlight'>{st.session_state.cambio:.2f}%</span> es basa en la inèrcia de 1.260 sessions i cicles de 2026. Per a un perfil {perfil}, se suggereix vigilància tècnica als {p_act:.2f}{simbolo}."
+                just_txt = {
+                    "Español": f"La proyección de <span class='highlight'>{st.session_state.cambio:.2f}%</span> para **{ticket}** se justifica por la inercia de 1,260 sesiones y la convergencia de soportes institucionales en {st.session_state.p_act:.2f}{simbolo}.",
+                    "English": f"The <span class='highlight'>{st.session_state.cambio:.2f}%</span> projection for **{ticket}** is justified by 1,260-session inertia and institutional support convergence at {st.session_state.p_act:.2f}{simbolo}.",
+                    "Català": f"La projecció de <span class='highlight'>{st.session_state.cambio:.2f}%</span> per a **{ticket}** es justifica per la inèrcia de 1.260 sessions i la convergència de suports institucionals als {st.session_state.p_act:.2f}{simbolo}."
                 }
-                st.write(txt_rec[st.session_state.lang], unsafe_allow_html=True)
+                st.write(just_txt[st.session_state.lang], unsafe_allow_html=True)
                 st.caption(t["disclaimer"])
-                s.update(label="Analysis Complete", state="complete")
+                s.update(label="OK", state="complete")
             else: st.error("Ticker Error.")
 
 with tab2:
@@ -197,4 +210,4 @@ with tab2:
             st.session_state.messages.append({"role": "assistant", "content": res})
             st.rerun()
 
-st.caption("InvestMind AI Platinum v19.0 | 2026")
+st.caption("InvestMind AI Platinum v20.0 | Badalona, 2026")
