@@ -62,7 +62,7 @@ with st.sidebar:
 # 5. EL CEREBRO: IA DE GROQ (CONEXIÓN SEGURA)
 def hablar_con_ia_real(pregunta, lang, ticket, cambio, perfil):
     # PEGA TU CLAVE AQUÍ (Asegúrate de que no haya espacios)
-    api_key = "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" 
+    api_key = "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" 
     
     # URL COMPLETA (Escrita manualmente para evitar errores de red)
     url_final = "https://api.groq.com"
