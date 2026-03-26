@@ -226,3 +226,5 @@ with tab2:
 
 st.markdown("---")
 st.caption(f"⚠️ {t['disclaimer']}")
+
+setx GROQ_API_KEY "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"
