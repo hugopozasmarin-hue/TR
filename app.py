@@ -5,7 +5,7 @@ import pandas as pd
 from groq import Groq
 import time
 
-# 1. CONFIGURACIÓN Y ESTILO (UI LUXURY 2026)
+# 1. CONFIGURACIÓN Y ESTILO (UI ELITE 2026)
 st.set_page_config(page_title="InvestMind AI Elite", page_icon="💎", layout="wide")
 
 st.markdown("""
@@ -15,81 +15,82 @@ st.markdown("""
     
     /* PANEL LATERAL DE LUJO */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0a0c10 0%, #161821 100%);
-        border-right: 1px solid rgba(255,255,255,0.05);
+        background: linear-gradient(180deg, #050505 0%, #1a1c23 100%);
+        border-right: 1px solid rgba(255,255,255,0.1);
+        padding: 2rem 1rem;
     }
 
     label { display: none !important; }
 
     /* TÍTULOS DE SECCIÓN REFINADOS */
     .field-title {
-        color: #818cf8;
-        font-size: 10px;
+        color: #a5b4fc;
+        font-size: 11px;
         font-weight: 800;
-        letter-spacing: 2.5px;
+        letter-spacing: 2px;
         text-transform: uppercase;
-        margin-bottom: 12px;
-        margin-top: 30px;
-        display: block;
-        border-bottom: 1px solid rgba(129, 140, 248, 0.15);
-        padding-bottom: 6px;
+        margin-top: 25px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        opacity: 0.8;
     }
 
-    /* INPUTS VISIBLES Y AMPLIOS */
+    /* INPUTS VISIBLES */
     .stNumberInput input, .stSelectbox [data-baseweb="select"], .stTextInput input {
-        background-color: #262730 !important;
+        background-color: #1e1f26 !important;
         color: #ffffff !important;
-        border: 1px solid #444 !important;
-        border-radius: 12px !important;
-        height: 48px !important;
-        font-size: 15px !important;
+        border: 1px solid #334155 !important;
+        border-radius: 8px !important;
+        height: 45px !important;
     }
     
-    .stSelectbox div[role="button"] { background-color: #262730 !important; height: 48px !important; }
+    .stSelectbox div[role="button"] { background-color: #1e1f26 !important; }
 
-    /* BOTÓN CON EFECTO GLOW */
+    /* BOTÓN CON DEGRADADO */
     .stButton>button {
-        width: 100%; border-radius: 14px;
-        background: linear-gradient(90deg, #6366f1, #00d4ff);
-        color: white !important; font-weight: 800; border: none; padding: 16px;
-        transition: all 0.4s ease; margin-top: 15px;
-        text-transform: uppercase; letter-spacing: 1px;
+        width: 100%; border-radius: 10px;
+        background: linear-gradient(90deg, #4f46e5, #06b6d4);
+        color: white !important; font-weight: 700; border: none; padding: 12px;
+        transition: all 0.3s ease; margin-top: 20px;
+        text-transform: uppercase; font-size: 13px;
     }
-    .stButton>button:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(99,102,241,0.4); }
+    .stButton>button:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(79,70,229,0.5); }
 
-    /* CHAT Y RESALTADOS */
-    .bubble { padding: 18px 22px; border-radius: 18px; margin-bottom: 12px; max-width: 85%; font-size: 15px; line-height: 1.6; }
-    .user-bubble { background: #6366f1; color: white !important; margin-left: auto; border-bottom-right-radius: 2px; }
-    .assistant-bubble { background: #262730; border: 1px solid #444; color: #eee !important; border-bottom-left-radius: 2px; }
-    .highlight { color: #00ffcc; font-weight: 800; }
+    /* CHAT */
+    .bubble { padding: 15px 20px; border-radius: 15px; margin-bottom: 10px; max-width: 85%; font-size: 14.5px; }
+    .user-bubble { background: #4f46e5; color: white !important; margin-left: auto; border-bottom-right-radius: 2px; }
+    .assistant-bubble { background: #1e293b; border: 1px solid #334155; color: #f1f5f9 !important; border-bottom-left-radius: 2px; }
+    
+    .highlight { color: #22d3ee; font-weight: 800; }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. DICCIONARIO DE TRADUCCIÓN INTEGRAL
+# 2. DICCIONARIO DE TRADUCCIÓN COMPLETO
 languages = {
     "Español": {
-        "title": "InvestMind AI Elite", "ajust": "⚙️ AJUSTES", "lang_lab": "IDIOMA",
-        "conf": "🛠️ CONFIGURACIÓN", "curr": "MONEDA", "cap": "CAPITAL", 
-        "risk_lab": "PERFIL DE RIESGO", "ass_lab": "ACTIVO FINANCIERO", "btn": "EJECUTAR ANÁLISIS", 
-        "diag": "Consultoría Estratégica Institucional", "just": "Justificación Técnica", 
+        "title": "InvestMind AI Elite", "ajust": "⚙️ AJUSTES", "lang_name": "IDIOMA",
+        "conf": "📊 CONFIGURACIÓN", "curr": "💰 MONEDA", "cap": "💵 CAPITAL", 
+        "risk_lab": "🛡️ RIESGO", "ass_lab": "🔍 ACTIVO", "btn": "EJECUTAR ANÁLISIS", 
+        "diag": "Consultoría Estratégica", "just": "Justificación Técnica", 
         "wait": "Analizando Big Data...", "price": "Precio Hoy", "target": "Objetivo IA (30d)", 
-        "shares": "Unidades Comprables", "disclaimer": "Simulación basada en ciclos 2026. Riesgo de capital."
+        "shares": "Acciones a Comprar", "disclaimer": "Simulación 2026. Riesgo de capital."
     },
     "English": {
-        "title": "InvestMind AI Elite", "ajust": "⚙️ SETTINGS", "lang_lab": "LANGUAGE",
-        "conf": "🛠️ CONFIGURATION", "curr": "CURRENCY", "cap": "CAPITAL", 
-        "risk_lab": "RISK PROFILE", "ass_lab": "FINANCIAL ASSET", "btn": "EXECUTE ANALYSIS", 
-        "diag": "Institutional Strategic Consultancy", "just": "Technical Justification", 
-        "wait": "Analyzing Big Data...", "price": "Price Today", "target": "AI Target (30d)", 
-        "shares": "Buying Power", "disclaimer": "Simulation based on 2026 cycles. Capital at risk."
+        "title": "InvestMind AI Elite", "ajust": "⚙️ SETTINGS", "lang_name": "LANGUAGE",
+        "conf": "📊 CONFIGURATION", "curr": "💰 CURRENCY", "cap": "💵 CAPITAL", 
+        "risk_lab": "🛡️ RISK", "ass_lab": "🔍 ASSET", "btn": "EXECUTE ANALYSIS", 
+        "diag": "Strategic Consultancy", "just": "Technical Justification", 
+        "wait": "Analyzing Big Data...", "price": "Current Price", "target": "AI Target (30d)", 
+        "shares": "Shares to Buy", "disclaimer": "2026 Simulation. Capital at risk."
     },
     "Català": {
-        "title": "InvestMind AI Elite", "ajust": "⚙️ AJUSTOS", "lang_lab": "IDIOMA",
-        "conf": "🛠️ CONFIGURACIÓ", "curr": "MONEDA", "cap": "CAPITAL", 
-        "risk_lab": "PERFIL DE RISC", "ass_lab": "ACTIU FINANCER", "btn": "EXECUTAR ANÀLISI", 
-        "diag": "Consultoria Estratègica Institucional", "just": "Justificació Tècnica", 
+        "title": "InvestMind AI Elite", "ajust": "⚙️ AJUSTOS", "lang_name": "IDIOMA",
+        "conf": "📊 CONFIGURACIÓ", "curr": "💰 MONEDA", "cap": "💵 CAPITAL", 
+        "risk_lab": "🛡️ RISC", "ass_lab": "🔍 ACTIU", "btn": "EXECUTAR ANÀLISI", 
+        "diag": "Consultoria Estratègica", "just": "Justificació Tècnica", 
         "wait": "Analitzant Big Data...", "price": "Preu Avui", "target": "Objectiu IA (30d)", 
-        "shares": "Unitats Comprables", "disclaimer": "Simulació basada en cicles 2026. Risc de capital."
+        "shares": "Accions a Comprar", "disclaimer": "Simulació 2026. Risc de capital."
     }
 }
 
@@ -100,15 +101,14 @@ if 'analizado' not in st.session_state: st.session_state.analizado = False
 if 'ticket_act' not in st.session_state: st.session_state.ticket_act = "N/A"
 if 'lang' not in st.session_state: st.session_state.lang = "Español"
 
-# 4. BARRA LATERAL (FIX UI & TRANSLATIONS)
+# 4. BARRA LATERAL (ESTÉTICA MEJORADA)
 with st.sidebar:
-    # Ajustes Expandibles (Traducción de "Language" incluida)
+    # Ajustes con traducción de la palabra "Idioma"
     curr_t = languages[st.session_state.lang]
     with st.expander(curr_t["ajust"], expanded=False):
-        st.markdown(f'<p class="field-title">{curr_t["lang_lab"]}</p>', unsafe_allow_html=True)
+        st.markdown(f'<p class="field-title">{curr_t["lang_name"]}</p>', unsafe_allow_html=True)
         st.session_state.lang = st.selectbox("", ["Español", "English", "Català"], index=["Español", "English", "Català"].index(st.session_state.lang))
     
-    # Recargar textos dinámicos
     t = languages[st.session_state.lang]
     
     st.markdown(f'<p class="field-title">{t["curr"]}</p>', unsafe_allow_html=True)
@@ -122,16 +122,16 @@ with st.sidebar:
     perfil = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"])
     
     st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
-    ticket = st.text_input("", value="AAPL", placeholder="EX: TSLA, BTC-USD").upper().strip()
+    ticket = st.text_input("", value="AAPL").upper().strip()
 
-# 5. MOTOR IA (2026 UPDATED MODEL)
+# 5. MOTOR IA (GROQ 2026)
 def hablar_con_ia_real(pregunta, lang, ticket, cambio, perfil):
     api_key = "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" 
     try:
         client = Groq(api_key=api_key)
-        prompt = f"Asesor Elite 2026. Usuario: {perfil}, Activo: {ticket}, Tendencia: {cambio:.2f}%. Responde en {lang} con sofisticación."
+        prompt = f"Eres InvestMind AI (Marzo 2026). Perfil: {perfil}, Activo: {ticket}, Tendencia: {cambio:.2f}%. Responde en {lang} con sabiduría financiera."
         completion = client.chat.completions.create(model="llama-3.3-70b-versatile", messages=[{"role": "system", "content": prompt}, {"role": "user", "content": pregunta}])
-        return completion.choices[0].message.content
+        return completion.choices.message.content
     except Exception as e:
         return f"Error técnico: {str(e)}"
 
@@ -155,11 +155,11 @@ with tab1:
                 st.session_state.analizado = True
                 st.session_state.ticket_act = ticket
 
-                # MÉTRICAS MAPYADAS SEGÚN TU IMAGEN
+                # MÉTRICAS CON TÍTULOS CLAROS
                 c1, c2, c3 = st.columns(3)
-                c1.metric(t["price"], f"{p_act:.2f}{simbolo}")
-                c2.metric(t["target"], f"{p_pre:.2f}{simbolo}", f"{st.session_state.cambio:.2f}%")
-                c3.metric(t["shares"], f"{(capital/p_act):.4f}")
+                c1.metric(label=t["price"], value=f"{p_act:.2f}{simbolo}")
+                c2.metric(label=t["target"], value=f"{p_pre:.2f}{simbolo}", delta=f"{st.session_state.cambio:.2f}%")
+                c3.metric(label=t["shares"], value=f"{(capital/p_act):.4f}")
                 
                 st.line_chart(datos['Close'])
 
@@ -169,9 +169,9 @@ with tab1:
                 st.subheader(f"📊 {t['just']}")
                 
                 just_txt = {
-                    "Español": f"La proyección de <span class='highlight'>{st.session_state.cambio:.2f}%</span> para **{ticket}** se basa en un análisis de regresión de 1,260 sesiones. Detectamos una inercia institucional en {p_act:.2f} y una convergencia de ciclos estacionales de 2026.",
-                    "English": f"The <span class='highlight'>{st.session_state.cambio:.2f}%</span> projection for **{ticket}** is based on 1,260-session regression analysis. We detect institutional inertia at {p_act:.2f} and 2026 seasonal cycle convergence.",
-                    "Català": f"La projecció de <span class='highlight'>{st.session_state.cambio:.2f}%</span> per a **{ticket}** es basa en un anàlisi de regressió de 1.260 sessions. Detectem una inèrcia institucional a {p_act:.2f} i una convergència de cicles estacionals de 2026."
+                    "Español": f"Nuestros modelos proyectan un <span class='highlight'>{st.session_state.cambio:.2f}%</span> para **{ticket}**. La justificación reside en la inercia de 1,260 sesiones y la convergencia de soportes en {p_act:.2f}.",
+                    "English": f"Our models project <span class='highlight'>{st.session_state.cambio:.2f}%</span> for **{ticket}**. This is justified by 1,260-session inertia and support convergence at {p_act:.2f}.",
+                    "Català": f"Els nostres models projecten un <span class='highlight'>{st.session_state.cambio:.2f}%</span> per a **{ticket}**. La justificació resideix en la inèrcia de 1.260 sessions i la convergència de suports a {p_act:.2f}."
                 }
                 st.write(just_txt[st.session_state.lang], unsafe_allow_html=True)
                 st.caption(t["disclaimer"])
@@ -184,11 +184,11 @@ with tab2:
         clase = "user-bubble" if msg["role"] == "user" else "assistant-bubble"
         st.markdown(f'<div class="bubble {clase}">{msg["content"]}</div>', unsafe_allow_html=True)
 
-    if p := st.chat_input("Escribe tu duda financiera..."):
+    if p := st.chat_input("..."):
         st.session_state.messages.append({"role": "user", "content": p})
         with st.spinner("..."):
             res = hablar_con_ia_real(p, st.session_state.lang, st.session_state.ticket_act, st.session_state.cambio, perfil)
             st.session_state.messages.append({"role": "assistant", "content": res})
             st.rerun()
 
-st.caption("InvestMind AI Elite Platinum v15.0 | 2026 Edition")
+st.caption("InvestMind AI Platinum Edition v15.5 | 2026")
