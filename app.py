@@ -60,7 +60,7 @@ with st.sidebar:
 
 # 5. EL "CEREBRO": IA REAL DE GROQ
 def hablar_con_ia_real(pregunta, lang, ticket, cambio, perfil):
-    # --- AQUÍ PEGA TU CLAVE DE GROQ ---
+    # --- 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 ---
     api_key = "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" 
     # ---------------------------------
     
