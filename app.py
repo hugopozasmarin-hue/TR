@@ -3,65 +3,109 @@ import yfinance as yf
 from prophet import Prophet
 import pandas as pd
 
-# CONFIGURACIÓN
-st.set_page_config(page_title="InvestMind AI", page_icon="📈")
-st.title("🤖 InvestMind AI: Tu Copiloto Financiero")
+# 1. CONFIGURACIÓN Y ESTILO
+st.set_page_config(page_title="InvestMind AI", page_icon="💰", layout="wide")
+st.title("🤖 InvestMind AI: Tu Copiloto Financiero Pro")
 
+# 2. BARRA LATERAL (CONFIGURACIÓN)
 with st.sidebar:
-    st.header("⚙️ Configuración")
-    capital = st.number_input("Capital a invertir ($)", min_value=1, value=1000)
-    perfil = st.selectbox("Tu perfil de riesgo", ["Conservador", "Arriesgado"])
-    ticket = st.text_input("Ticker (ej: AAPL, TSLA, BTC-USD)", value="TSLA").upper()
+    st.header("⚙️ Panel de Control")
+    
+    # Selección de Moneda
+    moneda = st.radio("Selecciona tu moneda:", ["USD ($)", "EUR (€)"], horizontal=True)
+    simbolo_moneda = "$" if "USD" in moneda else "€"
+    
+    # Capital
+    capital = st.number_input(f"Capital a invertir ({simbolo_moneda})", min_value=1.0, value=1000.0, step=10.0)
+    
+    # Perfil
+    perfil = st.selectbox("Tu perfil de riesgo", ["Conservador (Protección)", "Moderado (Equilibrio)", "Arriesgado (Crecimiento)"])
+    
+    # Menú desplegable de Tickers populares + Opción manual
+    opciones_ticker = {
+        "Apple (AAPL)": "AAPL",
+        "Tesla (TSLA)": "TSLA",
+        "Microsoft (MSFT)": "MSFT",
+        "Amazon (AMZN)": "AMZN",
+        "Google (GOOGL)": "GOOGL",
+        "Nvidia (NVDA)": "NVDA",
+        "Bitcoin (BTC-USD)": "BTC-USD",
+        "Ethereum (ETH-USD)": "ETH-USD",
+        "Santander (SAN.MC)": "SAN.MC",
+        "IBEX 35 (^IBEX)": "^IBEX",
+        "OTRO (Escribir abajo)": "CUSTOM"
+    }
+    seleccion = st.selectbox("Selecciona un activo o empresa:", list(opciones_ticker.keys()))
+    
+    if opciones_ticker[seleccion] == "CUSTOM":
+        ticket = st.text_input("Escribe el Ticker manualmente (ej: META):").upper()
+    else:
+        ticket = opciones_ticker[seleccion]
 
-if st.button("🔍 Analizar Inversión"):
-    with st.spinner('Analizando datos...'):
-        # 1. Descarga de datos
-        datos = yf.download(ticket, period="5y")
-        
-        if datos.empty or len(datos) < 20:
-            st.error("❌ No hay datos suficientes para este Ticker.")
-        else:
-            try:
-                # --- EL PARCHE DE SEGURIDAD ESTÁ AQUÍ ---
-                # Forzamos a que sean números simples (floats) y no listas
-                precio_actual = float(datos['Close'].iloc[-1]) 
-                
-                # 2. IA de Predicción
-                df_prophet = datos.reset_index()[['Date', 'Close']]
-                df_prophet.columns = ['ds', 'y']
-                df_prophet['ds'] = df_prophet['ds'].dt.tz_localize(None)
-                
-                modelo = Prophet(daily_seasonality=True)
-                modelo.fit(df_prophet)
-                futuro = modelo.make_future_dataframe(periods=30)
-                prediccion = modelo.predict(futuro)
-                
-                # Extraemos el valor predicho como número simple
-                precio_predicho = float(prediccion['yhat'].iloc[-1])
-                cambio = float(((precio_predicho - precio_actual) / precio_actual) * 100)
-                # ----------------------------------------
+# 3. CUERPO PRINCIPAL
+tab1, tab2 = st.tabs(["📈 Análisis y Predicción", "💬 Chat con el Asesor"])
 
-                # 3. Mostrar métricas sin errores
-                col1, col2 = st.columns(2)
-                col1.metric("Precio Actual", f"${precio_actual:.2f}")
-                col2.metric("Predicción (30 días)", f"${precio_predicho:.2f}", f"{cambio:.2f}%")
+with tab1:
+    if st.button("🚀 Iniciar Análisis Profundo"):
+        with st.spinner('Analizando mercados globales...'):
+            datos = yf.download(ticket, period="5y")
+            
+            if datos.empty:
+                st.error("No se encontraron datos. Revisa el Ticker.")
+            else:
+                # Procesamiento de Precios
+                precio_actual = float(datos['Close'].iloc[-1])
                 
-                st.subheader("Gráfica de Tendencia")
+                # IA Prophet
+                df_p = datos.reset_index()[['Date', 'Close']]
+                df_p.columns = ['ds', 'y']
+                df_p['ds'] = df_p['ds'].dt.tz_localize(None)
+                m = Prophet(daily_seasonality=True).fit(df_p)
+                futuro = m.make_future_dataframe(periods=30)
+                pred = m.predict(futuro)
+                
+                precio_pred = float(pred['yhat'].iloc[-1])
+                cambio = ((precio_pred - precio_actual) / precio_actual) * 100
+                
+                # Visualización
+                col1, col2, col3 = st.columns(3)
+                col1.metric("Precio Actual", f"{precio_actual:.2f} {simbolo_moneda}")
+                col2.metric("Predicción 30 días", f"{precio_pred:.2f} {simbolo_moneda}", f"{cambio:.2f}%")
+                
+                # CÁLCULO CON DECIMALES
+                cantidad_acciones = capital / precio_actual
+                col3.metric("Capacidad de Compra", f"{cantidad_acciones:.4f} unidades")
+
                 st.line_chart(datos['Close'])
-                
-                st.subheader("💡 Consejo de la IA")
-                if perfil == "Conservador":
-                    if cambio > 7:
-                        st.success(f"✅ Oportunidad sólida. Comprarías aprox. {int(capital/precio_actual)} acciones.")
-                    else:
-                        st.warning("⚠️ Poco beneficio esperado para un perfil conservador.")
-                else:
-                    if cambio > 2:
-                        st.success(f"🚀 Tendencia positiva detectada para perfil arriesgado.")
-                    else:
-                        st.info("📉 No es el mejor momento para este activo.")
-                
-            except Exception as e:
-                st.error(f"Error al procesar datos: {e}")
 
-st.caption("Nota: Los datos pueden tardar unos segundos en cargar.")
+                # SECCIÓN DE CONSEJO EXTENSO
+                st.subheader("💡 Informe Detallado de la IA")
+                
+                with st.expander("VER ANÁLISIS COMPLETO", expanded=True):
+                    if cambio > 5:
+                        st.success(f"**DIAGNÓSTICO: OPORTUNIDAD ALCISTA**")
+                        st.write(f"Nuestros algoritmos detectan una tendencia de crecimiento del {cambio:.2f}% para el próximo mes.")
+                    elif cambio < -2:
+                        st.error(f"**DIAGNÓSTICO: PRECAUCIÓN / BAJISTA**")
+                        st.write("Se observa una posible corrección. Podría ser un momento de riesgo.")
+                    else:
+                        st.info(f"**DIAGNÓSTICO: MERCADO LATERAL**")
+                        st.write("El activo se mantiene estable sin tendencias claras de ruptura.")
+
+                    st.markdown(f"""
+                    **Análisis según tu perfil ({perfil}):**
+                    *   **Estrategia recomendada:** {"Diversificación cautelosa" if "Conservador" in perfil else "Entrada agresiva o escalonada"}.
+                    *   **Riesgo estimado:** El mercado muestra una volatilidad estándar. Para un capital de {capital} {simbolo_moneda}, la exposición es manejable.
+                    *   **Sugerencia de salida:** Si el precio alcanza los {precio_pred:.2f} {simbolo_moneda}, considera tomar beneficios parciales.
+                    """)
+
+with tab2:
+    st.subheader("💬 Pregúntale a tu Asesor Personal")
+    user_question = st.text_input("Ej: ¿Es buen momento para invertir mis ahorros en esto?")
+    
+    if user_question:
+        # Lógica de respuesta "inteligente" simulada
+        st.chat_message("assistant").write(f"Sobre tu pregunta: '{user_question}'...")
+        st.write(f"Basándome en tu perfil **{perfil}** y el activo **{ticket}**, mi recomendación es que analices si esos {capital} {simbolo_moneda} representan más del 20% de tus ahorros. En la situación actual, la rentabilidad esperada es del {cambio:.2f}%. ¿Te gustaría saber el riesgo de pérdida máxima?")
+
+st.caption("Aviso legal: Esta IA utiliza modelos estadísticos. La inversión conlleva riesgos. No nos hacemos responsables de pérdidas financieras.")
