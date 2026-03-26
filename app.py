@@ -44,13 +44,11 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
         return response.choices[0].message.content
     except Exception as e: return f"Error IA: {e}"
 
-# --- INICIALIZACIÓN DE SESIÓN (SOLUCIÓN DEFINITIVA A KEYERROR) ---
+# --- INICIALIZACIÓN DE SESIÓN ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
 if "analizado" not in st.session_state: st.session_state.analizado = False
-keys_to_init = ["p_act", "p_pre", "cambio", "ticket_act", "perfil_act", "cap_act", "ultimo_informe", "chat_history"]
-for key in keys_to_init:
-    if key not in st.session_state:
-        st.session_state[key] = 0.0 if "p_" in key or key == "cambio" or "cap" in key else "" if key != "chat_history" else []
+if "chat_history" not in st.session_state: st.session_state.chat_history = []
+if "ultimo_informe" not in st.session_state: st.session_state.ultimo_informe = ""
 
 # --- SIDEBAR ---
 with st.sidebar:
@@ -60,8 +58,8 @@ with st.sidebar:
     if lang_temp != st.session_state.lang:
         st.session_state.lang = lang_temp
         if st.session_state.analizado:
-            # Regenerar informe al cambiar idioma para que sea instantáneo
-            st.session_state.ultimo_informe = generar_analisis_ia(st.session_state.lang, st.session_state.ticket_act, st.session_state.p_act, st.session_state.p_pre, st.session_state.cambio, st.session_state.perfil_act, st.session_state.cap_act)
+            # Regenerar informe al vuelo para que cambie el idioma al instante
+            st.session_state.ultimo_informe = generar_analisis_ia(st.session_state.lang, st.session_state.get("ticket_act"), st.session_state.get("p_act"), st.session_state.get("p_pre"), st.session_state.get("cambio"), perf_in, cap_in)
         st.rerun()
 
     t = languages[st.session_state.lang]
@@ -79,39 +77,48 @@ tab1, tab2 = st.tabs([f"📊 {t['btn']}", "💬 AI ADVISOR"])
 with tab1:
     if st.button(t["btn"]):
         with st.status(t["wait"]):
-            raw_data = yf.download(tick_in, period="2y", interval="1d")
+            # DESCARGA BLINDADA: Forzamos columnas planas
+            raw_data = yf.download(tick_in, period="2y", interval="1d", multi_level_index=False)
+            
             if not raw_data.empty:
-                if isinstance(raw_data.columns, pd.MultiIndex):
-                    raw_data.columns = raw_data.columns.get_level_values(0)
+                # Limpieza manual de nombres de columnas (para yfinance 0.2.50+)
+                raw_data.columns = [col[0] if isinstance(col, tuple) else col for col in raw_data.columns]
                 
-                df_p = raw_data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
-                df_p['ds'] = df_p['ds'].dt.tz_localize(None)
-                model = Prophet(daily_seasonality=True).fit(df_p)
+                df_p = raw_data.reset_index()
+                # Buscamos 'Close' o el nombre del ticker que a veces pone yfinance
+                col_cierre = 'Close' if 'Close' in df_p.columns else tick_in
+                
+                df_prophet = df_p[['Date', col_cierre]].rename(columns={'Date':'ds', col_cierre:'y'})
+                df_prophet['ds'] = df_prophet['ds'].dt.tz_localize(None)
+                
+                model = Prophet(daily_seasonality=True).fit(df_prophet)
                 forecast = model.predict(model.make_future_dataframe(periods=30))
                 
-                pa, pf = float(df_p['y'].iloc[-1]), float(forecast['yhat'].iloc[-1])
+                pa = float(df_prophet['y'].iloc[-1])
+                pf = float(forecast['yhat'].iloc[-1])
                 ca = ((pf - pa) / pa) * 100
                 
-                # Actualización masiva de estado
                 st.session_state.update({
                     "p_act": pa, "p_pre": pf, "cambio": ca, "ticket_act": tick_in, 
-                    "perfil_act": perf_in, "cap_act": cap_in, "analizado": True,
-                    "data_plot": raw_data, "forecast_plot": forecast, "df_p": df_p
+                    "analizado": True, "data_plot": raw_data, "forecast_plot": forecast, "df_p": df_prophet
                 })
                 st.session_state.ultimo_informe = generar_analisis_ia(st.session_state.lang, tick_in, pa, pf, ca, perf_in, cap_in)
             else: st.error("Ticker no válido.")
 
     if st.session_state.analizado:
+        # Métricas
         m1, m2, m3 = st.columns(3)
         with m1: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['price']}</div><div class='metric-value'>{st.session_state.p_act:.2f}€</div></div>", unsafe_allow_html=True)
         with m2: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['target']}</div><div class='metric-value'>{st.session_state.p_pre:.2f}€ ({st.session_state.cambio:+.2f}%)</div></div>", unsafe_allow_html=True)
-        with m3: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['shares']}</div><div class='metric-value'>{st.session_state.cap_act/st.session_state.p_act:.2f}</div></div>", unsafe_allow_html=True)
+        with m3: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['shares']}</div><div class='metric-value'>{cap_in/st.session_state.p_act:.2f}</div></div>", unsafe_allow_html=True)
 
+        # GRÁFICA 1: VELAS
         st.markdown(f"#### {t['hist_t']}")
         fig1 = go.Figure(data=[go.Candlestick(x=st.session_state.data_plot.index, open=st.session_state.data_plot['Open'], high=st.session_state.data_plot['High'], low=st.session_state.data_plot['Low'], close=st.session_state.data_plot['Close'], name=st.session_state.ticket_act)])
         fig1.update_layout(template="plotly_white", xaxis_rangeslider_visible=False, height=400)
         st.plotly_chart(fig1, use_container_width=True)
 
+        # GRÁFICA 2: PROYECCIÓN (LÍNEAS)
         st.markdown(f"#### {t['pred_t']}")
         fig2 = go.Figure()
         fig2.add_trace(go.Scatter(x=st.session_state.df_p['ds'], y=st.session_state.df_p['y'], name="Real", line=dict(color='#000000', width=1.5)))
@@ -128,10 +135,9 @@ with tab2:
 
     if pr_u := st.chat_input(t["chat_placeholder"]):
         st.session_state.chat_history.append({"role": "user", "content": pr_u})
-        # Contexto de seguridad para el chat
+        # Verificamos si existe el ticket analizado antes de enviar el contexto al chat
         tk = st.session_state.get("ticket_act", "General")
-        res = generar_analisis_ia(st.session_state.lang, tk, st.session_state.p_act, st.session_state.p_pre, st.session_state.cambio, perf_in, cap_in, pr_u)
+        res = generar_analisis_ia(st.session_state.lang, tk, st.session_state.get("p_act", 0), st.session_state.get("p_pre", 0), st.session_state.get("cambio", 0), perf_in, cap_in, pr_u)
         st.session_state.chat_history.append({"role": "assistant", "content": res})
         st.rerun()
-
 
