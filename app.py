@@ -11,111 +11,102 @@ st.set_page_config(page_title="InvestIA Elite | Pro", page_icon="💎", layout="
 # --- ⚠️ CONFIGURACIÓN API ---
 GROQ_API_KEY = "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"
 
-# --- DISEÑO DE VANGUARDIA (CSS) ---
+# --- DISEÑO MINIMALISTA Y LIMPIO (CSS) ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com');
     
-    /* Variables y Reset */
-    :root {
-        --bg-deep: #050a14;
-        --accent: #64ffda;
-        --secondary: #48cae4;
-        --glass: rgba(255, 255, 255, 0.03);
-        --glass-border: rgba(255, 255, 255, 0.1);
+    /* Reset a Blanco */
+    .stApp {
+        background-color: #ffffff;
+        color: #1a1a1a;
     }
 
     * { font-family: 'Inter', sans-serif; }
     
-    .stApp {
-        background: radial-gradient(circle at top right, #0a192f, #050a14);
-    }
-
-    /* Sidebar Estilizada */
+    /* Sidebar Profesional */
     [data-testid="stSidebar"] {
-        background-color: #050a14 !important;
-        border-right: 1px solid var(--glass-border);
+        background-color: #f8f9fa !important;
+        border-right: 1px solid #e9ecef;
     }
     
     .field-title { 
-        color: var(--accent); font-size: 11px; font-weight: 800;
-        letter-spacing: 1.8px; text-transform: uppercase;
-        margin-bottom: 10px; opacity: 0.8;
+        color: #495057; font-size: 11px; font-weight: 700;
+        letter-spacing: 1.2px; text-transform: uppercase;
+        margin-bottom: 8px; margin-top: 15px;
     }
 
-    /* Tabs Modernos */
+    /* Tabs Minimalistas */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 20px; background-color: transparent;
+        gap: 10px; border-bottom: 1px solid #dee2e6;
     }
     .stTabs [data-baseweb="tab"] {
-        height: 50px; border-radius: 10px; border: none;
-        background-color: var(--glass); color: white;
-        transition: all 0.3s ease; padding: 0 25px;
+        background-color: transparent; color: #6c757d;
+        font-weight: 500; padding: 10px 20px;
     }
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(90deg, #64ffda33, #48cae433) !important;
-        border-bottom: 2px solid var(--accent) !important;
+        color: #000000 !important;
+        border-bottom: 2px solid #000000 !important;
     }
 
-    /* Botón Premium */
+    /* Botón Sólido Moderno */
     .stButton>button { 
-        border: none; border-radius: 12px;
-        background: linear-gradient(135deg, var(--accent), var(--secondary));
-        color: #050a14 !important; font-weight: 700;
-        height: 48px; letter-spacing: 0.5px;
-        transition: transform 0.2s, box-shadow 0.2s;
+        border: none; border-radius: 8px;
+        background-color: #1a1a1a;
+        color: #ffffff !important; font-weight: 600;
+        height: 45px; transition: all 0.2s ease;
     }
     .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(100, 255, 218, 0.3);
+        background-color: #333333;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-    /* Tarjetas de Métricas Custom */
+    /* Tarjetas de Métricas Blancas */
     .metric-card {
-        background: var(--glass); border: 1px solid var(--glass-border);
-        border-radius: 16px; padding: 20px; text-align: center;
-        backdrop-filter: blur(10px);
+        background: #ffffff; border: 1px solid #e9ecef;
+        border-radius: 12px; padding: 20px; text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
-    .metric-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; }
-    .metric-value { font-size: 24px; font-weight: 800; color: white; }
+    .metric-label { font-size: 11px; color: #adb5bd; text-transform: uppercase; font-weight: 600; }
+    .metric-value { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-top: 5px; }
 
-    /* Chat Estilo Consultoría de Lujo */
-    .chat-row { display: flex; margin-bottom: 20px; justify-content: flex-start; }
+    /* Chat Estilo "Clean Canvas" */
+    .chat-row { display: flex; margin-bottom: 25px; justify-content: flex-start; }
     .bubble { 
-        padding: 16px 20px; border-radius: 20px; 
-        max-width: 85%; font-size: 15px; line-height: 1.6;
-        backdrop-filter: blur(10px);
+        padding: 20px; border-radius: 12px; 
+        max-width: 85%; font-size: 15px;
+        line-height: 1.6; /* Separación entre líneas igual */
+        background: #ffffff; border: 1px solid #e9ecef;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
     }
-    .user-bubble { 
-        background: rgba(100, 255, 218, 0.1); color: #e2e8f0; 
-        border: 1px solid rgba(100, 255, 218, 0.2);
-        border-left: 5px solid var(--accent);
-    }
-    .ai-bubble { 
-        background: rgba(72, 202, 228, 0.05); color: #cbd5e1; 
-        border: 1px solid rgba(72, 202, 228, 0.1);
-        border-left: 5px solid var(--secondary);
-    }
+    .user-bubble { border-left: 4px solid #adb5bd; }
+    .ai-bubble { border-left: 4px solid #1a1a1a; }
+    
     .chat-label { 
-        font-size: 10px; font-weight: 800; margin-bottom: 6px; 
-        letter-spacing: 1.2px; color: var(--accent); opacity: 0.7;
+        font-size: 10px; font-weight: 800; 
+        display: block;
+        margin-bottom: 12px; /* Espacio entre inversor y el texto */
+        letter-spacing: 1px; color: #212529; opacity: 0.8;
     }
+    
+    /* Ajuste de párrafos dentro del chat */
+    .bubble p { margin-bottom: 1.2em; }
 </style>
 """, unsafe_allow_html=True)
 
 # --- DICCIONARIO DE IDIOMAS ---
 languages = {
     "Español": {
-        "title":"INVESTIA ELITE", "lang_lab":"Ajustes de Idioma", "cap":"Capital de Inversión", "risk_lab":"Perfil de Riesgo",
-        "ass_lab":"Símbolo del Activo", "btn":"EJECUTAR ANÁLISIS", "wait":"IA Procesando datos...", 
+        "title":"INVESTIA ELITE", "lang_lab":"Idioma", "cap":"Presupuesto", "risk_lab":"Riesgo",
+        "ass_lab":"Ticker", "btn":"EJECUTAR ANÁLISIS", "wait":"Procesando datos...", 
         "price":"Precio Actual", "target":"Objetivo 30d", "shares":"Capacidad Compra", 
-        "analysis":"Estrategia Institucional", "chat_placeholder":"Consultar a la IA..."
+        "analysis":"Estrategia Institucional", "chat_placeholder":"Escribe tu consulta aquí..."
     },
     "English": {
-        "title":"INVESTIA ELITE", "lang_lab":"Language Settings", "cap":"Investment Capital", "risk_lab":"Risk Profile",
+        "title":"INVESTIA ELITE", "lang_lab":"Language", "cap":"Budget", "risk_lab":"Risk Profile",
         "ass_lab":"Asset Ticker", "btn":"EXECUTE ANALYSIS", "wait":"AI Processing...", 
         "price":"Current Price", "target":"30-Day Target", "shares":"Buying Capacity", 
-        "analysis":"Institutional Strategy", "chat_placeholder":"Ask the IA Advisor..."
+        "analysis":"Institutional Strategy", "chat_placeholder":"Type your query here..."
     }
 }
 
@@ -125,9 +116,9 @@ def generar_analisis_ia(lang, ticket=None, p_act=None, p_fut=None, cambio=None, 
         client = Groq(api_key=GROQ_API_KEY)
         contexto = f"Activo: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€ ({cambio:.2f}%)." if ticket else ""
         prompt = f"""Actúa como analista senior de un Hedge Fund. RESPONDE SIEMPRE EN {lang}. Perfil {perfil}, Capital {capital}€. {contexto}
-        Pregunta: {pregunta if pregunta else "Realiza un informe de inversión institucional."}"""
+        Pregunta: {pregunta if pregunta else "Realiza un informe de inversión institucional detallado."}"""
         response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile")
-        return response.choices[0].message.content
+        return response.choices.message.content
     except Exception as e: return f"Error: {e}"
 
 # --- GESTIÓN DE SESIÓN ---
@@ -135,7 +126,7 @@ if "lang" not in st.session_state: st.session_state.lang = "Español"
 if "analizado" not in st.session_state: st.session_state.analizado = False
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
-# --- SIDEBAR PREMIUM ---
+# --- SIDEBAR ---
 with st.sidebar:
     st.markdown(f'<p class="field-title">{languages[st.session_state.lang]["lang_lab"]}</p>', unsafe_allow_html=True)
     lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
@@ -152,8 +143,8 @@ with st.sidebar:
     ticket = st.text_input("", value="AAPL", label_visibility="collapsed").upper()
 
 # --- CUERPO PRINCIPAL ---
-st.markdown(f"<h1 style='text-align: center; letter-spacing: 5px; font-weight: 800; color: white;'>{t['title']}</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #64ffda; opacity: 0.6; font-size: 13px; margin-bottom: 40px;'>ADVANCED QUANTITATIVE AI ANALYSIS</p>", unsafe_allow_html=True)
+st.markdown(f"<h1 style='text-align: center; font-weight: 800; color: #1a1a1a; margin-top: 20px;'>{t['title']}</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #adb5bd; font-weight: 500; font-size: 12px; letter-spacing: 2px; margin-bottom: 50px;'>QUANTITATIVE INTELLIGENCE TERMINAL</p>", unsafe_allow_html=True)
 
 tab1, tab2 = st.tabs([f"📊 {t['btn']}", "💬 AI ADVISOR"])
 
@@ -172,33 +163,42 @@ with tab1:
                 cambio = ((p_fut - p_act) / p_act) * 100
                 st.session_state.update({"p_act": p_act, "p_pre": p_fut, "cambio": cambio, "ticket_act": ticket, "analizado": True})
 
-                # Métricas Estilizadas
                 m1, m2, m3 = st.columns(3)
                 with m1: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['price']}</div><div class='metric-value'>{p_act:.2f}€</div></div>", unsafe_allow_html=True)
-                with m2: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['target']}</div><div class='metric-value' style='color:#64ffda'>{p_fut:.2f}€ ({cambio:+.2f}%)</div></div>", unsafe_allow_html=True)
+                with m2: 
+                    color = "#28a745" if cambio >= 0 else "#dc3545"
+                    st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['target']}</div><div class='metric-value' style='color:{color}'>{p_fut:.2f}€ ({cambio:+.2f}%)</div></div>", unsafe_allow_html=True)
                 with m3: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['shares']}</div><div class='metric-value'>{capital/p_act:.2f}</div></div>", unsafe_allow_html=True)
 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
-                # Gráficas
+                # Gráficas con fondo blanco
                 fig_candles = go.Figure(data=[go.Candlestick(x=data.index, open=data['Open'], high=data['High'], low=data['Low'], close=data['Close'], name=ticket)])
-                fig_candles.update_layout(template="plotly_dark", xaxis_rangeslider_visible=False, height=450, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+                fig_candles.update_layout(template="plotly_white", xaxis_rangeslider_visible=False, height=450)
                 st.plotly_chart(fig_candles, use_container_width=True)
 
                 fig_pred = go.Figure()
-                fig_pred.add_trace(go.Scatter(x=df_prophet['ds'], y=df_prophet['y'], name="Histórico", line=dict(color='#48cae4', width=2)))
-                fig_pred.add_trace(go.Scatter(x=forecast['ds'].iloc[-30:], y=forecast['yhat'].iloc[-30:], name="Predicción", line=dict(color='#64ffda', width=3, dash='dot')))
-                fig_pred.update_layout(template="plotly_dark", height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+                fig_pred.add_trace(go.Scatter(x=df_prophet['ds'], y=df_prophet['y'], name="Histórico", line=dict(color='#000000', width=1.5)))
+                fig_pred.add_trace(go.Scatter(x=forecast['ds'].iloc[-30:], y=forecast['yhat'].iloc[-30:], name="Predicción", line=dict(color='#adb5bd', width=2, dash='dot')))
+                fig_pred.update_layout(template="plotly_white", height=400)
                 st.plotly_chart(fig_pred, use_container_width=True)
 
-                st.markdown(f"<div style='background:var(--glass); padding:30px; border-radius:20px; border:1px solid var(--glass-border);'><h3>📊 {t['analysis']}</h3>{generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='background:#f8f9fa; padding:30px; border-radius:12px; border:1px solid #e9ecef;'><h3>📊 {t['analysis']}</h3><div style='line-height:1.6;'>{generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)}</div></div>", unsafe_allow_html=True)
             else: st.error("Asset not found.")
 
 with tab2:
     for chat in st.session_state.chat_history:
         b_class = "user-bubble" if chat["role"] == "user" else "ai-bubble"
         label = "INVERSOR" if chat["role"] == "user" else "IA STRATEGIST"
-        st.markdown(f'<div class="chat-row"><div class="bubble {b_class}"><span class="chat-label">{label}</span>{chat["content"]}</div></div>', unsafe_allow_html=True)
+        # Renderizado de chat con saltos de línea respetados
+        st.markdown(f'''
+            <div class="chat-row">
+                <div class="bubble {b_class}">
+                    <span class="chat-label">{label}</span>
+                    <div style="white-space: pre-wrap;">{chat["content"]}</div>
+                </div>
+            </div>
+        ''', unsafe_allow_html=True)
 
     if prompt_user := st.chat_input(t["chat_placeholder"]):
         st.session_state.chat_history.append({"role": "user", "content": prompt_user})
