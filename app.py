@@ -30,61 +30,53 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- DICCIONARIO DE IDIOMAS (Actualizado) ---
+# --- DICCIONARIO DE IDIOMAS ---
 languages = {
     "Español": {
         "title":"InvestIA Elite", "lang_lab":"AJUSTES", "cap":"PRESUPUESTO", "risk_lab":"RIESGO",
         "ass_lab":"TICKER", "btn":"ANALIZAR MERCADO", "wait":"Procesando datos...", 
         "price":"Precio Actual", "target":"Predicción 30d", "shares":"Acciones posibles", 
-        "analysis":"Análisis Estratégico IA", "chat_placeholder":"Pregunta lo que quieras sobre inversión..."
+        "analysis":"Análisis Estratégico IA", "chat_placeholder":"Pregunta lo que quieras...",
+        "chart_title": "Histórico: Velas + Línea"
     },
     "English": {
         "title":"InvestIA Elite", "lang_lab":"SETTINGS", "cap":"BUDGET", "risk_lab":"RISK",
         "ass_lab":"TICKER", "btn":"ANALYZE MARKET", "wait":"Processing...", 
         "price":"Current Price", "target":"30-Day Target", "shares":"Possible Shares", 
-        "analysis":"AI Strategic Analysis", "chat_placeholder":"Ask anything about investing..."
+        "analysis":"AI Strategic Analysis", "chat_placeholder":"Ask anything...",
+        "chart_title": "History: Candlestick + Line"
     },
     "Català": {
         "title":"InvestIA Elite", "lang_lab":"CONFIGURACIÓ", "cap":"PRESSUPOST", "risk_lab":"RISC",
         "ass_lab":"TICKER", "btn":"ANALITZAR MERCAT", "wait":"Processant dades...", 
         "price":"Preu Actual", "target":"Predicció 30d", "shares":"Accions possibles", 
-        "analysis":"Anàlisi Estratègic IA", "chat_placeholder":"Pregunta el que vulguis sobre inversió..."
+        "analysis":"Anàlisi Estratègic IA", "chat_placeholder":"Pregunta el que vulguis...",
+        "chart_title": "Històric: Espelmes + Línia"
     }
 }
 
-# --- LÓGICA DE IA (Mejorada para Consultoría General) ---
-def generar_analisis_ia(pregunta, ticket=None, p_act=None, p_fut=None, cambio=None, perfil=None, capital=None):
+# --- LÓGICA DE IA MULTILINGÜE ---
+def generar_analisis_ia(pregunta, lang, ticket=None, p_act=None, p_fut=None, cambio=None, perfil=None, capital=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
-        
-        # Contexto dinámico: si hay análisis previo lo incluye, si no, responde como experto general
         contexto_activo = ""
         if ticket:
-            contexto_activo = f"""
-            Activo analizado actualmente: {ticket}
-            Precio: {p_act}€ | Predicción 30d: {p_fut}€ ({cambio:.2f}%)
-            Perfil del usuario: {perfil} | Capital: {capital}€
-            """
+            contexto_activo = f"Activo: {ticket} | Precio: {p_act}€ | Predicción: {p_fut}€ ({cambio:.2f}%) | Perfil: {perfil} | Capital: {capital}€"
 
-        system_prompt = f"""Eres un asesor financiero experto y estratega de mercados globales. 
-        Tu objetivo es ayudar al usuario con cualquier duda sobre finanzas, trading, cripto o macroeconomía.
-        {contexto_activo}
-        Si el usuario pregunta algo general, responde con datos precisos y profesionalismo. 
-        Si pregunta sobre el activo analizado, integra los datos proporcionados en tu respuesta.
-        Sé directo, crítico y evita consejos genéricos legamente peligrosos (añade siempre que es educación financiera)."""
+        system_prompt = f"""Eres un asesor financiero experto. RESPONDE SIEMPRE EN IDIOMA: {lang}.
+        Contexto actual: {contexto_activo}
+        Si es una pregunta general, usa tu base de conocimientos. Si es sobre el activo, usa los datos proporcionados.
+        Sé profesional y añade un disclaimer de educación financiera al final."""
 
         response = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": pregunta}
-            ],
+            messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": pregunta}],
             model="llama-3.3-70b-versatile"
         )
         return response.choices[0].message.content
     except Exception as e:
-        return f"Error en la IA: {e}"
+        return f"Error: {e}"
 
-# --- GESTIÓN DE SESIÓN ---
+# --- SESSION STATE ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
 if "analizado" not in st.session_state: st.session_state.analizado = False
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
@@ -97,21 +89,17 @@ with st.sidebar:
 
     st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
     capital = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
-    
-    st.markdown(f'<p class="field-title">{t["risk_lab"]}</p>', unsafe_allow_html=True)
-    perfil = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"], label_visibility="collapsed")
-
-    st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
-    ticket = st.text_input("", value="NVDA", label_visibility="collapsed").upper()
+    perfil = st.selectbox(t["risk_lab"], ["Conservador", "Moderado", "Arriesgado"])
+    ticket = st.text_input(t["ass_lab"], value="NVDA").upper()
 
 # --- INTERFAZ ---
 st.title(f"💎 {t['title']}")
-tab1, tab2 = st.tabs([f"📈 {t['btn']}", "💬 Consultoría Global"])
+tab1, tab2 = st.tabs([f"📈 {t['btn']}", "💬 Chat Advisor"])
 
 with tab1:
     if st.button(t["btn"]):
         with st.status(t["wait"]):
-            data = yf.download(ticket, period="2y", interval="1d")
+            data = yf.download(ticket, period="2y")
             if not data.empty:
                 data.columns = data.columns.get_level_values(0)
                 df_p = data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
@@ -122,47 +110,39 @@ with tab1:
 
                 p_act, p_fut = float(df_p['y'].iloc[-1]), float(forecast['yhat'].iloc[-1])
                 cambio = ((p_fut - p_act) / p_act) * 100
-
                 st.session_state.update({"p_act": p_act, "p_pre": p_fut, "cambio": cambio, "ticket_act": ticket, "analizado": True})
 
-                # Métricas y Gráficas
+                # Métricas
                 c1, c2, c3 = st.columns(3)
                 c1.metric(t["price"], f"{p_act:.2f}€")
                 c2.metric(t["target"], f"{p_fut:.2f}€", f"{cambio:.2f}%")
                 c3.metric(t["shares"], f"{int(capital/p_act)}")
 
-                fig = go.Figure(data=[go.Candlestick(x=data.index, open=data['Open'], high=data['High'], low=data['Low'], close=data['Close'])])
-                fig.update_layout(template="plotly_dark", xaxis_rangeslider_visible=False, height=400)
+                # --- GRÁFICA COMBINADA (VELAS + LÍNEA) ---
+                st.markdown(f"### 🕯️ {t['chart_title']}")
+                fig = go.Figure()
+                fig.add_trace(go.Candlestick(x=data.index, open=data['Open'], high=data['High'], low=data['Low'], close=data['Close'], name="Velas"))
+                fig.add_trace(go.Scatter(x=data.index, y=data['Close'], name="Cierre (Línea)", line=dict(color='#64ffda', width=1.5)))
+                fig.update_layout(template="plotly_dark", xaxis_rangeslider_visible=False, height=450)
                 st.plotly_chart(fig, use_container_width=True)
 
-                with st.spinner("🧠 Analizando..."):
-                    inf = generar_analisis_ia(f"Haz un análisis de {ticket}", ticket, p_act, p_fut, cambio, perfil, capital)
+                # Análisis IA en el idioma seleccionado
+                with st.spinner("🧠 Generando análisis..."):
+                    inf = generar_analisis_ia(f"Analiza detalladamente {ticket}", st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)
                 st.markdown(f"### {t['analysis']}")
                 st.write(inf)
             else:
                 st.error("Ticker no válido.")
 
 with tab2:
-    st.markdown(f"### 💬 IA Financial Advisor")
     for chat in st.session_state.chat_history:
         with st.chat_message(chat["role"]): st.write(chat["content"])
 
     if prompt_user := st.chat_input(t["chat_placeholder"]):
         st.session_state.chat_history.append({"role": "user", "content": prompt_user})
         with st.chat_message("user"): st.write(prompt_user)
-
         with st.chat_message("assistant"):
-            # Si hay análisis previo, se lo pasamos para que tenga contexto, si no, va como consulta general
-            kwargs = {
-                "pregunta": prompt_user,
-                "ticket": st.session_state.get("ticket_act"),
-                "p_act": st.session_state.get("p_act"),
-                "p_fut": st.session_state.get("p_pre"),
-                "cambio": st.session_state.get("cambio"),
-                "perfil": perfil,
-                "capital": capital
-            }
-            res = generar_analisis_ia(**kwargs)
+            res = generar_analisis_ia(prompt_user, st.session_state.lang, st.session_state.get("ticket_act"), st.session_state.get("p_act"), st.session_state.get("p_pre"), st.session_state.get("cambio"), perfil, capital)
             st.write(res)
             st.session_state.chat_history.append({"role": "assistant", "content": res})
         st.rerun()
