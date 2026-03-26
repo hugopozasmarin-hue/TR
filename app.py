@@ -26,12 +26,9 @@ st.markdown("""
         letter-spacing: 1.2px; text-transform: uppercase;
         margin-bottom: 8px; margin-top: 15px;
     }
-    .stTabs [data-baseweb="tab-list"] { gap: 10px; border-bottom: 1px solid #dee2e6; }
-    .stTabs [data-baseweb="tab"] { background-color: transparent; color: #6c757d; font-weight: 500; padding: 10px 20px; }
-    .stTabs [aria-selected="true"] { color: #000000 !important; border-bottom: 2px solid #000000 !important; }
     .stButton>button { 
         border: none; border-radius: 8px; background-color: #1a1a1a;
-        color: #ffffff !important; font-weight: 600; height: 45px; transition: all 0.2s ease;
+        color: #ffffff !important; font-weight: 600; height: 45px;
     }
     .metric-card {
         background: #ffffff; border: 1px solid #e9ecef;
@@ -44,35 +41,33 @@ st.markdown("""
     .bubble { 
         padding: 20px; border-radius: 12px; max-width: 85%; font-size: 15px;
         line-height: 1.6; background: #ffffff; border: 1px solid #e9ecef;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
     }
     .user-bubble { border-left: 4px solid #adb5bd; }
     .ai-bubble { border-left: 4px solid #1a1a1a; }
-    .chat-label { font-size: 10px; font-weight: 800; display: block; margin-bottom: 12px; letter-spacing: 1px; color: #212529; opacity: 0.8; }
 </style>
 """, unsafe_allow_html=True)
 
 # --- DICCIONARIO DE IDIOMAS ---
 languages = {
-    "Español": { "title":"INVESTIA ELITE", "lang_lab":"Idioma", "cap":"Presupuesto", "risk_lab":"Riesgo", "ass_lab":"Ticker", "btn":"EJECUTAR ANÁLISIS", "wait":"Procesando...", "price":"Precio Actual", "target":"Objetivo 30d", "shares":"Capacidad Compra", "analysis":"Estrategia Institucional", "chat_placeholder":"Escribe tu consulta..." },
-    "English": { "title":"INVESTIA ELITE", "lang_lab":"Language", "cap":"Budget", "risk_lab":"Risk Profile", "ass_lab":"Asset Ticker", "btn":"EXECUTE ANALYSIS", "wait":"Processing...", "price":"Current Price", "target":"30-Day Target", "shares":"Buying Capacity", "analysis":"Institutional Strategy", "chat_placeholder":"Type your query..." }
+    "Español": { "title":"INVESTIA ELITE", "lang_lab":"Idioma", "cap":"Presupuesto", "risk_lab":"Riesgo", "ass_lab":"Ticker", "btn":"EJECUTAR ANÁLISIS", "wait":"Procesando...", "price":"Precio Actual", "target":"Objetivo 30d", "shares":"Capacidad Compra", "analysis":"Estrategia Institucional", "hist_t":"Tendencia Histórica", "pred_t":"Proyección IA (30 días)" },
+    "English": { "title":"INVESTIA ELITE", "lang_lab":"Language", "cap":"Budget", "risk_lab":"Risk Profile", "ass_lab":"Asset Ticker", "btn":"EXECUTE ANALYSIS", "wait":"Processing...", "price":"Current Price", "target":"30-Day Target", "shares":"Buying Capacity", "analysis":"Institutional Strategy", "hist_t":"Historical Trend", "pred_t":"AI Projection (30 Days)" }
 }
 
 # --- FUNCIÓN IA ---
-def generar_analisis_ia(lang, ticket=None, p_act=None, p_fut=None, cambio=None, perfil=None, capital=None, pregunta=None):
+def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
-        contexto = f"Activo: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€ ({cambio:.2f}%)." if ticket else ""
-        prompt = f"Asesor Senior. Idioma: {lang}. Perfil: {perfil}. Capital: {capital}€. {contexto} Pregunta: {pregunta if pregunta else 'Informe detallado.'}"
+        contexto = f"Activo: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€ ({cambio:.2f}%)."
+        prompt = f"Asesor Financiero Senior. RESPONDE SIEMPRE EN IDIOMA: {lang}. Perfil: {perfil}. Capital: {capital}€. {contexto} Pregunta: {pregunta if pregunta else 'Informe institucional completo.'}"
         response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile")
         return response.choices[0].message.content
-    except Exception as e: return f"Error: {e}"
+    except Exception as e: return f"Error IA: {e}"
 
 # --- GESTIÓN DE SESIÓN ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
 if "analizado" not in st.session_state: st.session_state.analizado = False
-if "chat_history" not in st.session_state: st.session_state.chat_history = []
 if "ultimo_informe" not in st.session_state: st.session_state.ultimo_informe = ""
+if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
 # --- SIDEBAR ---
 with st.sidebar:
@@ -81,17 +76,17 @@ with st.sidebar:
     
     if lang_temp != st.session_state.lang:
         st.session_state.lang = lang_temp
-        if st.session_state.analizado: # Regenerar informe en el nuevo idioma
-            st.session_state.ultimo_informe = generar_analisis_ia(st.session_state.lang, st.session_state.ticket_act, st.session_state.p_act, st.session_state.p_pre, st.session_state.cambio, st.session_state.perfil_act, st.session_state.cap_act)
+        # Limpiar informe para forzar actualización de idioma en el próximo renderizado
+        st.session_state.ultimo_informe = "" 
         st.rerun()
 
     t = languages[st.session_state.lang]
     st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
-    capital_input = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
+    capital_in = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
     st.markdown(f'<p class="field-title">{t["risk_lab"]}</p>', unsafe_allow_html=True)
-    perfil_input = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"], label_visibility="collapsed")
+    perfil_in = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"], label_visibility="collapsed")
     st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
-    ticket_input = st.text_input("", value="AAPL", label_visibility="collapsed").upper()
+    ticket_in = st.text_input("", value="AAPL", label_visibility="collapsed").upper()
 
 # --- CUERPO ---
 st.markdown(f"<h1 style='text-align: center; font-weight: 800; color: #1a1a1a; margin-top: 20px;'>{t['title']}</h1>", unsafe_allow_html=True)
@@ -100,46 +95,60 @@ tab1, tab2 = st.tabs([f"📊 {t['btn']}", "💬 AI ADVISOR"])
 with tab1:
     if st.button(t["btn"]):
         with st.status(t["wait"]):
-            data = yf.download(ticket_input, period="2y", interval="1d")
+            data = yf.download(ticket_in, period="2y", interval="1d")
             if not data.empty:
                 data.columns = data.columns.get_level_values(0)
                 df_p = data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
                 df_p['ds'] = df_p['ds'].dt.tz_localize(None)
                 model = Prophet(daily_seasonality=True).fit(df_p)
                 forecast = model.predict(model.make_future_dataframe(periods=30))
+                
                 p_act, p_fut = float(df_p['y'].iloc[-1]), float(forecast['yhat'].iloc[-1])
                 cambio = ((p_fut - p_act) / p_act) * 100
                 
-                informe_ia = generar_analisis_ia(st.session_state.lang, ticket_input, p_act, p_fut, cambio, perfil_input, capital_input)
-                
                 st.session_state.update({
                     "p_act": p_act, "p_pre": p_fut, "cambio": cambio, 
-                    "ticket_act": ticket_input, "perfil_act": perfil_input, "cap_act": capital_input,
-                    "analizado": True, "ultimo_informe": informe_ia, "data_plot": data
+                    "ticket_act": ticket_in, "perfil_act": perfil_in, "cap_act": capital_in,
+                    "analizado": True, "data_plot": data, "forecast_plot": forecast, "df_p": df_p
                 })
+                # Generar informe en el idioma actual
+                st.session_state.ultimo_informe = generar_analisis_ia(st.session_state.lang, ticket_in, p_act, p_fut, cambio, perfil_in, capital_in)
             else: st.error("Asset not found.")
 
-    # SOLO MOSTRAR SI YA HAY DATOS
     if st.session_state.analizado:
+        # Si el informe está vacío (por cambio de idioma), se regenera automáticamente
+        if st.session_state.ultimo_informe == "":
+            st.session_state.ultimo_informe = generar_analisis_ia(st.session_state.lang, st.session_state.ticket_act, st.session_state.p_act, st.session_state.p_pre, st.session_state.cambio, st.session_state.perfil_act, st.session_state.cap_act)
+
         m1, m2, m3 = st.columns(3)
         with m1: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['price']}</div><div class='metric-value'>{st.session_state.p_act:.2f}€</div></div>", unsafe_allow_html=True)
         with m2: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['target']}</div><div class='metric-value'>{st.session_state.p_pre:.2f}€ ({st.session_state.cambio:+.2f}%)</div></div>", unsafe_allow_html=True)
         with m3: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['shares']}</div><div class='metric-value'>{st.session_state.cap_act/st.session_state.p_act:.2f}</div></div>", unsafe_allow_html=True)
 
+        # GRÁFICA 1: VELAS
+        st.markdown(f"#### {t['hist_t']}")
         fig1 = go.Figure(data=[go.Candlestick(x=st.session_state.data_plot.index, open=st.session_state.data_plot['Open'], high=st.session_state.data_plot['High'], low=st.session_state.data_plot['Low'], close=st.session_state.data_plot['Close'], name=st.session_state.ticket_act)])
         fig1.update_layout(template="plotly_white", xaxis_rangeslider_visible=False, height=400)
         st.plotly_chart(fig1, use_container_width=True)
+
+        # GRÁFICA 2: PROYECCIÓN (LÍNEAS)
+        st.markdown(f"#### {t['pred_t']}")
+        fig2 = go.Figure()
+        fig2.add_trace(go.Scatter(x=st.session_state.df_p['ds'], y=st.session_state.df_p['y'], name="Histórico", line=dict(color='#000000', width=1.5)))
+        fig2.add_trace(go.Scatter(x=st.session_state.forecast_plot['ds'].iloc[-30:], y=st.session_state.forecast_plot['yhat'].iloc[-30:], name="Predicción", line=dict(color='#adb5bd', width=2, dash='dot')))
+        fig2.update_layout(template="plotly_white", height=400)
+        st.plotly_chart(fig2, use_container_width=True)
 
         st.markdown(f"<div style='background:#f8f9fa; padding:30px; border-radius:12px; border:1px solid #e9ecef;'><h3>📊 {t['analysis']}</h3><div style='line-height:1.6;'>{st.session_state.ultimo_informe}</div></div>", unsafe_allow_html=True)
 
 with tab2:
     for chat in st.session_state.chat_history:
         b_class = "user-bubble" if chat["role"] == "user" else "ai-bubble"
-        st.markdown(f'<div class="chat-row"><div class="bubble {b_class}"><span class="chat-label">{"INVERSOR" if chat["role"]=="user" else "IA STRATEGIST"}</span><div style="white-space: pre-wrap;">{chat["content"]}</div></div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="chat-row"><div class="bubble {b_class}"><span style="font-size:10px; font-weight:800; display:block; margin-bottom:10px;">{"INVERSOR" if chat["role"]=="user" else "IA STRATEGIST"}</span>{chat["content"]}</div></div>', unsafe_allow_html=True)
 
-    if prompt_user := st.chat_input(t["chat_placeholder"]):
-        st.session_state.chat_history.append({"role": "user", "content": prompt_user})
-        res = generar_analisis_ia(st.session_state.lang, st.session_state.get("ticket_act"), st.session_state.get("p_act"), st.session_state.get("p_pre"), st.session_state.get("cambio"), perfil_input, capital_input, prompt_user)
+    if prompt_u := st.chat_input(t["chat_placeholder"]):
+        st.session_state.chat_history.append({"role": "user", "content": prompt_u})
+        res = generar_analisis_ia(st.session_state.lang, st.session_state.get("ticket_act"), st.session_state.get("p_act"), st.session_state.get("p_pre"), st.session_state.get("cambio"), perfil_in, capital_in, prompt_u)
         st.session_state.chat_history.append({"role": "assistant", "content": res})
         st.rerun()
 
