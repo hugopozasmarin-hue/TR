@@ -25,8 +25,6 @@ st.markdown("""
     .metric-value { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-top: 5px; }
     .chat-row { display: flex; margin-bottom: 25px; justify-content: flex-start; }
     .bubble { padding: 20px; border-radius: 12px; max-width: 85%; font-size: 15px; line-height: 1.6; background: #ffffff; border: 1px solid #e9ecef; }
-    .user-bubble { border-left: 4px solid #adb5bd; }
-    .ai-bubble { border-left: 4px solid #1a1a1a; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -41,16 +39,18 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
     try:
         client = Groq(api_key=GROQ_API_KEY)
         contexto = f"Activo: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€ ({cambio:.2f}%)."
-        prompt = f"Asesor Financiero Senior. RESPONDE EN IDIOMA: {lang}. Perfil: {perfil}. Capital: {capital}€. {contexto} Pregunta: {pregunta if pregunta else 'Informe institucional completo.'}"
+        prompt = f"Asesor Senior. RESPONDE SIEMPRE EN {lang}. Perfil: {perfil}. Capital: {capital}€. {contexto} Pregunta: {pregunta if pregunta else 'Informe institucional.'}"
         response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile")
         return response.choices[0].message.content
     except Exception as e: return f"Error IA: {e}"
 
-# --- GESTIÓN DE SESIÓN ---
+# --- INICIALIZACIÓN DE SESIÓN (SOLUCIÓN DEFINITIVA A KEYERROR) ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
 if "analizado" not in st.session_state: st.session_state.analizado = False
-if "ultimo_informe" not in st.session_state: st.session_state.ultimo_informe = ""
-if "chat_history" not in st.session_state: st.session_state.chat_history = []
+keys_to_init = ["p_act", "p_pre", "cambio", "ticket_act", "perfil_act", "cap_act", "ultimo_informe", "chat_history"]
+for key in keys_to_init:
+    if key not in st.session_state:
+        st.session_state[key] = 0.0 if "p_" in key or key == "cambio" or "cap" in key else "" if key != "chat_history" else []
 
 # --- SIDEBAR ---
 with st.sidebar:
@@ -59,8 +59,8 @@ with st.sidebar:
     
     if lang_temp != st.session_state.lang:
         st.session_state.lang = lang_temp
-        # Seguridad: Solo regenerar si ya se analizó un ticker previamente
-        if st.session_state.analizado and "ticket_act" in st.session_state:
+        if st.session_state.analizado:
+            # Regenerar informe al cambiar idioma para que sea instantáneo
             st.session_state.ultimo_informe = generar_analisis_ia(st.session_state.lang, st.session_state.ticket_act, st.session_state.p_act, st.session_state.p_pre, st.session_state.cambio, st.session_state.perfil_act, st.session_state.cap_act)
         st.rerun()
 
@@ -72,14 +72,13 @@ with st.sidebar:
     st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
     tick_in = st.text_input("", value="AAPL", label_visibility="collapsed").upper()
 
-# --- INTERFAZ ---
+# --- CUERPO ---
 st.markdown(f"<h1 style='text-align: center; font-weight: 800; color: #1a1a1a; margin-top: 20px;'>{t['title']}</h1>", unsafe_allow_html=True)
 tab1, tab2 = st.tabs([f"📊 {t['btn']}", "💬 AI ADVISOR"])
 
 with tab1:
     if st.button(t["btn"]):
         with st.status(t["wait"]):
-            # SOLUCIÓN: yfinance v0.2.50+ requiere limpieza de MultiIndex
             raw_data = yf.download(tick_in, period="2y", interval="1d")
             if not raw_data.empty:
                 if isinstance(raw_data.columns, pd.MultiIndex):
@@ -87,35 +86,32 @@ with tab1:
                 
                 df_p = raw_data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
                 df_p['ds'] = df_p['ds'].dt.tz_localize(None)
-                
                 model = Prophet(daily_seasonality=True).fit(df_p)
                 forecast = model.predict(model.make_future_dataframe(periods=30))
                 
-                p_act, p_fut = float(df_p['y'].iloc[-1]), float(forecast['yhat'].iloc[-1])
-                cambio = ((p_fut - p_act) / p_act) * 100
+                pa, pf = float(df_p['y'].iloc[-1]), float(forecast['yhat'].iloc[-1])
+                ca = ((pf - pa) / pa) * 100
                 
+                # Actualización masiva de estado
                 st.session_state.update({
-                    "p_act": p_act, "p_pre": p_fut, "cambio": cambio, 
-                    "ticket_act": tick_in, "perfil_act": perf_in, "cap_act": cap_in,
-                    "analizado": True, "data_plot": raw_data, "forecast_plot": forecast, "df_p": df_p
+                    "p_act": pa, "p_pre": pf, "cambio": ca, "ticket_act": tick_in, 
+                    "perfil_act": perf_in, "cap_act": cap_in, "analizado": True,
+                    "data_plot": raw_data, "forecast_plot": forecast, "df_p": df_p
                 })
-                st.session_state.ultimo_informe = generar_analisis_ia(st.session_state.lang, tick_in, p_act, p_fut, cambio, perf_in, cap_in)
-            else: st.error("Asset not found.")
+                st.session_state.ultimo_informe = generar_analisis_ia(st.session_state.lang, tick_in, pa, pf, ca, perf_in, cap_in)
+            else: st.error("Ticker no válido.")
 
     if st.session_state.analizado:
-        # Métricas
         m1, m2, m3 = st.columns(3)
         with m1: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['price']}</div><div class='metric-value'>{st.session_state.p_act:.2f}€</div></div>", unsafe_allow_html=True)
         with m2: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['target']}</div><div class='metric-value'>{st.session_state.p_pre:.2f}€ ({st.session_state.cambio:+.2f}%)</div></div>", unsafe_allow_html=True)
         with m3: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['shares']}</div><div class='metric-value'>{st.session_state.cap_act/st.session_state.p_act:.2f}</div></div>", unsafe_allow_html=True)
 
-        # Gráfica 1: Velas
         st.markdown(f"#### {t['hist_t']}")
         fig1 = go.Figure(data=[go.Candlestick(x=st.session_state.data_plot.index, open=st.session_state.data_plot['Open'], high=st.session_state.data_plot['High'], low=st.session_state.data_plot['Low'], close=st.session_state.data_plot['Close'], name=st.session_state.ticket_act)])
         fig1.update_layout(template="plotly_white", xaxis_rangeslider_visible=False, height=400)
         st.plotly_chart(fig1, use_container_width=True)
 
-        # Gráfica 2: Líneas (Proyección)
         st.markdown(f"#### {t['pred_t']}")
         fig2 = go.Figure()
         fig2.add_trace(go.Scatter(x=st.session_state.df_p['ds'], y=st.session_state.df_p['y'], name="Real", line=dict(color='#000000', width=1.5)))
@@ -123,22 +119,19 @@ with tab1:
         fig2.update_layout(template="plotly_white", height=400)
         st.plotly_chart(fig2, use_container_width=True)
 
-        # Análisis IA
         st.markdown(f"<div style='background:#f8f9fa; padding:30px; border-radius:12px; border:1px solid #e9ecef;'><h3>📊 {t['analysis']}</h3><div style='line-height:1.6;'>{st.session_state.ultimo_informe}</div></div>", unsafe_allow_html=True)
 
 with tab2:
     for chat in st.session_state.chat_history:
-        b_class = "user-bubble" if chat["role"] == "user" else "ai-bubble"
-        st.markdown(f'<div class="chat-row"><div class="bubble {b_class}"><span style="font-size:10px; font-weight:800; display:block; margin-bottom:10px;">{"INVERSOR" if chat["role"]=="user" else "IA STRATEGIST"}</span>{chat["content"]}</div></div>', unsafe_allow_html=True)
+        clase = "user-bubble" if chat["role"] == "user" else "ai-bubble"
+        st.markdown(f'<div class="chat-row"><div class="bubble {clase}"><span style="font-size:10px; font-weight:800; display:block; margin-bottom:10px;">{"INVERSOR" if chat["role"]=="user" else "IA STRATEGIST"}</span>{chat["content"]}</div></div>', unsafe_allow_html=True)
 
     if pr_u := st.chat_input(t["chat_placeholder"]):
         st.session_state.chat_history.append({"role": "user", "content": pr_u})
-        # Verificamos si existe el ticket analizado antes de enviar el contexto al chat
-        tk = st.session_state.get("ticket_act")
-        pa = st.session_state.get("p_act")
-        pf = st.session_state.get("p_pre")
-        ca = st.session_state.get("cambio")
-        res = generar_analisis_ia(st.session_state.lang, tk, pa, pf, ca, perf_in, cap_in, pr_u)
+        # Contexto de seguridad para el chat
+        tk = st.session_state.get("ticket_act", "General")
+        res = generar_analisis_ia(st.session_state.lang, tk, st.session_state.p_act, st.session_state.p_pre, st.session_state.cambio, perf_in, cap_in, pr_u)
         st.session_state.chat_history.append({"role": "assistant", "content": res})
         st.rerun()
+
 
