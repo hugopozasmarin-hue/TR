@@ -27,6 +27,17 @@ st.markdown("""
     background: linear-gradient(90deg, #64ffda, #48cae4);
     color: #0a192f !important; font-weight: 800; border: none;
 }
+
+/* Estilos de Chat Moderno */
+.chat-row { display: flex; margin-bottom: 10px; width: 100%; }
+.row-user { justify-content: flex-end; }
+.row-ai { justify-content: flex-start; }
+.bubble { 
+    padding: 12px 16px; border-radius: 18px; 
+    max-width: 80%; font-size: 14px; line-height: 1.4;
+}
+.user-bubble { background: #005c4b; color: white; border-bottom-right-radius: 2px; }
+.ai-bubble { background: #202c33; color: #e9edef; border-bottom-left-radius: 2px; border: 1px solid #3b4a54; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -36,13 +47,13 @@ languages = {
         "title":"InvestIA Elite", "lang_lab":"IDIOMA", "cap":"PRESUPUESTO", "risk_lab":"RIESGO",
         "ass_lab":"TICKER (Ej: NVDA)", "btn":"ANALIZAR MERCADO", "wait":"Procesando datos...", 
         "price":"Precio Actual", "target":"Predicción 30d", "shares":"Acciones posibles", 
-        "analysis":"Análisis Estratégico IA", "chat_placeholder":"Pregunta sobre cualquier tema de inversión..."
+        "analysis":"Análisis Estratégico IA", "chat_placeholder":"Pregunta sobre inversiones..."
     },
     "English": {
         "title":"InvestIA Elite", "lang_lab":"LANGUAGE", "cap":"BUDGET", "risk_lab":"RISK",
         "ass_lab":"TICKER (e.g. NVDA)", "btn":"ANALYZE MARKET", "wait":"Processing...", 
         "price":"Current Price", "target":"30-Day Target", "shares":"Shares you can buy", 
-        "analysis":"AI Strategic Analysis", "chat_placeholder":"Ask about any investment topic..."
+        "analysis":"AI Strategic Analysis", "chat_placeholder":"Ask about investments..."
     }
 }
 
@@ -50,28 +61,17 @@ languages = {
 def generar_analisis_ia(lang, ticket=None, p_act=None, p_fut=None, cambio=None, perfil=None, capital=None, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
+        contexto_activo = f"Activo: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€ ({cambio:.2f}%)." if ticket else ""
+        prompt = f"""Actúa como analista senior. RESPONDE SIEMPRE EN {lang}. Perfil {perfil}, Capital {capital}€. {contexto_activo}
+        Pregunta: {pregunta if pregunta else "Realiza un análisis estratégico."}"""
         
-        # Contexto dinámico: si hay datos de ticker los incluye, si no, es consulta general
-        contexto_activo = ""
-        if ticket:
-            contexto_activo = f"Activo: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€ ({cambio:.2f}%)."
-
-        prompt = f"""
-Actúa como analista senior de Wall Street. RESPONDE SIEMPRE EN {lang}.
-Contexto del usuario: Perfil {perfil}, Capital {capital}€.
-{contexto_activo}
-
-Instrucción: Si el usuario hace una pregunta general sobre inversiones, responde como experto global. 
-Si pregunta sobre el activo actual, integra los datos técnicos proporcionados.
-Pregunta del usuario: {pregunta if pregunta else "Realiza un análisis estratégico del activo actual."}
-"""
         response = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
             model="llama-3.3-70b-versatile"
         )
         return response.choices[0].message.content
     except Exception as e:
-        return f"Error en el motor de IA: {e}"
+        return f"Error: {e}"
 
 # --- SESIÓN ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
@@ -80,11 +80,15 @@ if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
 # --- SIDEBAR ---
 with st.sidebar:
+    # Selector de idioma
+    lang_temp = st.selectbox("Select Language", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
+    if lang_temp != st.session_state.lang:
+        st.session_state.lang = lang_temp
+        st.rerun() # Forzamos recarga para que el título cambie al instante
+
     t = languages[st.session_state.lang]
     st.markdown(f'<p class="field-title">{t["lang_lab"]}</p>', unsafe_allow_html=True)
-    st.session_state.lang = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
-    t = languages[st.session_state.lang]
-
+    
     st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
     capital = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
 
@@ -96,7 +100,7 @@ with st.sidebar:
 
 # --- CUERPO ---
 st.title(f"💎 {t['title']}")
-tab1, tab2 = st.tabs([f"📈 {t['btn']}", "💬 Chat de Inversión"])
+tab1, tab2 = st.tabs([f"📈 {t['btn']}", "💬 Chat Advisor"])
 
 with tab1:
     if st.button(t["btn"]):
@@ -107,68 +111,44 @@ with tab1:
                 df_prophet = data.reset_index()[['Date','Close']].rename(columns={'Date':'ds','Close':'y'})
                 df_prophet['ds'] = df_prophet['ds'].dt.tz_localize(None)
                 model = Prophet(daily_seasonality=True).fit(df_prophet)
-                future = model.make_future_dataframe(periods=30)
-                forecast = model.predict(future)
+                forecast = model.predict(model.make_future_dataframe(periods=30))
 
-                p_act = float(df_prophet['y'].iloc[-1])
-                p_fut = float(forecast['yhat'].iloc[-1])
+                p_act, p_fut = float(df_prophet['y'].iloc[-1]), float(forecast['yhat'].iloc[-1])
                 cambio = ((p_fut - p_act) / p_act) * 100
 
-                st.session_state.update({
-                    "p_act": p_act, "p_pre": p_fut, "cambio": cambio,
-                    "ticket_act": ticket, "analizado": True
-                })
+                st.session_state.update({"p_act": p_act, "p_pre": p_fut, "cambio": cambio, "ticket_act": ticket, "analizado": True})
 
-                # Métricas
                 c1,c2,c3 = st.columns(3)
                 c1.metric(t["price"], f"{p_act:.2f}€")
                 c2.metric(t["target"], f"{p_fut:.2f}€", f"{cambio:.2f}%")
                 c3.metric(t["shares"], f"{capital/p_act:.2f}")
 
-                # Gráfica Velas
-                fig_candles = go.Figure(data=[go.Candlestick(
-                    x=data.index, open=data['Open'], high=data['High'],
-                    low=data['Low'], close=data['Close'], name=ticket
-                )])
+                fig_candles = go.Figure(data=[go.Candlestick(x=data.index, open=data['Open'], high=data['High'], low=data['Low'], close=data['Close'], name=ticket)])
                 fig_candles.update_layout(template="plotly_dark", xaxis_rangeslider_visible=False, height=400)
                 st.plotly_chart(fig_candles, use_container_width=True)
 
-                # Proyección
                 fig_pred = go.Figure()
                 fig_pred.add_trace(go.Scatter(x=df_prophet['ds'], y=df_prophet['y'], name="Real", line=dict(color='#48cae4')))
                 fig_pred.add_trace(go.Scatter(x=forecast['ds'].iloc[-30:], y=forecast['yhat'].iloc[-30:], name="Predicción", line=dict(color='#64ffda', dash='dash')))
                 fig_pred.update_layout(template="plotly_dark", height=350)
                 st.plotly_chart(fig_pred, use_container_width=True)
 
-                # Análisis IA (AHORA EN EL IDIOMA SELECCIONADO)
                 informe = generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)
                 st.markdown(f"--- \n ### 📊 {t['analysis']}")
                 st.write(informe)
-            else:
-                st.error("No se encontraron datos.")
+            else: st.error("No data found.")
 
 with tab2:
-    st.markdown("### 💬 Consultoría Global")
+    st.container()
     for chat in st.session_state.chat_history:
-        with st.chat_message(chat["role"]):
-            st.write(chat["content"])
+        role_class = "row-user" if chat["role"] == "user" else "row-ai"
+        bubble_class = "user-bubble" if chat["role"] == "user" else "ai-bubble"
+        st.markdown(f'<div class="chat-row {role_class}"><div class="bubble {bubble_class}">{chat["content"]}</div></div>', unsafe_allow_html=True)
 
     if prompt_user := st.chat_input(t["chat_placeholder"]):
         st.session_state.chat_history.append({"role": "user", "content": prompt_user})
-        with st.chat_message("user"): st.write(prompt_user)
-        
-        with st.chat_message("assistant"):
-            # Si no se ha analizado nada, enviamos parámetros vacíos pero permitimos que el chat funcione
-            r = generar_analisis_ia(
-                st.session_state.lang,
-                st.session_state.get("ticket_act"),
-                st.session_state.get("p_act"),
-                st.session_state.get("p_pre"),
-                st.session_state.get("cambio"),
-                perfil,
-                capital,
-                prompt_user
-            )
-            st.write(r)
+        # Llamada a la IA con contexto de sesión
+        r = generar_analisis_ia(st.session_state.lang, st.session_state.get("ticket_act"), st.session_state.get("p_act"), st.session_state.get("p_pre"), st.session_state.get("cambio"), perfil, capital, prompt_user)
         st.session_state.chat_history.append({"role": "assistant", "content": r})
         st.rerun()
+
