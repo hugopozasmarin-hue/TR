@@ -64,7 +64,7 @@ def hablar_con_ia_real(pregunta, lang, ticket, cambio, perfil):
     # --- ¡PEGA TU LLAVE AQUÍ ABAJO! ---
     api_key = "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" 
     
-    if api_key == "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":
+    if api_key == "gsk_IvSyeGxPk8yXHhsOYb3vG645Xd5myKqcYi3Y":
         return "⚠️ Error: No has configurado tu API KEY de Groq en el código."
 
     url = "https://api.groq.com"
