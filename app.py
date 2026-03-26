@@ -47,8 +47,8 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
 # --- GESTIÓN DE SESIÓN ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
 if "analizado" not in st.session_state: st.session_state.analizado = False
-if "ultimo_informe" not in st.session_state: st.session_state.ultimo_informe = ""
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
+if "ultimo_informe" not in st.session_state: st.session_state.ultimo_informe = ""
 
 # --- SIDEBAR ---
 with st.sidebar:
@@ -58,8 +58,8 @@ with st.sidebar:
     if lang_temp != st.session_state.lang:
         st.session_state.lang = lang_temp
         if st.session_state.analizado:
-            # Regenerar informe al vuelo con el nuevo idioma
-            st.session_state.ultimo_informe = generar_analisis_ia(st.session_state.lang, st.session_state.get("ticket_act"), st.session_state.get("p_act"), st.session_state.get("p_pre"), st.session_state.get("cambio"), perf_in, cap_in)
+            # Regenerar informe al vuelo para que cambie el idioma al instante
+            st.session_state.ultimo_informe = generar_analisis_ia(st.session_state.lang, st.session_state.get("ticket_act"), st.session_state.get("p_act"), st.session_state.get("p_pre"), st.session_state.get("cambio"), st.session_state.get("perf_act"), st.session_state.get("cap_act"))
         st.rerun()
 
     t = languages[st.session_state.lang]
@@ -77,53 +77,60 @@ tab1, tab2 = st.tabs([f"📊 {t['btn']}", "💬 AI ADVISOR"])
 with tab1:
     if st.button(t["btn"]):
         with st.status(t["wait"]):
-            # DESCARGA CON LIMPIEZA EXTREMA
-            raw_data = yf.download(tick_in, period="2y", interval="1d", auto_adjust=True)
+            # DESCARGA Y LIMPIEZA AGRESIVA DE COLUMNAS
+            df_raw = yf.download(tick_in, period="2y", interval="1d")
             
-            if not raw_data.empty:
-                # 1. Aplanamos columnas MultiIndex si existen
-                if isinstance(raw_data.columns, pd.MultiIndex):
-                    raw_data.columns = raw_data.columns.get_level_values(0)
+            if not df_raw.empty:
+                # 1. Eliminar niveles de MultiIndex (Solución al error principal)
+                if isinstance(df_raw.columns, pd.MultiIndex):
+                    df_raw.columns = df_raw.columns.get_level_values(0)
                 
-                # 2. Nos aseguramos de tener nombres de columnas estándar
-                raw_data = raw_data.reset_index()
-                raw_data.columns = [str(c) for c in raw_data.columns] # Forzar a string
+                # 2. Resetear índice para tener 'Date' como columna
+                df_raw = df_raw.reset_index()
                 
-                # Buscamos la columna de cierre (Close)
-                close_col = 'Close' if 'Close' in raw_data.columns else raw_data.columns[1]
+                # 3. Preparar datos para Prophet
+                df_p = df_raw[['Date', 'Close']].copy()
+                df_p.columns = ['ds', 'y']
+                df_p['ds'] = pd.to_datetime(df_p['ds']).dt.tz_localize(None)
                 
-                # 3. Formateo para Prophet
-                df_prophet = raw_data[['Date', close_col]].rename(columns={'Date':'ds', close_col:'y'})
-                df_prophet['ds'] = pd.to_datetime(df_prophet['ds']).dt.tz_localize(None)
-                
-                model = Prophet(daily_seasonality=True).fit(df_prophet)
+                model = Prophet(daily_seasonality=True).fit(df_p)
                 forecast = model.predict(model.make_future_dataframe(periods=30))
                 
-                pa = float(df_prophet['y'].iloc[-1])
+                pa = float(df_p['y'].iloc[-1])
                 pf = float(forecast['yhat'].iloc[-1])
                 ca = ((pf - pa) / pa) * 100
                 
+                # Guardar en sesión
                 st.session_state.update({
                     "p_act": pa, "p_pre": pf, "cambio": ca, "ticket_act": tick_in, 
-                    "analizado": True, "data_plot": raw_data, "forecast_plot": forecast, "df_p": df_prophet
+                    "perf_act": perf_in, "cap_act": cap_in, "analizado": True,
+                    "data_plot": df_raw, "forecast_plot": forecast, "df_p": df_p
                 })
                 st.session_state.ultimo_informe = generar_analisis_ia(st.session_state.lang, tick_in, pa, pf, ca, perf_in, cap_in)
-            else: st.error("Ticker no válido.")
+            else:
+                st.error("No se encontraron datos para este Ticker.")
 
     if st.session_state.analizado:
         # Métricas
         m1, m2, m3 = st.columns(3)
         with m1: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['price']}</div><div class='metric-value'>{st.session_state.p_act:.2f}€</div></div>", unsafe_allow_html=True)
         with m2: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['target']}</div><div class='metric-value'>{st.session_state.p_pre:.2f}€ ({st.session_state.cambio:+.2f}%)</div></div>", unsafe_allow_html=True)
-        with m3: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['shares']}</div><div class='metric-value'>{cap_in/st.session_state.p_act:.2f}</div></div>", unsafe_allow_html=True)
+        with m3: st.markdown(f"<div class='metric-card'><div class='metric-label'>{t['shares']}</div><div class='metric-value'>{st.session_state.cap_act/st.session_state.p_act:.2f}</div></div>", unsafe_allow_html=True)
 
         # GRÁFICA 1: VELAS
         st.markdown(f"#### {t['hist_t']}")
-        fig1 = go.Figure(data=[go.Candlestick(x=st.session_state.data_plot['Date'], open=st.session_state.data_plot['Open'], high=st.session_state.data_plot['High'], low=st.session_state.data_plot['Low'], close=st.session_state.data_plot['Close'], name=st.session_state.ticket_act)])
+        fig1 = go.Figure(data=[go.Candlestick(
+            x=st.session_state.data_plot['Date'], 
+            open=st.session_state.data_plot['Open'], 
+            high=st.session_state.data_plot['High'], 
+            low=st.session_state.data_plot['Low'], 
+            close=st.session_state.data_plot['Close'], 
+            name=st.session_state.ticket_act
+        )])
         fig1.update_layout(template="plotly_white", xaxis_rangeslider_visible=False, height=400)
         st.plotly_chart(fig1, use_container_width=True)
 
-        # GRÁFICA 2: PROYECCIÓN (LÍNEAS)
+        # GRÁFICA 2: PROYECCIÓN (LÍNEAS INDEPENDIENTE)
         st.markdown(f"#### {t['pred_t']}")
         fig2 = go.Figure()
         fig2.add_trace(go.Scatter(x=st.session_state.df_p['ds'], y=st.session_state.df_p['y'], name="Real", line=dict(color='#000000', width=1.5)))
@@ -131,18 +138,23 @@ with tab1:
         fig2.update_layout(template="plotly_white", height=400)
         st.plotly_chart(fig2, use_container_width=True)
 
-        # Análisis IA
         st.markdown(f"<div style='background:#f8f9fa; padding:30px; border-radius:12px; border:1px solid #e9ecef;'><h3>📊 {t['analysis']}</h3><div style='line-height:1.6;'>{st.session_state.ultimo_informe}</div></div>", unsafe_allow_html=True)
 
 with tab2:
     for chat in st.session_state.chat_history:
-        clase = "user-bubble" if chat["role"] == "user" else "ai-bubble"
-        st.markdown(f'<div class="chat-row"><div class="bubble {clase}"><span style="font-size:10px; font-weight:800; display:block; margin-bottom:10px;">{"INVERSOR" if chat["role"]=="user" else "IA STRATEGIST"}</span>{chat["content"]}</div></div>', unsafe_allow_html=True)
+        b_class = "user-bubble" if chat["role"] == "user" else "ai-bubble"
+        st.markdown(f'<div class="chat-row"><div class="bubble {b_class}"><span style="font-size:10px; font-weight:800; display:block; margin-bottom:10px;">{"INVERSOR" if chat["role"]=="user" else "IA STRATEGIST"}</span>{chat["content"]}</div></div>', unsafe_allow_html=True)
 
     if pr_u := st.chat_input(t["chat_placeholder"]):
         st.session_state.chat_history.append({"role": "user", "content": pr_u})
-        res = generar_analisis_ia(st.session_state.lang, st.session_state.get("ticket_act", "General"), st.session_state.get("p_act", 0), st.session_state.get("p_pre", 0), st.session_state.get("cambio", 0), perf_in, cap_in, pr_u)
+        # Parámetros de seguridad para evitar errores si no hay análisis previo
+        tk = st.session_state.get("ticket_act", "N/A")
+        pa = st.session_state.get("p_act", 0)
+        pf = st.session_state.get("p_pre", 0)
+        ca = st.session_state.get("cambio", 0)
+        res = generar_analisis_ia(st.session_state.lang, tk, pa, pf, ca, perf_in, cap_in, pr_u)
         st.session_state.chat_history.append({"role": "assistant", "content": res})
         st.rerun()
+
 
 
