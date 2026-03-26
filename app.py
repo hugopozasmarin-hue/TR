@@ -30,6 +30,8 @@ st.markdown("""
         margin-bottom: 8px;
         display: block;
         opacity: 0.9;
+        border-bottom: 1px solid rgba(129, 140, 248, 0.2);
+        padding-bottom: 4px;
     }
 
     .stNumberInput input, .stSelectbox [data-baseweb="select"], .stTextInput input {
@@ -62,24 +64,24 @@ st.markdown("""
 languages = {
     "Español": {
         "title": "InvestMind AI Elite", "ajust": "⚙️ AJUSTES", "lang_lab": "IDIOMA",
-        "conf": "🛠️ CONFIGURACIÓN", "curr": "DIVISA", "cap": "CAPITAL", 
-        "risk_lab": "PERFIL", "ass_lab": "ACTIVO", "btn": "EJECUTAR ANÁLISIS", 
+        "conf": "🛠️ CONFIGURACIÓN", "curr": "DIVISA DE CUENTA", "cap": "CAPITAL TOTAL", 
+        "risk_lab": "PERFIL DE RIESGO", "ass_lab": "ACTIVO A ANALIZAR", "btn": "EJECUTAR ANÁLISIS", 
         "diag": "Consultoría Estratégica", "just": "Justificación Técnica", 
         "wait": "Analizando...", "price": "Precio Actual", "target": "Objetivo IA (30d)", 
         "shares": "Acciones Comprables", "disclaimer": "Simulación 2026. Riesgo de capital."
     },
     "English": {
         "title": "InvestMind AI Elite", "ajust": "⚙️ SETTINGS", "lang_lab": "LANGUAGE",
-        "conf": "🛠️ CONFIGURATION", "curr": "CURRENCY", "cap": "CAPITAL", 
-        "risk_lab": "PROFILE", "ass_lab": "ASSET", "btn": "EXECUTE ANALYSIS", 
+        "conf": "🛠️ CONFIGURATION", "curr": "ACCOUNT CURRENCY", "cap": "TOTAL CAPITAL", 
+        "risk_lab": "RISK PROFILE", "ass_lab": "ASSET TO ANALYZE", "btn": "EXECUTE ANALYSIS", 
         "diag": "Strategic Consultancy", "just": "Technical Justification", 
         "wait": "Analyzing...", "price": "Current Price", "target": "AI Target (30d)", 
         "shares": "Buying Power", "disclaimer": "2026 Simulation. Capital risk."
     },
     "Català": {
         "title": "InvestMind AI Elite", "ajust": "⚙️ AJUSTOS", "lang_lab": "IDIOMA",
-        "conf": "🛠️ CONFIGURACIÓ", "curr": "MONEDA", "cap": "CAPITAL", 
-        "risk_lab": "PERFIL", "ass_lab": "ACTIU", "btn": "EXECUTAR ANÀLISI", 
+        "conf": "🛠️ CONFIGURACIÓ", "curr": "MONEDA DEL COMPTE", "cap": "CAPITAL TOTAL", 
+        "risk_lab": "PERFIL DE RISC", "ass_lab": "ACTIU A ANALITZAR", "btn": "EXECUTAR ANÀLISI", 
         "diag": "Consultoria Estratègica", "just": "Justificació Tècnica", 
         "wait": "Analitzant...", "price": "Preu Actual", "target": "Objectiu IA (30d)", 
         "shares": "Accions a Comprar", "disclaimer": "Simulació 2026. Risc de capital."
@@ -101,6 +103,7 @@ with st.sidebar:
         st.session_state.lang = st.selectbox("", ["Español", "English", "Català"], index=["Español", "English", "Català"].index(st.session_state.lang))
     
     t = languages[st.session_state.lang]
+    
     st.markdown(f'<p class="field-title">{t["curr"]}</p>', unsafe_allow_html=True)
     mon_sel = st.radio("", ["USD ($)", "EUR (€)"], horizontal=True)
     simbolo = "$" if "USD" in mon_sel else "€"
@@ -116,16 +119,14 @@ with st.sidebar:
 
 # 5. MOTOR IA (VALIDACIÓN DE LLAVE)
 def hablar_con_ia_real(pregunta, lang, ticket, cambio, perfil):
-    # PEGA TU LLAVE AQUÍ (Asegúrate de que no haya espacios al pegar)
-    api_key = "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" 
-    
+    api_key = "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
     try:
         client = Groq(api_key=api_key)
         prompt = f"Asesor Senior 2026. Perfil: {perfil}, Activo: {ticket}, Tendencia: {cambio:.2f}%. Responde en {lang}."
         completion = client.chat.completions.create(model="llama-3.3-70b-versatile", messages=[{"role": "system", "content": prompt}, {"role": "user", "content": pregunta}])
         return completion.choices[0].message.content
     except Exception as e:
-        return f"Error de Autenticación: Revisa tu API Key de Groq. (Detalle: {str(e)})"
+        return f"Error: {str(e)}"
 
 # 6. CUERPO PRINCIPAL
 st.title(f"💎 {t['title']}")
@@ -147,25 +148,25 @@ with tab1:
                 st.session_state.analizado = True
                 st.session_state.ticket_act = ticket
 
-                # MÉTRICAS CON TÍTULOS
-                  # MÉTRICAS CON TÍTULOS CLAROS
+                # MÉTRICAS CON TÍTULOS DINÁMICOS (CORRECCIÓN DE NAMEERROR)
                 col1, col2, col3 = st.columns(3)
 
                 col1.metric(
-                    label="💰 Precio actual (€)",
-                    value=f"{precio_actual:.2f}€"
+                    label=f"💰 {t['price']} ({simbolo})",
+                    value=f"{p_act:.2f}{simbolo}"
                 )
 
                 col2.metric(
-                    label="📈 Precio predicho (30 días)",
-                    value=f"{precio_futuro:.2f}€",
-                    delta=f"{cambio:.2f}%"
+                    label=f"📈 {t['target']}",
+                    value=f"{p_pre:.2f}{simbolo}",
+                    delta=f"{st.session_state.cambio:.2f}%"
                 )
 
                 col3.metric(
-                    label="🧮 Acciones que puedes comprar",
-                    value=f"{acciones:.4f}"
+                    label=f"🧮 {t['shares']}",
+                    value=f"{(capital/p_act):.4f}"
                 )
+                
                 st.line_chart(datos['Close'])
 
                 # RECOMENDACIÓN DE LA IA DEBAJO DE LA GRÁFICA
@@ -174,13 +175,13 @@ with tab1:
                 st.subheader(f"📊 {t['just']}")
                 
                 txt_rec = {
-                    "Español": f"La proyección de <span class='highlight'>{st.session_state.cambio:.2f}%</span> se basa en la inercia de 1,260 sesiones y ciclos estacionales de 2026. Para un perfil {perfil}, se sugiere vigilancia en los {p_act:.2f}{simbolo}.",
-                    "English": f"The <span class='highlight'>{st.session_state.cambio:.2f}%</span> projection is based on 1,260-session inertia and 2026 seasonal cycles. For a {perfil} profile, monitor {p_act:.2f}{simbolo}.",
-                    "Català": f"La projecció de <span class='highlight'>{st.session_state.cambio:.2f}%</span> es basa en la inèrcia de 1.260 sessions i cicles de 2026. Per a un perfil {perfil}, es suggereix vigilància als {p_act:.2f}{simbolo}."
+                    "Español": f"La proyección de <span class='highlight'>{st.session_state.cambio:.2f}%</span> se basa en la inercia de 1,260 sesiones y ciclos estacionales observados en 2026. Para un perfil {perfil}, se sugiere vigilancia técnica en los {p_act:.2f}{simbolo}.",
+                    "English": f"The <span class='highlight'>{st.session_state.cambio:.2f}%</span> projection is based on 1,260-session inertia and 2026 seasonal cycles. For a {perfil} profile, technical monitoring at {p_act:.2f}{simbolo} is advised.",
+                    "Català": f"La projecció de <span class='highlight'>{st.session_state.cambio:.2f}%</span> es basa en la inèrcia de 1.260 sessions i cicles de 2026. Per a un perfil {perfil}, se suggereix vigilància tècnica als {p_act:.2f}{simbolo}."
                 }
                 st.write(txt_rec[st.session_state.lang], unsafe_allow_html=True)
                 st.caption(t["disclaimer"])
-                s.update(label="OK", state="complete")
+                s.update(label="Analysis Complete", state="complete")
             else: st.error("Ticker Error.")
 
 with tab2:
@@ -196,4 +197,4 @@ with tab2:
             st.session_state.messages.append({"role": "assistant", "content": res})
             st.rerun()
 
-st.caption("InvestMind AI Platinum v18.0 | 2026")
+st.caption("InvestMind AI Platinum v19.0 | 2026")
