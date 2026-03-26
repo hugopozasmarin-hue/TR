@@ -71,7 +71,7 @@ with st.sidebar:
 # 5. EL CEREBRO: IA DE GROQ (SDK OFICIAL)
 def hablar_con_ia_real(pregunta, lang, ticket, cambio, perfil):
     # --- COPIA TU CLAVE AQUÍ ---
-    api_key = "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" 
+    api_key = "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" 
     
     try:
         client = Groq(api_key=api_key)
