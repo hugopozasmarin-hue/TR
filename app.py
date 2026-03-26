@@ -11,7 +11,7 @@ st.set_page_config(page_title="InvestIA Elite | Pro", page_icon="💎", layout="
 # --- ⚠️ CONFIGURACIÓN API ---
 GROQ_API_KEY = "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" 
 
-# --- ESTILOS CSS ---
+# --- ESTILOS CSS CUSTOM ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com');
@@ -40,22 +40,54 @@ st.markdown("""
         color: #ffffff !important;
         font-weight: 600;
         height: 45px;
+        width: 100%;
+    }
+
+    /* --- ESTÉTICA DEL CHAT MODERNO --- */
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
     }
 
     .chat-row {
         display: flex;
-        margin-bottom: 25px;
-        justify-content: flex-start;
+        width: 100%;
+        margin-bottom: 10px;
     }
 
+    .row-user { justify-content: flex-end; }
+    .row-ai { justify-content: flex-start; }
+
     .bubble {
-        padding: 20px;
-        border-radius: 12px;
-        max-width: 85%;
+        padding: 15px 20px;
+        border-radius: 20px;
+        max-width: 80%;
         font-size: 15px;
-        line-height: 1.6;
-        background: #ffffff;
+        line-height: 1.5;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .user-bubble {
+        background-color: #007bff;
+        color: white;
+        border-bottom-right-radius: 2px;
+    }
+
+    .ai-bubble {
+        background-color: #f8f9fa;
+        color: #1a1a1a;
         border: 1px solid #e9ecef;
+        border-bottom-left-radius: 2px;
+    }
+
+    .chat-label {
+        font-size: 11px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: #6c757d;
+        text-transform: uppercase;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -63,36 +95,16 @@ st.markdown("""
 # --- TRADUCCIONES ---
 languages = {
     "Español": { 
-        "title":"INVESTIA ELITE", 
-        "lang_lab":"Idioma", 
-        "cap":"Presupuesto", 
-        "risk_lab":"Riesgo", 
-        "ass_lab":"Ticker", 
-        "btn":"EJECUTAR ANÁLISIS", 
-        "wait":"Procesando...", 
-        "price":"Precio Actual", 
-        "target":"Objetivo 30d", 
-        "shares":"Capacidad Compra", 
-        "analysis":"Estrategia Institucional", 
-        "hist_t":"Tendencia Histórica", 
-        "pred_t":"Proyección IA (30 días)",
-        "chat_placeholder":"Pregunta sobre inversiones..."
+        "title":"INVESTIA ELITE", "lang_lab":"Idioma", "cap":"Presupuesto", "risk_lab":"Riesgo", "ass_lab":"Ticker", 
+        "btn":"EJECUTAR ANÁLISIS", "wait":"Procesando...", "price":"Precio Actual", "target":"Objetivo 30d", 
+        "shares":"Capacidad Compra", "analysis":"Estrategia Institucional", "hist_t":"Gráfica de Velas (Histórico)", 
+        "pred_t":"Gráfica de Rayas (Proyección IA)", "chat_placeholder":"Pregunta sobre inversiones..."
     },
     "English": { 
-        "title":"INVESTIA ELITE", 
-        "lang_lab":"Language", 
-        "cap":"Budget", 
-        "risk_lab":"Risk Profile", 
-        "ass_lab":"Asset Ticker", 
-        "btn":"EXECUTE ANALYSIS", 
-        "wait":"Processing...", 
-        "price":"Current Price", 
-        "target":"30-Day Target", 
-        "shares":"Buying Capacity", 
-        "analysis":"Institutional Strategy", 
-        "hist_t":"Historical Trend", 
-        "pred_t":"AI Projection (30 Days)",
-        "chat_placeholder":"Ask about investments..."
+        "title":"INVESTIA ELITE", "lang_lab":"Language", "cap":"Budget", "risk_lab":"Risk Profile", "ass_lab":"Asset Ticker", 
+        "btn":"EXECUTE ANALYSIS", "wait":"Processing...", "price":"Current Price", "target":"30-Day Target", 
+        "shares":"Buying Capacity", "analysis":"Institutional Strategy", "hist_t":"Historical Candlestick", 
+        "pred_t":"AI Line Projection (30 Days)", "chat_placeholder":"Ask about investments..."
     }
 }
 
@@ -102,7 +114,6 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
         client = Groq(api_key=GROQ_API_KEY)
         contexto = f"Activo: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€ ({cambio:.2f}%)."
         prompt = f"Asesor Senior. RESPONDE EN {lang}. Perfil: {perfil}. Capital: {capital}€. {contexto} Pregunta: {pregunta if pregunta else 'Informe institucional.'}"
-        
         response = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
             model="llama-3.3-70b-versatile"
@@ -112,32 +123,22 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
         return f"Error IA: {e}"
 
 # --- SESIÓN ---
-if "lang" not in st.session_state:
-    st.session_state.lang = "Español"
+if "lang" not in st.session_state: st.session_state.lang = "Español"
+if "analizado" not in st.session_state: st.session_state.analizado = False
+if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
-if "analizado" not in st.session_state:
-    st.session_state.analizado = False
-
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-
-# --- SIDEBAR (TU DISEÑO) ---
+# --- SIDEBAR (MANTENIDO) ---
 with st.sidebar:
     st.markdown(f'<p class="field-title">{languages[st.session_state.lang]["lang_lab"]}</p>', unsafe_allow_html=True)
     lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
-    
     if lang_temp != st.session_state.lang:
         st.session_state.lang = lang_temp
         st.rerun()
-
     t = languages[st.session_state.lang]
-
     st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
     capital = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
-
     st.markdown(f'<p class="field-title">{t["risk_lab"]}</p>', unsafe_allow_html=True)
     perfil = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"], label_visibility="collapsed")
-
     st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
     ticket = st.text_input("", value="AAPL", label_visibility="collapsed").upper()
 
@@ -150,9 +151,10 @@ with tab1:
     if st.button(t["btn"]):
         with st.spinner(t["wait"]):
             data = yf.download(ticket, period="2y", interval="1d")
-
             if not data.empty:
-                data.columns = data.columns.get_level_values(0)
+                # Limpieza de MultiIndex si existe (yfinance v3+)
+                if isinstance(data.columns, pd.MultiIndex):
+                    data.columns = data.columns.get_level_values(0)
 
                 df = data.reset_index()[['Date', 'Close']]
                 df.columns = ['ds', 'y']
@@ -166,11 +168,8 @@ with tab1:
                 cambio = ((p_fut - p_act) / p_act) * 100
 
                 st.session_state.update({
-                    "p_act": p_act,
-                    "p_pre": p_fut,
-                    "cambio": cambio,
-                    "ticket_act": ticket,
-                    "analizado": True
+                    "p_act": p_act, "p_pre": p_fut, "cambio": cambio, "ticket_act": ticket,
+                    "analizado": True, "full_data": data, "forecast_data": forecast, "df_prophet": df
                 })
 
                 c1, c2, c3 = st.columns(3)
@@ -178,21 +177,53 @@ with tab1:
                 c2.metric(t["target"], f"{p_fut:.2f}€", f"{cambio:.2f}%")
                 c3.metric(t["shares"], f"{capital/p_act:.2f}")
 
-                st.session_state.analisis = generar_analisis_ia(
-                    st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital
-                )
-
+                st.session_state.analisis = generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)
             else:
                 st.error("Ticker no válido")
 
     if st.session_state.analizado:
-        st.markdown("### 📊 Análisis IA")
-        st.write(st.session_state.get("analisis", ""))
+        # --- GRÁFICA DE VELAS ---
+        st.markdown(f"### 🕯️ {t['hist_t']}")
+        fig_candles = go.Figure(data=[go.Candlestick(
+            x=st.session_state.full_data.index,
+            open=st.session_state.full_data['Open'],
+            high=st.session_state.full_data['High'],
+            low=st.session_state.full_data['Low'],
+            close=st.session_state.full_data['Close'],
+            name=st.session_state.ticket_act
+        )])
+        fig_candles.update_layout(xaxis_rangeslider_visible=False, template="plotly_white", height=500)
+        st.plotly_chart(fig_candles, use_container_width=True)
+
+        # --- GRÁFICA DE RAYAS (PROYECCIÓN) ---
+        st.markdown(f"### 📈 {t['pred_t']}")
+        fig_line = go.Figure()
+        fig_line.add_trace(go.Scatter(x=st.session_state.df_prophet['ds'], y=st.session_state.df_prophet['y'], name="Histórico", line=dict(color='#1a1a1a')))
+        fig_line.add_trace(go.Scatter(x=st.session_state.forecast_data['ds'], y=st.session_state.forecast_data['yhat'], name="Predicción IA", line=dict(color='#64ffda', dash='dash')))
+        fig_line.update_layout(template="plotly_white", height=400)
+        st.plotly_chart(fig_line, use_container_width=True)
+
+        st.markdown(f"### 📊 {t['analysis']}")
+        st.info(st.session_state.get("analisis", ""))
 
 # --- CHAT ---
 with tab2:
+    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
     for msg in st.session_state.chat_history:
-        st.markdown(f"**{msg['role'].upper()}**: {msg['content']}")
+        is_user = msg['role'] == "user"
+        row_class = "row-user" if is_user else "row-ai"
+        bubble_class = "user-bubble" if is_user else "ai-bubble"
+        label = "Tú" if is_user else "Asesor IA"
+        
+        st.markdown(f"""
+            <div class="chat-row {row_class}">
+                <div class="bubble {bubble_class}">
+                    <div class="chat-label">{label}</div>
+                    {msg['content']}
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     if prompt := st.chat_input(t["chat_placeholder"]):
         st.session_state.chat_history.append({"role": "user", "content": prompt})
