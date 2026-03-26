@@ -4,7 +4,7 @@ from prophet import Prophet
 import pandas as pd
 from groq import Groq
 
-# --- CONFIGURACIÓN ---
+# --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="InvestIA Elite", page_icon="💎", layout="wide")
 
 # --- ⚠️ PON AQUÍ TU API KEY ---
@@ -16,7 +16,7 @@ st.markdown("""
 @import url('https://fonts.googleapis.com');
 * { font-family: 'Inter', sans-serif; }
 
-[data-testid="stSidebar"] { background-color: #0a192f !important; }
+[data-testid="stSidebar"] { background-color: #0a192f !important; border-right: 1px solid rgba(255,255,255,0.1); }
 
 .field-title { 
     color: #64ffda; font-size: 10px; font-weight: 800;
@@ -46,6 +46,7 @@ languages = {
         "target":"Predicción en 30 días",
         "shares":"Acciones que puedes comprar",
         "analysis":"Análisis de inversión",
+        "chat_placeholder":"Escribe tu pregunta..."
     },
     "English": {
         "title":"InvestIA Elite",
@@ -59,6 +60,7 @@ languages = {
         "target":"30-Day Prediction",
         "shares":"Shares you can buy",
         "analysis":"Investment Analysis",
+        "chat_placeholder":"Type your question..."
     },
     "Català": {
         "title":"InvestIA Elite",
@@ -72,33 +74,39 @@ languages = {
         "target":"Predicció en 30 dies",
         "shares":"Accions que pots comprar",
         "analysis":"Anàlisi d'inversió",
+        "chat_placeholder":"Escriu la teva pregunta..."
     }
 }
 
 # --- FUNCIÓN IA ---
-def generar_analisis_ia(ticket, precio_actual, precio_futuro, cambio, perfil, capital):
+def generar_analisis_ia(ticket, precio_actual, precio_futuro, cambio, perfil, capital, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
-
+        
+        # Prompt ultra pro para inversión
         prompt = f"""
-Eres un asesor financiero experto.
+Actúa como un analista financiero de alto nivel (tipo hedge fund). 
+Analiza el activo {ticket} para un inversor con perfil {perfil} y capital {capital}€.
 
-Activo: {ticket}
-Precio actual: {precio_actual}
-Precio futuro: {precio_futuro}
-Rentabilidad: {cambio:.2f}%
-Perfil: {perfil}
-Capital: {capital}€
+Datos:
+- Precio actual: {precio_actual}€
+- Predicción a 30 días: {precio_futuro}€
+- Rentabilidad esperada: {cambio:.2f}%
 
-Haz un análisis claro:
-- Si vale la pena invertir
-- Riesgos
-- Estrategia recomendada
+Analiza:
+1. Fiabilidad de la predicción
+2. Riesgos reales (volatilidad, tendencia)
+3. Oportunidad para este perfil
+4. Estrategia concreta (comprar, esperar, dividir inversión, evitar)
+5. Consideraciones macroeconómicas y sectoriales
+
+Si se proporciona una pregunta del usuario, inclúyela al final y respóndela de manera profesional: {pregunta if pregunta else "N/A"}
+Sé crítico, profesional y directo. Evita respuestas genéricas.
 """
 
         response = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
-            model="llama3-70b-8192"
+            model="llama-3.3-70b-versatile"
         )
 
         return response.choices[0].message.content
@@ -107,16 +115,16 @@ Haz un análisis claro:
         return f"Error IA: {e}"
 
 # --- SESSION ---
-if "lang" not in st.session_state:
-    st.session_state.lang = "Español"
+for key in ["lang", "analizado", "ticket_act", "p_act", "p_pre", "cambio", "chat_messages"]:
+    if key not in st.session_state:
+        st.session_state[key] = [] if key=="chat_messages" else (False if key=="analizado" else 0.0 if "p_" in key or key=="cambio" else "" if key=="ticket_act" else "Español")
 
 # --- SIDEBAR ---
 with st.sidebar:
     t = languages[st.session_state.lang]
-
+    
     st.markdown(f'<p class="field-title">{t["lang_lab"]}</p>', unsafe_allow_html=True)
     st.session_state.lang = st.selectbox("", list(languages.keys()))
-
     t = languages[st.session_state.lang]
 
     st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
@@ -131,42 +139,71 @@ with st.sidebar:
 # --- INTERFAZ ---
 st.title(f"💎 {t['title']}")
 
-if st.button(t["btn"]):
-    data = yf.download(ticket, period="5y")
+tab1, tab2 = st.tabs([f"📈 {t['btn']}", "💬 Chat"])
 
-    if not data.empty:
-        df = data.reset_index()[['Date', 'Close']]
-        df.columns = ['ds', 'y']
+with tab1:
+    if st.button(t["btn"]):
+        with st.status(t["wait"]):
+            data = yf.download(ticket, period="5y")
 
-        model = Prophet().fit(df)
-        future = model.make_future_dataframe(periods=30)
-        forecast = model.predict(future)
+            if not data.empty:
+                df = data.reset_index()[['Date','Close']].rename(columns={'Date':'ds','Close':'y'})
+                model = Prophet(daily_seasonality=True).fit(df)
+                forecast = model.predict(model.make_future_dataframe(periods=30))
 
-        precio_actual = df['y'].iloc[-1]
-        precio_futuro = forecast['yhat'].iloc[-1]
-        cambio = ((precio_futuro - precio_actual) / precio_actual) * 100
+                precio_actual = df['y'].iloc[-1]
+                precio_futuro = forecast['yhat'].iloc[-1]
+                cambio = ((precio_futuro - precio_actual)/precio_actual)*100
 
-        # MÉTRICAS
-        c1, c2, c3 = st.columns(3)
-        c1.metric(t["price"], f"{precio_actual:.2f}€")
-        c2.metric(t["target"], f"{precio_futuro:.2f}€", f"{cambio:.2f}%")
-        c3.metric(t["shares"], f"{(capital/precio_actual):.2f}")
+                st.session_state.p_act = precio_actual
+                st.session_state.p_pre = precio_futuro
+                st.session_state.cambio = cambio
+                st.session_state.ticket_act = ticket
+                st.session_state.analizado = True
 
-        # GRÁFICA
-        st.line_chart(df.set_index('ds')['y'])
+                # MÉTRICAS
+                c1,c2,c3 = st.columns(3)
+                c1.metric(t["price"], f"{precio_actual:.2f}€")
+                c2.metric(t["target"], f"{precio_futuro:.2f}€", f"{cambio:.2f}%")
+                c3.metric(t["shares"], f"{(capital/precio_actual):.2f}")
 
-        # RESUMEN
-        st.markdown("### 📊 " + t["analysis"])
-        st.write(f"Rentabilidad esperada: {cambio:.2f}%")
+                # GRÁFICA
+                st.line_chart(df.set_index('ds')['y'])
 
-        # IA
-        with st.spinner("Generando análisis IA..."):
-            analisis = generar_analisis_ia(
-                ticket, precio_actual, precio_futuro, cambio, perfil, capital
+                # ANÁLISIS BÁSICO
+                resumen = "📈 Tendencia positiva" if cambio>5 else "⚖️ Crecimiento leve" if cambio>0 else "📉 Tendencia negativa"
+                st.markdown("### 📊 " + t["analysis"])
+                st.write(resumen)
+
+                # ANALISIS ULTRA PRO
+                with st.spinner("🧠 Generando análisis profesional..."):
+                    analisis = generar_analisis_ia(ticket, precio_actual, precio_futuro, cambio, perfil, capital)
+                st.write(analisis)
+
+            else:
+                st.error("Ticker no válido")
+
+with tab2:
+    st.markdown("### 💬 Chat con IA")
+    if st.session_state.analizado:
+        # Mostrar chat previo
+        for msg in st.session_state.chat_messages:
+            st.write(msg)
+
+        # Input de usuario
+        user_msg = st.text_input(t["chat_placeholder"])
+        if user_msg:
+            respuesta = generar_analisis_ia(
+                st.session_state.ticket_act,
+                st.session_state.p_act,
+                st.session_state.p_pre,
+                st.session_state.cambio,
+                perfil,
+                capital,
+                pregunta=user_msg
             )
-
-        st.write(analisis)
-
+            st.session_state.chat_messages.append(f"**Tú:** {user_msg}")
+            st.session_state.chat_messages.append(f"**IA:** {respuesta}")
+            st.experimental_rerun()
     else:
-        st.error("Ticker no válido")
-
+        st.write("Realiza primero un análisis en la pestaña de 📈")
