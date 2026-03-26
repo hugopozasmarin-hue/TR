@@ -8,7 +8,7 @@ from groq import Groq
 st.set_page_config(page_title="InvestIA Elite", page_icon="💎", layout="wide")
 
 # --- ⚠️ PON AQUÍ TU API KEY ---
-GROQ_API_KEY = "PON_AQUI_TU_API_KEY" 
+GROQ_API_KEY = "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" 
 
 # --- ESTILOS ---
 st.markdown("""
