@@ -4,60 +4,69 @@ from prophet import Prophet
 import pandas as pd
 import time
 
-# 1. CONFIGURACIÓN DE PÁGINA Y ESTILO CSS AVANZADO
+# 1. CONFIGURACIÓN Y ESTILO CSS MEJORADO
 st.set_page_config(page_title="InvestMind AI", page_icon="💰", layout="wide")
 
 st.markdown("""
     <style>
-    /* Animación para botones */
+    /* Botones con animación */
     .stButton>button {
         width: 100%;
-        border-radius: 20px;
-        transition: all 0.3s ease-in-out;
+        border-radius: 25px;
+        transition: all 0.3s ease;
         background-color: #007bff;
-        color: white;
+        color: white !important;
         border: none;
         font-weight: bold;
+        padding: 10px;
     }
     .stButton>button:hover {
-        transform: scale(1.05);
-        background-color: #0056b3;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,123,255,0.4);
     }
     
-    /* Estilo del Chat (Adiós al fondo azul) */
-    .chat-bubble {
-        padding: 15px;
-        border-radius: 15px;
+    /* Burbujas de Chat Optimizadas */
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    .bubble {
+        padding: 15px 20px;
+        border-radius: 20px;
+        max-width: 80%;
+        font-size: 16px;
+        line-height: 1.5;
         margin-bottom: 10px;
-        border: 1px solid #e0e0e0;
     }
     .user-bubble {
-        background-color: #f0f2f6;
-        text-align: right;
-        border-left: 5px solid #007bff;
+        align-self: flex-end;
+        background-color: #007bff;
+        color: white !important;
+        border-bottom-right-radius: 2px;
     }
     .assistant-bubble {
-        background-color: #ffffff;
-        border-left: 5px solid #28a745;
-        box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+        align-self: flex-start;
+        background-color: #262730; /* Color oscuro neutral de Streamlit */
+        color: #ffffff !important;
+        border-bottom-left-radius: 2px;
+        border: 1px solid #464646;
     }
     
-    /* Mejoras estéticas generales */
-    .main { background-color: #f8f9fa; }
-    h1 { color: #1e1e1e; font-family: 'Helvetica Neue', sans-serif; }
+    /* Texto dentro de las burbujas para asegurar visibilidad */
+    .bubble p, .bubble span {
+        color: inherit !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. INICIALIZACIÓN DE MEMORIA (SESSION STATE)
-if 'messages' not in st.session_state:
-    st.session_state.messages = []
-if 'cambio' not in st.session_state:
-    st.session_state.cambio = 0.0
-if 'analizado' not in st.session_state:
-    st.session_state.analizado = False
+# 2. MEMORIA
+if 'messages' not in st.session_state: st.session_state.messages = []
+if 'cambio' not in st.session_state: st.session_state.cambio = 0.0
+if 'analizado' not in st.session_state: st.session_state.analizado = False
 
-# 3. BARRA LATERAL (RETRACTABLE POR DEFECTO)
+# 3. BARRA LATERAL
 with st.sidebar:
     st.header("⚙️ Configuración")
     moneda = st.radio("Moneda:", ["USD ($)", "EUR (€)"], horizontal=True)
@@ -65,79 +74,52 @@ with st.sidebar:
     capital = st.number_input(f"Capital ({simbolo})", min_value=1.0, value=1000.0)
     perfil = st.selectbox("Tu Perfil:", ["Conservador", "Moderado", "Arriesgado"])
     
-    opciones = {
-        "Apple (AAPL)": "AAPL", "Tesla (TSLA)": "TSLA", "Nvidia (NVDA)": "NVDA",
-        "Bitcoin (BTC-USD)": "BTC-USD", "Santander (SAN.MC)": "SAN.MC", "OTRO": "CUSTOM"
-    }
-    sel = st.selectbox("Activo a analizar:", list(opciones.keys()))
+    opciones = {"Apple (AAPL)": "AAPL", "Tesla (TSLA)": "TSLA", "Nvidia (NVDA)": "NVDA", "Bitcoin (BTC-USD)": "BTC-USD", "Santander (SAN.MC)": "SAN.MC", "OTRO": "CUSTOM"}
+    sel = st.selectbox("Activo:", list(opciones.keys()))
     ticket = st.text_input("Ticker manual:").upper() if opciones[sel] == "CUSTOM" else opciones[sel]
-    
-    st.divider()
-    st.caption("Usa la flecha arriba a la izquierda para retraer este menú.")
 
 # 4. CUERPO PRINCIPAL
 st.title("🤖 InvestMind AI")
-tab1, tab2 = st.tabs(["📈 Panel de Análisis", "💬 Chat del Asesor"])
+t1, t2 = st.tabs(["📈 Análisis", "💬 Chat"])
 
-with tab1:
-    if st.button("🚀 INICIAR ANÁLISIS DE MERCADO"):
-        with st.status("Analizando datos históricos...", expanded=True) as status:
+with t1:
+    if st.button("🚀 INICIAR ANÁLISIS"):
+        with st.status("Procesando datos...", expanded=False) as s:
             datos = yf.download(ticket, period="5y")
             if not datos.empty:
-                st.write("Calculando tendencias con IA...")
                 precio_act = float(datos['Close'].iloc[-1])
-                
                 df_p = datos.reset_index()[['Date', 'Close']]
                 df_p.columns = ['ds', 'y']
                 df_p['ds'] = df_p['ds'].dt.tz_localize(None)
                 m = Prophet(daily_seasonality=True).fit(df_p)
                 pred = m.predict(m.make_future_dataframe(periods=30))
-                
-                precio_pre = float(pred['yhat'].iloc[-1])
-                st.session_state.cambio = ((precio_pre - precio_act) / precio_act) * 100
+                st.session_state.cambio = ((float(pred['yhat'].iloc[-1]) - precio_act) / precio_act) * 100
                 st.session_state.analizado = True
-                status.update(label="Análisis completado!", state="complete", expanded=False)
+                s.update(label="Análisis Completo!", state="complete")
                 
-                # Métricas con estilo
                 c1, c2, c3 = st.columns(3)
-                c1.metric("Precio Hoy", f"{precio_act:.2f} {simbolo}")
-                c2.metric("Meta 30 días", f"{precio_pre:.2f} {simbolo}", f"{st.session_state.cambio:.2f}%")
-                c3.metric("Acciones Comprables", f"{(capital/precio_act):.4f}")
-                
+                c1.metric("Hoy", f"{precio_act:.2f} {simbolo}")
+                c2.metric("Meta 30d", f"{float(pred['yhat'].iloc[-1]):.2f} {simbolo}", f"{st.session_state.cambio:.2f}%")
+                c3.metric("Acciones", f"{(capital/precio_act):.4f}")
                 st.line_chart(datos['Close'])
-                
-                # Informe Extenso
-                st.subheader("💡 Informe Estratégico")
-                estado = "POSITIVO" if st.session_state.cambio > 2 else "ESTABLE/BAJISTA"
-                st.info(f"""
-                **Análisis para {ticket}:** El mercado muestra un tono **{estado}**. 
-                Para un perfil **{perfil}**, la recomendación es observar el soporte actual. 
-                Si el precio se mantiene, la proyección es alcanzar los {precio_pre:.2f} {simbolo}.
-                """)
-            else:
-                st.error("Error al obtener datos.")
+            else: st.error("Error de datos.")
 
-with tab2:
+with t2:
     st.subheader("💬 Consultoría en Tiempo Real")
     
-    # Mostrar historial de chat con burbujas personalizadas
-    for msg in st.session_state.messages:
-        clase = "user-bubble" if msg["role"] == "user" else "assistant-bubble"
-        st.markdown(f'<div class="chat-bubble {clase}">{msg["content"]}</div>', unsafe_allow_html=True)
+    # Contenedor de chat
+    for m in st.session_state.messages:
+        clase = "user-bubble" if m["role"] == "user" else "assistant-bubble"
+        st.markdown(f'<div class="bubble {clase}">{m["content"]}</div>', unsafe_allow_html=True)
 
-    if prompt := st.chat_input("Escribe tu duda aquí (ej: ¿Es arriesgado comprar ahora?)"):
-        # Añadir pregunta del usuario
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        st.markdown(f'<div class="chat-bubble user-bubble">{prompt}</div>', unsafe_allow_html=True)
+    if p := st.chat_input("Escribe tu duda..."):
+        st.session_state.messages.append({"role": "user", "content": p})
+        st.markdown(f'<div class="bubble user-bubble">{p}</div>', unsafe_allow_html=True)
         
-        # Respuesta de la IA
-        with st.spinner("Pensando..."):
-            time.sleep(1) # Simulación de pensamiento
-            info = f"tendencia de {st.session_state.cambio:.2f}%" if st.session_state.analizado else "sin analizar"
-            respuesta = f"Como asesor para un perfil **{perfil}**, te diré que {ticket} presenta una {info}. Considero que invertir {capital} {simbolo} en este activo requiere una visión a {'largo plazo' if perfil == 'Conservador' else 'corto plazo'}. ¿Deseas que profundice en el riesgo técnico?"
-            
-            st.session_state.messages.append({"role": "assistant", "content": respuesta})
-            st.markdown(f'<div class="chat-bubble assistant-bubble">{respuesta}</div>', unsafe_allow_html=True)
-
-st.divider()
-st.caption("InvestMind AI v2.0 | La inversión conlleva riesgos.")
+        with st.spinner("Escribiendo..."):
+            time.sleep(0.5)
+            info = f"un cambio del {st.session_state.cambio:.2f}%" if st.session_state.analizado else "tendencia aún no analizada"
+            res = f"Como experto para un perfil **{perfil}**, veo que **{ticket}** muestra una {info}. Para tus **{capital}{simbolo}**, sugiero cautela. ¿Quieres más detalles?"
+            st.session_state.messages.append({"role": "assistant", "content": res})
+            st.markdown(f'<div class="bubble assistant-bubble">{res}</div>', unsafe_allow_html=True)
+            st.rerun() # Refresca para limpiar el input y mostrar todo ordenado
