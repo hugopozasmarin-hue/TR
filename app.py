@@ -148,11 +148,24 @@ with tab1:
                 st.session_state.ticket_act = ticket
 
                 # MÉTRICAS CON TÍTULOS
-                c1, c2, c3 = st.columns(3)
-                c1.metric(t["price"], f"{p_act:.2f}{simbolo}")
-                c2.metric(t["target"], f"{p_pre:.2f}{simbolo}", delta=f"{st.session_state.cambio:.2f}%")
-                c3.metric(t["shares"], f"{(capital/p_act):.4f}")
-                
+                  # MÉTRICAS CON TÍTULOS CLAROS
+                col1, col2, col3 = st.columns(3)
+
+                col1.metric(
+                    label="💰 Precio actual (€)",
+                    value=f"{precio_actual:.2f}€"
+                )
+
+                col2.metric(
+                    label="📈 Precio predicho (30 días)",
+                    value=f"{precio_futuro:.2f}€",
+                    delta=f"{cambio:.2f}%"
+                )
+
+                col3.metric(
+                    label="🧮 Acciones que puedes comprar",
+                    value=f"{acciones:.4f}"
+                )
                 st.line_chart(datos['Close'])
 
                 # RECOMENDACIÓN DE LA IA DEBAJO DE LA GRÁFICA
