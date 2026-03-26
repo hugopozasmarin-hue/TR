@@ -3,167 +3,184 @@ import yfinance as yf
 from prophet import Prophet
 import pandas as pd
 from groq import Groq
+import time
 
-# CONFIG
+# 1. CONFIGURACIÓN Y ESTILO ELITE 2026
 st.set_page_config(page_title="InvestMind AI Elite", page_icon="💎", layout="wide")
 
 st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+    <style>
+    @import url('https://fonts.googleapis.com');
+    * { font-family: 'Inter', sans-serif; }
+    
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0a0c10 0%, #161821 100%);
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
 
-* { font-family: 'Inter', sans-serif; }
+    label { display: none !important; }
 
-/* SIDEBAR MÁS ELEGANTE */
-[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-    padding: 20px;
-}
+    .field-title {
+        color: #818cf8;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-top: 25px;
+        margin-bottom: 8px;
+        display: block;
+        opacity: 0.9;
+    }
 
-/* TÍTULOS */
-.field-title {
-    color: #38bdf8;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    margin-top: 20px;
-}
+    .stNumberInput input, .stSelectbox [data-baseweb="select"], .stTextInput input {
+        background-color: #262730 !important;
+        color: #ffffff !important;
+        border: 1px solid #444 !important;
+        border-radius: 10px !important;
+        height: 48px !important;
+    }
+    
+    .stSelectbox div[role="button"] { background-color: #262730 !important; height: 48px !important; }
 
-/* INPUTS */
-.stNumberInput input, .stSelectbox div, .stTextInput input {
-    background-color: #1e293b !important;
-    color: white !important;
-    border-radius: 10px !important;
-    border: 1px solid #334155 !important;
-}
+    .stButton>button {
+        width: 100%; border-radius: 12px;
+        background: linear-gradient(90deg, #6366f1, #00d4ff);
+        color: white !important; font-weight: 800; border: none; padding: 15px;
+        transition: all 0.4s ease; margin-top: 20px;
+    }
+    .stButton>button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(99,102,241,0.4); }
 
-/* BOTÓN */
-.stButton>button {
-    width: 100%;
-    border-radius: 12px;
-    background: linear-gradient(90deg, #6366f1, #22d3ee);
-    font-weight: bold;
-    padding: 12px;
-}
+    .bubble { padding: 18px 22px; border-radius: 18px; margin-bottom: 12px; max-width: 85%; font-size: 15px; }
+    .user-bubble { background: #6366f1; color: white !important; margin-left: auto; border-bottom-right-radius: 2px; }
+    .assistant-bubble { background: #262730; border: 1px solid #444; color: #eee !important; border-bottom-left-radius: 2px; }
+    
+    .highlight { color: #00ffcc; font-weight: 800; }
+    </style>
+    """, unsafe_allow_html=True)
 
-/* CHAT */
-.bubble {
-    padding: 15px;
-    border-radius: 15px;
-    margin-bottom: 10px;
-}
-
-.user-bubble { background: #6366f1; color: white; }
-.assistant-bubble { background: #1e293b; color: #e2e8f0; }
-
-.highlight { color: #22d3ee; font-weight: bold; }
-</style>
-""", unsafe_allow_html=True)
-
-# IDIOMAS
+# 2. DICCIONARIO DE IDIOMAS 2026
 languages = {
     "Español": {
-        "title": "InvestMind AI Elite",
-        "conf": "CONFIGURACIÓN",
-        "cap": "PRESUPUESTO (€)",
-        "risk": "PERFIL DE RIESGO",
-        "asset": "ACTIVO",
-        "btn": "EJECUTAR ANÁLISIS",
-        "price": "Precio actual (€)",
-        "target": "Precio predicho (30 días)",
-        "shares": "Acciones que puedes comprar",
-        "wait": "Analizando..."
+        "title": "InvestMind AI Elite", "ajust": "⚙️ AJUSTES", "lang_lab": "IDIOMA",
+        "conf": "🛠️ CONFIGURACIÓN", "curr": "DIVISA", "cap": "CAPITAL", 
+        "risk_lab": "PERFIL", "ass_lab": "ACTIVO", "btn": "EJECUTAR ANÁLISIS", 
+        "diag": "Consultoría Estratégica", "just": "Justificación Técnica", 
+        "wait": "Analizando...", "price": "Precio Actual", "target": "Objetivo IA (30d)", 
+        "shares": "Acciones Comprables", "disclaimer": "Simulación 2026. Riesgo de capital."
+    },
+    "English": {
+        "title": "InvestMind AI Elite", "ajust": "⚙️ SETTINGS", "lang_lab": "LANGUAGE",
+        "conf": "🛠️ CONFIGURATION", "curr": "CURRENCY", "cap": "CAPITAL", 
+        "risk_lab": "PROFILE", "ass_lab": "ASSET", "btn": "EXECUTE ANALYSIS", 
+        "diag": "Strategic Consultancy", "just": "Technical Justification", 
+        "wait": "Analyzing...", "price": "Current Price", "target": "AI Target (30d)", 
+        "shares": "Buying Power", "disclaimer": "2026 Simulation. Capital risk."
+    },
+    "Català": {
+        "title": "InvestMind AI Elite", "ajust": "⚙️ AJUSTOS", "lang_lab": "IDIOMA",
+        "conf": "🛠️ CONFIGURACIÓ", "curr": "MONEDA", "cap": "CAPITAL", 
+        "risk_lab": "PERFIL", "ass_lab": "ACTIU", "btn": "EXECUTAR ANÀLISI", 
+        "diag": "Consultoria Estratègica", "just": "Justificació Tècnica", 
+        "wait": "Analitzant...", "price": "Preu Actual", "target": "Objectiu IA (30d)", 
+        "shares": "Accions a Comprar", "disclaimer": "Simulació 2026. Risc de capital."
     }
 }
 
+# 3. MEMORIA
 if 'messages' not in st.session_state: st.session_state.messages = []
 if 'cambio' not in st.session_state: st.session_state.cambio = 0.0
-if 'ticket_act' not in st.session_state: st.session_state.ticket_act = "AAPL"
+if 'analizado' not in st.session_state: st.session_state.analizado = False
+if 'ticket_act' not in st.session_state: st.session_state.ticket_act = "N/A"
+if 'lang' not in st.session_state: st.session_state.lang = "Español"
 
-t = languages["Español"]
-
-# SIDEBAR
+# 4. BARRA LATERAL (AJUSTES E IDIOMA DENTRO)
 with st.sidebar:
-    st.markdown(f"<div class='field-title'>{t['conf']}</div>", unsafe_allow_html=True)
-
-    st.markdown(f"<div class='field-title'>{t['cap']}</div>", unsafe_allow_html=True)
+    curr_t = languages[st.session_state.lang]
+    with st.expander(curr_t["ajust"], expanded=False):
+        st.markdown(f'<p class="field-title">{curr_t["lang_lab"]}</p>', unsafe_allow_html=True)
+        st.session_state.lang = st.selectbox("", ["Español", "English", "Català"], index=["Español", "English", "Català"].index(st.session_state.lang))
+    
+    t = languages[st.session_state.lang]
+    st.markdown(f'<p class="field-title">{t["curr"]}</p>', unsafe_allow_html=True)
+    mon_sel = st.radio("", ["USD ($)", "EUR (€)"], horizontal=True)
+    simbolo = "$" if "USD" in mon_sel else "€"
+    
+    st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
     capital = st.number_input("", min_value=1.0, value=1000.0)
-
-    st.markdown(f"<div class='field-title'>{t['risk']}</div>", unsafe_allow_html=True)
+    
+    st.markdown(f'<p class="field-title">{t["risk_lab"]}</p>', unsafe_allow_html=True)
     perfil = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"])
-
-    st.markdown(f"<div class='field-title'>{t['asset']}</div>", unsafe_allow_html=True)
+    
+    st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
     ticket = st.text_input("", value="AAPL").upper().strip()
 
-# IA
-def hablar_con_ia_real(pregunta):
-    api_key = "TU_API_KEY"
-    client = Groq(api_key=api_key)
-    completion = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": pregunta}]
-    )
-    return completion.choices[0].message.content
+# 5. MOTOR IA (VALIDACIÓN DE LLAVE)
+def hablar_con_ia_real(pregunta, lang, ticket, cambio, perfil):
+    # PEGA TU LLAVE AQUÍ (Asegúrate de que no haya espacios al pegar)
+    api_key = "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" 
+    
+    try:
+        client = Groq(api_key=api_key)
+        prompt = f"Asesor Senior 2026. Perfil: {perfil}, Activo: {ticket}, Tendencia: {cambio:.2f}%. Responde en {lang}."
+        completion = client.chat.completions.create(model="llama-3.3-70b-versatile", messages=[{"role": "system", "content": prompt}, {"role": "user", "content": pregunta}])
+        return completion.choices[0].message.content
+    except Exception as e:
+        return f"Error de Autenticación: Revisa tu API Key de Groq. (Detalle: {str(e)})"
 
-# MAIN
+# 6. CUERPO PRINCIPAL
 st.title(f"💎 {t['title']}")
-
-tab1, tab2 = st.tabs(["📈 Análisis", "💬 Chat IA"])
+tab1, tab2 = st.tabs([f"📈 {t['btn']}", f"💬 {t['diag']}"])
 
 with tab1:
     if st.button(t["btn"]):
-        with st.spinner(t["wait"]):
+        with st.status(t["wait"]) as s:
             datos = yf.download(ticket, period="5y")
-
             if not datos.empty:
-                precio_actual = float(datos['Close'].iloc[-1])
+                p_act = float(datos['Close'].iloc[-1])
+                df_p = datos.reset_index()[['Date', 'Close']]
+                df_p.columns = ['ds', 'y']
+                df_p['ds'] = df_p['ds'].dt.tz_localize(None)
+                m = Prophet(daily_seasonality=True).fit(df_p)
+                pred = m.predict(m.make_future_dataframe(periods=30))
+                p_pre = float(pred['yhat'].iloc[-1])
+                st.session_state.cambio = ((p_pre - p_act) / p_act) * 100
+                st.session_state.analizado = True
+                st.session_state.ticket_act = ticket
 
-                df = datos.reset_index()[['Date', 'Close']]
-                df.columns = ['ds', 'y']
-                df['ds'] = df['ds'].dt.tz_localize(None)
-
-                modelo = Prophet().fit(df)
-                futuro = modelo.make_future_dataframe(periods=30)
-                pred = modelo.predict(futuro)
-
-                precio_futuro = float(pred['yhat'].iloc[-1])
-
-                cambio = ((precio_futuro - precio_actual) / precio_actual) * 100
-
-                acciones = capital / precio_actual
-
-                # MÉTRICAS CON TÍTULOS CLAROS
-                col1, col2, col3 = st.columns(3)
-
-                col1.metric(
-                    label="💰 Precio actual (€)",
-                    value=f"{precio_actual:.2f}€"
-                )
-
-                col2.metric(
-                    label="📈 Precio predicho (30 días)",
-                    value=f"{precio_futuro:.2f}€",
-                    delta=f"{cambio:.2f}%"
-                )
-
-                col3.metric(
-                    label="🧮 Acciones que puedes comprar",
-                    value=f"{acciones:.4f}"
-                )
-
+                # MÉTRICAS CON TÍTULOS
+                c1, c2, c3 = st.columns(3)
+                c1.metric(t["price"], f"{p_act:.2f}{simbolo}")
+                c2.metric(t["target"], f"{p_pre:.2f}{simbolo}", delta=f"{st.session_state.cambio:.2f}%")
+                c3.metric(t["shares"], f"{(capital/p_act):.4f}")
+                
                 st.line_chart(datos['Close'])
 
-            else:
-                st.error("Ticker no válido")
+                # RECOMENDACIÓN DE LA IA DEBAJO DE LA GRÁFICA
+                st.divider()
+                st.header(f"💼 {t['diag']}")
+                st.subheader(f"📊 {t['just']}")
+                
+                txt_rec = {
+                    "Español": f"La proyección de <span class='highlight'>{st.session_state.cambio:.2f}%</span> se basa en la inercia de 1,260 sesiones y ciclos estacionales de 2026. Para un perfil {perfil}, se sugiere vigilancia en los {p_act:.2f}{simbolo}.",
+                    "English": f"The <span class='highlight'>{st.session_state.cambio:.2f}%</span> projection is based on 1,260-session inertia and 2026 seasonal cycles. For a {perfil} profile, monitor {p_act:.2f}{simbolo}.",
+                    "Català": f"La projecció de <span class='highlight'>{st.session_state.cambio:.2f}%</span> es basa en la inèrcia de 1.260 sessions i cicles de 2026. Per a un perfil {perfil}, es suggereix vigilància als {p_act:.2f}{simbolo}."
+                }
+                st.write(txt_rec[st.session_state.lang], unsafe_allow_html=True)
+                st.caption(t["disclaimer"])
+                s.update(label="OK", state="complete")
+            else: st.error("Ticker Error.")
 
 with tab2:
+    st.subheader(t["diag"])
     for msg in st.session_state.messages:
         clase = "user-bubble" if msg["role"] == "user" else "assistant-bubble"
-        st.markdown(f"<div class='bubble {clase}'>{msg['content']}</div>", unsafe_allow_html=True)
+        st.markdown(f'<div class="bubble {clase}">{msg["content"]}</div>', unsafe_allow_html=True)
 
-    if pregunta := st.chat_input("Pregunta..."):
-        st.session_state.messages.append({"role": "user", "content": pregunta})
+    if p := st.chat_input("..."):
+        st.session_state.messages.append({"role": "user", "content": p})
+        with st.spinner("..."):
+            res = hablar_con_ia_real(p, st.session_state.lang, st.session_state.ticket_act, st.session_state.cambio, perfil)
+            st.session_state.messages.append({"role": "assistant", "content": res})
+            st.rerun()
 
-        respuesta = hablar_con_ia_real(pregunta)
-
-        st.session_state.messages.append({"role": "assistant", "content": respuesta})
-        st.rerun()
+st.caption("InvestMind AI Platinum v18.0 | 2026")
