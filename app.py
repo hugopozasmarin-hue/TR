@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="InvestIA Elite", page_icon="💎", layout="wide")
 
 # --- ⚠️ CONFIGURACIÓN API ---
-GROQ_API_KEY = "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"  # ← reemplaza esto
+GROQ_API_KEY = "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"  # <- reemplaza con tu llave
 
 # --- ESTILOS CSS CUSTOM ---
 st.markdown("""
@@ -36,23 +36,17 @@ languages = {
         "title":"InvestIA Elite", "lang_lab":"IDIOMA", "cap":"PRESUPUESTO", "risk_lab":"RIESGO",
         "ass_lab":"TICKER (Ej: NVDA)", "btn":"ANALIZAR MERCADO", "wait":"Procesando datos...", 
         "price":"Precio Actual", "target":"Predicción 30d", "shares":"Acciones posibles", 
-        "analysis":"Análisis Estratégico IA", "chat_placeholder":"Pregunta sobre inversiones...",
-        "strategy_positive":"📈 Tendencia positiva",
-        "strategy_neutral":"⚖️ Crecimiento leve",
-        "strategy_negative":"📉 Tendencia negativa"
+        "analysis":"Análisis Estratégico IA", "chat_placeholder":"Pregunta sobre inversiones..."
     },
     "English": {
         "title":"InvestIA Elite", "lang_lab":"LANGUAGE", "cap":"BUDGET", "risk_lab":"RISK",
         "ass_lab":"TICKER (e.g. NVDA)", "btn":"ANALYZE MARKET", "wait":"Processing...", 
-        "price":"Current Price", "target":"30-Day Target", "shares":"Possible Shares", 
-        "analysis":"AI Strategic Analysis", "chat_placeholder":"Ask about investments...",
-        "strategy_positive":"📈 Positive trend",
-        "strategy_neutral":"⚖️ Mild growth",
-        "strategy_negative":"📉 Negative trend"
+        "price":"Current Price", "target":"30-Day Target", "shares":"Shares you can buy", 
+        "analysis":"AI Strategic Analysis", "chat_placeholder":"Ask about investments..."
     }
 }
 
-# --- LÓGICA DE IA ---
+# --- FUNCION IA ---
 def generar_analisis_ia(ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
@@ -74,10 +68,10 @@ Pregunta del usuario: {pregunta if pregunta else "Análisis general de inversion
     except Exception as e:
         return f"Error en el motor de IA: {e}"
 
-# --- GESTIÓN DE SESIÓN ---
-for key in ["lang", "analizado", "chat_history"]:
-    if key not in st.session_state:
-        st.session_state[key] = [] if key=="chat_history" else "Español" if key=="lang" else False
+# --- SESIÓN ---
+if "lang" not in st.session_state: st.session_state.lang = "Español"
+if "analizado" not in st.session_state: st.session_state.analizado = False
+if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
 # --- SIDEBAR ---
 with st.sidebar:
@@ -95,7 +89,7 @@ with st.sidebar:
     st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
     ticket = st.text_input("", value="AAPL", label_visibility="collapsed").upper()
 
-# --- CUERPO PRINCIPAL ---
+# --- CUERPO ---
 st.title(f"💎 {t['title']}")
 tab1, tab2 = st.tabs([f"📈 {t['btn']}", "💬 Chat de Inversión"])
 
@@ -126,8 +120,7 @@ with tab1:
                 c2.metric(t["target"], f"{p_fut:.2f}€", f"{cambio:.2f}%")
                 c3.metric(t["shares"], f"{capital/p_act:.2f}")  # <-- DECIMALES
 
-                # Gráfica de Velas
-                st.markdown("### 🕯️ Histórico de Velas")
+                # Gráfica Velas
                 fig_candles = go.Figure(data=[go.Candlestick(
                     x=data.index, open=data['Open'], high=data['High'],
                     low=data['Low'], close=data['Close'], name=ticket
@@ -136,7 +129,6 @@ with tab1:
                 st.plotly_chart(fig_candles, use_container_width=True)
 
                 # Proyección
-                st.markdown("### 🔮 Proyección IA (Próximos 30 días)")
                 fig_pred = go.Figure()
                 fig_pred.add_trace(go.Scatter(x=df_prophet['ds'], y=df_prophet['y'], name="Real", line=dict(color='#48cae4')))
                 fig_pred.add_trace(go.Scatter(x=forecast['ds'].iloc[-30:], y=forecast['yhat'].iloc[-30:], name="Predicción", line=dict(color='#64ffda', dash='dash')))
@@ -144,8 +136,7 @@ with tab1:
                 st.plotly_chart(fig_pred, use_container_width=True)
 
                 # Análisis IA
-                with st.spinner("🧠 Generando informe institucional..."):
-                    informe = generar_analisis_ia(ticket, p_act, p_fut, cambio, perfil, capital)
+                informe = generar_analisis_ia(ticket, p_act, p_fut, cambio, perfil, capital)
                 st.markdown(f"--- \n ### 📊 {t['analysis']}")
                 st.write(informe)
             else:
@@ -161,16 +152,15 @@ with tab2:
         st.session_state.chat_history.append({"role": "user", "content": prompt_user})
         with st.chat_message("user"): st.write(prompt_user)
         with st.chat_message("assistant"):
-            with st.spinner("Pensando..."):
-                r = generar_analisis_ia(
-                    st.session_state.ticket_act,
-                    st.session_state.p_act,
-                    st.session_state.p_pre,
-                    st.session_state.cambio,
-                    perfil,
-                    capital,
-                    prompt_user
-                )
-                st.write(r)
+            r = generar_analisis_ia(
+                st.session_state.ticket_act,
+                st.session_state.p_act,
+                st.session_state.p_pre,
+                st.session_state.cambio,
+                perfil,
+                capital,
+                prompt_user
+            )
+            st.write(r)
         st.session_state.chat_history.append({"role": "assistant", "content": r})
         st.rerun()
