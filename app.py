@@ -62,7 +62,7 @@ with st.sidebar:
 # 5. EL CEREBRO: IA DE GROQ CON DETECCIÓN DE ERRORES
 def hablar_con_ia_real(pregunta, lang, ticket, cambio, perfil):
     # --- COLOCA TU LLAVE DE GROQ AQUÍ ---
-    api_key = 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 
+    api_key = "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" 
     
     if api_key == "TU_LLAVE_GROQ_AQUI":
         return "⚠️ Por favor, introduce tu API KEY de Groq en el código fuente."
