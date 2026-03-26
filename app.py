@@ -6,7 +6,7 @@ from groq import Groq
 import plotly.graph_objects as go
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Investia Elite", page_icon="💎", layout="wide")
+st.set_page_config(page_title="InvestIA Elite", page_icon="💎", layout="wide")
 
 # --- ⚠️ CONFIGURACIÓN API ---
 GROQ_API_KEY = "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"
@@ -44,13 +44,13 @@ st.markdown("""
 # --- DICCIONARIO DE IDIOMAS ---
 languages = {
     "Español": {
-        "title":"Investia Elite", "lang_lab":"IDIOMA", "cap":"PRESUPUESTO", "risk_lab":"RIESGO",
+        "title":"InvestIA Elite", "lang_lab":"IDIOMA", "cap":"PRESUPUESTO", "risk_lab":"RIESGO",
         "ass_lab":"TICKER (Ej: NVDA)", "btn":"ANALIZAR MERCADO", "wait":"Procesando datos...", 
         "price":"Precio Actual", "target":"Predicción 30d", "shares":"Acciones posibles", 
         "analysis":"Análisis Estratégico IA", "chat_placeholder":"Pregunta sobre inversiones..."
     },
     "English": {
-        "title":"Investia Elite", "lang_lab":"LANGUAGE", "cap":"BUDGET", "risk_lab":"RISK",
+        "title":"InvestIA Elite", "lang_lab":"LANGUAGE", "cap":"BUDGET", "risk_lab":"RISK",
         "ass_lab":"TICKER (e.g. NVDA)", "btn":"ANALYZE MARKET", "wait":"Processing...", 
         "price":"Current Price", "target":"30-Day Target", "shares":"Shares you can buy", 
         "analysis":"AI Strategic Analysis", "chat_placeholder":"Ask about investments..."
