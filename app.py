@@ -54,7 +54,7 @@ st.markdown("""
     .chat-row {
         display: flex;
         width: 100%;
-        justify-content: flex-start; /* Todo a la izquierda */
+        justify-content: flex-start; 
         margin-bottom: 5px;
     }
 
@@ -108,28 +108,40 @@ languages = {
     }
 }
 
-# --- IA MEJORADA (RECOMENDACIÓN) ---
+# --- IA MEJORADA (RECOMENDACIÓN MULTILINGÜE) ---
 def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
-        contexto = f"Activo: {ticket}. Precio: {p_act}€. Predicción IA a 30 días: {p_fut}€ ({cambio:.2f}%)."
+        contexto = f"Ticker: {ticket}. Current Price: {p_act}€. IA Prediction (30d): {p_fut}€ ({cambio:.2f}%)."
         
-        prompt = f"""
-        Actúa como un Asesor Financiero Senior. Tu objetivo es dar una RECOMENDACIÓN DIRECTA basándote en:
-        1. Datos: {contexto}
-        2. Perfil del cliente: {perfil} (Capital: {capital}€).
-        
-        Instrucciones:
-        - Di claramente si recomiendas comprar, esperar o vender según su perfil de riesgo.
-        - Describe qué pasará en el futuro si el usuario sigue tu consejo basándote en la tendencia.
-        - Sé empático pero profesional.
-        - Idioma de respuesta: {lang}.
-        
-        Pregunta adicional del usuario: {pregunta if pregunta else "Dame tu recomendación general para este activo."}
-        """
+        # Ajustamos el prompt para que la IA entienda el idioma de destino incluso en sus instrucciones
+        if lang == "English":
+            instrucciones = f"""
+            Act as a Senior Financial Advisor. Your goal is to give a DIRECT RECOMMENDATION in ENGLISH:
+            1. Data: {contexto}
+            2. Client Profile: {perfil} (Capital: {capital}€).
+            
+            Guidelines:
+            - Clearly state if you recommend to buy, hold, or sell based on risk profile.
+            - Describe what will happen in the future if the user follows your advice.
+            - Be professional and critical.
+            Question: {pregunta if pregunta else "Give me your general recommendation for this asset."}
+            """
+        else:
+            instrucciones = f"""
+            Actúa como un Asesor Financiero Senior. Tu objetivo es dar una RECOMENDACIÓN DIRECTA en ESPAÑOL:
+            1. Datos: {contexto}
+            2. Perfil del cliente: {perfil} (Capital: {capital}€).
+            
+            Instrucciones:
+            - Di claramente si recomiendas comprar, esperar o vender según el perfil de riesgo.
+            - Describe qué pasará en el futuro si el usuario sigue tu consejo.
+            - Sé profesional y crítico.
+            Pregunta: {pregunta if pregunta else "Dame tu recomendación general para este activo."}
+            """
         
         response = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
+            messages=[{"role": "user", "content": instrucciones}],
             model="llama-3.3-70b-versatile"
         )
         return response.choices[0].message.content
@@ -190,6 +202,7 @@ with tab1:
                 c2.metric(t["target"], f"{p_fut:.2f}€", f"{cambio:.2f}%")
                 c3.metric(t["shares"], f"{capital/p_act:.2f}")
 
+                # Generamos la recomendación en el idioma activo
                 st.session_state.analisis = generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)
             else:
                 st.error("Ticker no válido")
@@ -209,7 +222,7 @@ with tab1:
 
         st.markdown(f"### 📈 {t['pred_t']}")
         fig_line = go.Figure()
-        fig_line.add_trace(go.Scatter(x=st.session_state.df_prophet['ds'], y=st.session_state.df_prophet['y'], name="Histórico", line=dict(color='#1a1a1a')))
+        fig_line.add_trace(go.Scatter(x=st.session_state.df_prophet['ds'], y=st.session_state.df_prophet['y'], name="Real", line=dict(color='#1a1a1a')))
         fig_line.add_trace(go.Scatter(x=st.session_state.forecast_data['ds'], y=st.session_state.forecast_data['yhat'], name="Predicción IA", line=dict(color='#64ffda', dash='dash')))
         fig_line.update_layout(template="plotly_white", height=400)
         st.plotly_chart(fig_line, use_container_width=True)
@@ -252,4 +265,5 @@ with tab2:
 
         st.session_state.chat_history.append({"role": "assistant", "content": respuesta})
         st.rerun()
+
 
