@@ -251,6 +251,7 @@ def obtener_noticias(categoria="Global"):
 
     return noticias
 # --- CHAT ---
+def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
 with tab2:
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
     for msg in st.session_state.chat_history:
@@ -311,7 +312,7 @@ with tab3:
             st.info(resumen_ia)
 
 # --- IA MEJORADA (DISCUSIÓN TOTAL) ---
-def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
+def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
         idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
