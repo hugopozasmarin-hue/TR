@@ -204,7 +204,6 @@ with tab1:
                 cambio = ((p_fut - p_act) / p_act) * 100
                 st.session_state.update({"p_act": p_act, "p_pre": p_fut, "cambio": cambio, "ticket_act": ticket, "analizado": True, "full_data": data, "forecast_data": forecast, "df_prophet": df})
                 st.session_state.analisis = generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)
-                st.session_state.update({"p_act": p_act, "p_pre": p_fut, "cambio": cambio, "ticket_act": ticket})
             else: st.error("Ticker incorrecto.")
 
     if st.session_state.analizado:
@@ -228,6 +227,19 @@ with tab1:
 
         st.markdown(f"<div class='recommendation-box'><h3 style='margin-top:0; color:#0A192F;'>✨ {t['analysis']}</h3><p style='white-space: pre-wrap; color:#374151;'>{st.session_state.get('analisis', '')}</p></div>", unsafe_allow_html=True)
 
+# --- CHAT ---
+with tab2:
+    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+    for msg in st.session_state.chat_history:
+        is_u = msg['role'] == "user"
+        st.markdown(f'<div class="chat-row"><div class="bubble {"user-bubble" if is_u else "ai-bubble"}"><div class="chat-label {"label-user" if is_u else "label-ai"}">{"YOU" if is_u else "AI ADVISOR"}</div>{msg["content"]}</div></div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if pr := st.chat_input(t["chat_placeholder"]):
+        st.session_state.chat_history.append({"role": "user", "content": pr})
+        res = generar_analisis_ia(st.session_state.lang, st.session_state.get("ticket_act", "N/A"), st.session_state.get("p_act", 0), st.session_state.get("p_pre", 0), st.session_state.get("cambio", 0), perfil, capital, pr)
+        st.session_state.chat_history.append({"role": "assistant", "content": res})
+        st.rerun()
 # --- IA MEJORADA (DISCUSIÓN TOTAL) ---
 def generar_analisis_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
     try:
@@ -245,22 +257,4 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=No
         return response.choices[0].message.content
     except Exception as e:
         return f"Error IA: {e}"
-
-
-# --- CHAT ---
-with tab2:
-    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-    for msg in st.session_state.chat_history:
-        is_u = msg['role'] == "user"
-        st.markdown(f'<div class="chat-row"><div class="bubble {"user-bubble" if is_u else "ai-bubble"}"><div class="chat-label {"label-user" if is_u else "label-ai"}">{"YOU" if is_u else "AI ADVISOR"}</div>{msg["content"]}</div></div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    if pr := st.chat_input(t["chat_placeholder"]): 
-    st.session_state.get("ticket_act", "N/A"), # Si no hay ticket, pone "N/A"
-    st.session_state.get("p_act", 0), 
-    st.session_state.get("p_pre", 0), 
-    st.session_state.get("cambio", 0), # Se añadió el cambio
-    perfil, # Se añadió el perfil de riesgo
-    capital, # Se añadió el capital
-    prompt_user
 
