@@ -296,19 +296,13 @@ with tab2:
         
 # --- 📰 NOTICIAS ---
 with tab3:
-    st.markdown("<h3 style='color:#0A192F;'>📰</h3>", unsafe_allow_html=True)
-
-    categoria = st.selectbox(
-        "Filtrar por mercado:",
-        ["Global", "EEUU", "Europa", "Cripto"]
-    )
+    st.markdown("<h3 style='color:#0A192F;'>🌎</h3>", unsafe_allow_html=True)
 
     noticias = obtener_noticias(categoria)
 # Cambia el título estático por la variable:
 with tab3:
     st.subheader(t["news_sub"])
-    st.subheader(t["news_sub"])
-
+  
     for noticia in noticias:
         st.markdown(f"""
         <div style="
