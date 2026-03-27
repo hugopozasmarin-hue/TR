@@ -298,7 +298,17 @@ st.markdown(html, unsafe_allow_html=True)
 """
 
 st.markdown(html, unsafe_allow_html=True)
-            border-radius:12px;
+        html = """
+<div style="
+    border:1px solid #E5E7EB;
+    padding:20px;
+    border-radius:12px;
+">
+    Contenido aquí
+</div>
+"""
+
+st.markdown(html, unsafe_allow_html=True)
             margin-bottom:15px;
             box-shadow:0 2px 6px rgba(0,0,0,0.05);
         ">
