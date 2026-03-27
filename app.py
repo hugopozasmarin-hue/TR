@@ -138,7 +138,9 @@ languages = {
         "btn":"ANALYZE ASSET", "wait":"Consulting markets...", "price":"Current Price", "target":"30-Day Target", 
         "shares":"Buying Capacity", "analysis":"Strategic Recommendation", "hist_t":"Market Movement", 
         "pred_t":"Algorithmic Projection", "chat_placeholder":"Type your financial query..."
-         "news_tab": "News",
+        "English": { 
+    ...
+    "news_tab": "News",
     "news_sub": "Global Economic News"
     }
 }
