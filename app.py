@@ -5,120 +5,102 @@ import pandas as pd
 from groq import Groq
 import plotly.graph_objects as go
 import feedparser
+from datetime import datetime
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="InvestIA Elite | Pro Terminal", page_icon="💎", layout="wide")
+st.set_page_config(page_title="InvestIA Elite | Pro Terminal", page_icon="📈", layout="wide")
 
 # --- ⚠️ CONFIGURACIÓN API ---
 GROQ_API_KEY = "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" 
 
-# --- ESTILOS CSS DE ALTO NIVEL ---
+# --- ESTILOS CSS PROFESIONALES (MODERNO/DARK) ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com');
-    
-    /* Fondo principal blanco */
-    .stApp { background-color: #FFFFFF; color: #1F2937; }
-    * { font-family: 'Inter', sans-serif; }
 
-    /* Barra lateral Azul Profundo Profesional */
+    :root {
+        --bg-dark: #05070A;
+        --card-bg: #0F121A;
+        --accent: #00F2FF;
+        --text-main: #E2E8F0;
+        --border: rgba(255, 255, 255, 0.08);
+    }
+
+    .stApp { background-color: var(--bg-dark); color: var(--text-main); }
+    * { font-family: 'Plus Jakarta Sans', sans-serif; }
+    code, .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Sidebar futurista */
     [data-testid="stSidebar"] {
-        background-color: #0A192F !important;
-        border-right: 1px solid #E5E7EB;
+        background-color: var(--card-bg) !important;
+        border-right: 1px solid var(--border);
     }
 
-    /* Títulos en la barra lateral */
-    .field-title {
-        color: #64FFDA;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 1.5px;
-        text-transform: uppercase;
-        margin-bottom: 5px;
-        margin-top: 15px;
+    /* Inputs estilizados */
+    .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"] {
+        background-color: #1A1E26 !important;
+        border: 1px solid var(--border) !important;
+        color: white !important;
+        border-radius: 8px !important;
     }
 
-    /* Botón Moderno */
+    /* Botón con Glow */
     .stButton>button {
+        background: linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%);
         border: none;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #0A192F 0%, #1F2937 100%);
-        color: #FFFFFF !important;
-        font-weight: 600;
-        height: 48px;
-        width: 100%;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        color: #05070A !important;
+        font-weight: 800;
+        letter-spacing: 1px;
+        border-radius: 8px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        text-transform: uppercase;
     }
     .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        transform: scale(1.02);
+        box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
     }
 
-    /* Tabs minimalistas */
-    .stTabs [data-baseweb="tab-list"] { gap: 10px; border-bottom: 1px solid #E5E7EB; }
+    /* Tabs modernas */
+    .stTabs [data-baseweb="tab-list"] { gap: 20px; background: transparent; }
     .stTabs [data-baseweb="tab"] {
-        background-color: transparent; color: #6B7280;
-        font-weight: 500; padding: 12px 24px;
+        height: 50px; background: transparent; border: none;
+        color: #64748B; font-weight: 600;
     }
-    .stTabs [aria-selected="true"] { color: #0A192F !important; border-bottom: 2px solid #0A192F !important; }
+    .stTabs [aria-selected="true"] {
+        color: var(--accent) !important;
+        border-bottom: 2px solid var(--accent) !important;
+    }
 
-    /* Métrica Cards Estilo Fintech */
-    .metric-container {
-        background: #FFFFFF;
-        border: 1px solid #F3F4F6;
+    /* Contenedores de métricas */
+    .metric-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        padding: 24px;
         border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        text-align: center;
+        text-align: left;
+        transition: 0.3s;
     }
+    .metric-card:hover { border-color: var(--accent); background: #161B25; }
 
-    /* --- CHAT MODERNO --- */
-    .chat-container { display: flex; flex-direction: column; gap: 15px; padding: 10px; }
-    .chat-row { display: flex; width: 100%; justify-content: flex-start; margin-bottom: 5px; }
-    
-    .bubble {
-        padding: 16px 22px;
-        border-radius: 18px;
-        max-width: 80%;
-        font-size: 15px;
-        line-height: 1.6;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
-
-    .user-bubble {
-        background-color: #F8F9FA;
-        color: #374151;
-        border: 1px solid #F3F4F6;
-        border-bottom-left-radius: 4px;
-    }
-
-    .ai-bubble {
-        background-color: #F0F7FF;
-        color: #1E3A8A;
-        border: 1px solid #DBEAFE;
-        border-bottom-left-radius: 4px;
-    }
-
-    .chat-label {
-        font-size: 9px;
-        font-weight: 800;
-        margin-bottom: 6px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    .label-user { color: #9CA3AF; }
-    .label-ai { color: #3B82F6; }
-
-    /* Caja de recomendación */
-    .recommendation-box {
-        background-color: #FFFFFF;
-        border: 1px solid #E5E7EB;
-        border-left: 5px solid #0A192F;
-        padding: 25px;
+    /* Chat UI Rediseñada */
+    .chat-bubble {
+        padding: 1.2rem;
         border-radius: 12px;
-        margin-top: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--accent);
+        background: rgba(255, 255, 255, 0.03);
+    }
+    
+    .ai-bubble { border-left-color: #00F2FF; background: rgba(0, 242, 255, 0.02); }
+    .user-bubble { border-left-color: #94A3B8; background: rgba(148, 163, 184, 0.05); }
+
+    /* Badge de recomendación */
+    .rec-box {
+        background: linear-gradient(145deg, #0F121A 0%, #1A1E26 100%);
+        border: 1px solid var(--border);
+        padding: 30px;
+        border-radius: 20px;
+        line-height: 1.8;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -126,41 +108,28 @@ st.markdown("""
 # --- TRADUCCIONES ---
 languages = {
     "Español": { 
-        "title":"INVESTIA TERMINAL", "lang_lab":"Idioma", "cap":"Presupuesto", "risk_lab":"Riesgo", "ass_lab":"Ticker", 
-        "btn":"ANALIZAR ACTIVO", "wait":"Consultando mercados...", "price":"Precio Actual", "target":"Objetivo 30d", 
-        "shares":"Capacidad Compra", "analysis":"Recomendación Estratégica", "hist_t":"Movimiento del Mercado", 
-        "pred_t":"Proyección Algorítmica", "chat_placeholder":"Escribe tu consulta financiera...",
-        "news_tab": "Noticias",
-        "news_sub": "Noticias Económicas Globales"
+        "title":"INVESTIA TERMINAL", "lang_lab":"IDIOMA", "cap":"CAPITAL DISPONIBLE", "risk_lab":"PERFIL DE RIESGO", "ass_lab":"TICKER ACTIVO", 
+        "btn":"EJECUTAR ANÁLISIS", "wait":"Procesando datos de mercado...", "price":"PRECIO ACTUAL", "target":"PROYECCIÓN 30D", 
+        "shares":"CAPACIDAD ADQUISICIÓN", "analysis":"INFORME ESTRATÉGICO", "hist_t":"HISTÓRICO DE MERCADO", 
+        "pred_t":"MODELADO PREDICTIVO PROPHET", "chat_placeholder":"Consultar con analista IA...",
+        "news_tab": "NOTICIAS", "news_sub": "FLUJO DE NOTICIAS EN TIEMPO REAL"
     },
     "English": { 
-        "title":"INVESTIA TERMINAL", "lang_lab":"Language", "cap":"Budget", "risk_lab":"Risk Profile", "ass_lab":"Asset Ticker", 
-        "btn":"ANALYZE ASSET", "wait":"Consulting markets...", "price":"Current Price", "target":"30-Day Target", 
-        "shares":"Buying Capacity", "analysis":"Strategic Recommendation", "hist_t":"Market Movement", 
-        "pred_t":"Algorithmic Projection", "chat_placeholder":"Type your financial query...",
-        "news_tab": "News",
-        "news_sub": "Global Economic News"
+        "title":"INVESTIA TERMINAL", "lang_lab":"LANGUAGE", "cap":"AVAILABLE CAPITAL", "risk_lab":"RISK PROFILE", "ass_lab":"ASSET TICKER", 
+        "btn":"EXECUTE ANALYSIS", "wait":"Processing market data...", "price":"CURRENT PRICE", "target":"30D TARGET", 
+        "shares":"BUYING POWER", "analysis":"STRATEGIC REPORT", "hist_t":"MARKET HISTORY", 
+        "pred_t":"PROPHET PREDICTIVE MODELING", "chat_placeholder":"Ask IA analyst...",
+        "news_tab": "NEWS", "news_sub": "REAL-TIME NEWS FEED"
     }
 }
 
-# --- IA MEJORADA (RECOMENDACIÓN) ---
+# --- LÓGICA IA ---
 def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
         contexto = f"Ticker: {ticket}. Price: {p_act}€. Prediction: {p_fut}€ ({cambio:.2f}%)."
         idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
-        
-        prompt = f"""
-        Act as a Senior Investment Strategist. Your goal is to give a CUSTOMIZED RECOMMENDATION in {idioma_inst}.
-        Data: {contexto}. Risk Profile: {perfil}. Capital: {capital}€.
-        
-        Structure:
-        1. Action: (Buy, Hold or Sell) based on the profile.
-        2. Rational: Why this makes sense.
-        3. Future Outlook: What to expect if the user follows this advice.
-        
-        Question: {pregunta if pregunta else "General recommendation."}
-        """
+        prompt = f"Act as a Senior Investment Strategist. Give a CUSTOMIZED RECOMMENDATION in {idioma_inst}. Data: {contexto}. Risk Profile: {perfil}. Capital: {capital}€. Question: {pregunta if pregunta else 'General recommendation.'}"
         
         response = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
@@ -168,171 +137,123 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
         )
         return response.choices[0].message.content
     except Exception as e:
-        return f"Error IA: {e}"
-        
-def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pr):
-    return generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=pr)
-    
-# --- SESIÓN ---
+        return f"Error: {e}"
+
+# --- ESTADO DE SESIÓN ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
 if "analizado" not in st.session_state: st.session_state.analizado = False
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
-# --- SIDEBAR ---
+# --- SIDEBAR ELEGante ---
 with st.sidebar:
-    st.markdown(f'<p class="field-title">{languages[st.session_state.lang]["lang_lab"]}</p>', unsafe_allow_html=True)
+    st.markdown(f"<h2 style='color: #00F2FF;'>Elite v2.0</h2>", unsafe_allow_html=True)
+    st.divider()
+    
+    st.markdown(f"**{languages[st.session_state.lang]['lang_lab']}**")
     lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
     if lang_temp != st.session_state.lang:
         st.session_state.lang = lang_temp
         st.rerun()
+    
     t = languages[st.session_state.lang]
-    st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
+    
+    st.markdown(f"**{t['cap']}**")
     capital = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
-    st.markdown(f'<p class="field-title">{t["risk_lab"]}</p>', unsafe_allow_html=True)
+    
+    st.markdown(f"**{t['risk_lab']}**")
     perfil = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"], label_visibility="collapsed")
-    st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
+    
+    st.markdown(f"**{t['ass_lab']}**")
     ticket = st.text_input("", value="NVDA", label_visibility="collapsed").upper()
+    
+    st.markdown("<br>"*5, unsafe_allow_html=True)
+    st.caption("InvestIA Elite Terminal © 2024")
 
-# --- UI ---
-st.markdown(f"<h2 style='text-align: center; color: #0A192F; font-weight: 700; letter-spacing: -1px; margin-bottom: 30px;'>{t['title']}</h2>", unsafe_allow_html=True)
-tab1, tab2, tab3 = st.tabs([f"📊 {t['btn']}", f"💬 Chat", f"📰 {t['news_tab']}"])
+# --- UI PRINCIPAL ---
+st.markdown(f"<h1 style='text-align: left; color: white; font-weight: 800; font-size: 2.5rem; letter-spacing: -2px;'>{t['title']}<span style='color: #00F2FF;'>.</span></h1>", unsafe_allow_html=True)
 
-# --- ANÁLISIS ---
+tab1, tab2, tab3 = st.tabs([f"📈 {t['btn']}", f"💬 ANALISTA IA", f"📰 {t['news_tab']}"])
+
 with tab1:
     if st.button(t["btn"]):
         with st.spinner(t["wait"]):
             data = yf.download(ticket, period="2y", interval="1d")
             if not data.empty:
-                if isinstance(data.columns, pd.MultiIndex): data.columns = data.columns.get_level_values(0)
-                df = data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
-                df['ds'] = pd.to_datetime(df['ds']).dt.tz_localize(None)
-                model = Prophet(daily_seasonality=True).fit(df)
-                forecast = model.predict(model.make_future_dataframe(periods=30))
-                p_act, p_fut = float(df['y'].iloc[-1]), float(forecast['yhat'].iloc[-1])
+                # Limpieza de datos
+                data.columns = [col[0] if isinstance(col, tuple) else col for col in data.columns]
+                p_act = data['Close'].iloc[-1]
+                
+                # Predicción Prophet
+                df_p = data.reset_index()[['Date', 'Close']].rename(columns={'Date': 'ds', 'Close': 'y'})
+                df_p['ds'] = df_p['ds'].dt.tz_localize(None)
+                m = Prophet(changepoint_prior_scale=0.05).fit(df_p)
+                future = m.make_future_dataframe(periods=30)
+                forecast = m.predict(future)
+                p_fut = forecast['yhat'].iloc[-1]
                 cambio = ((p_fut - p_act) / p_act) * 100
-                st.session_state.update({"p_act": p_act, "p_pre": p_fut, "cambio": cambio, "ticket_act": ticket, "analizado": True, "full_data": data, "forecast_data": forecast, "df_prophet": df})
-                st.session_state.analisis = generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)
-            else: st.error("Ticker incorrecto.")
+                
+                # Layout de métricas
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.markdown(f"<div class='metric-card'><p style='color: #64748B; font-size: 0.8rem; margin:0;'>{t['price']}</p><h2 style='color: white; margin:0;'>{p_act:,.2f}€</h2></div>", unsafe_allow_html=True)
+                with col2:
+                    color = "#00FF88" if cambio > 0 else "#FF4B4B"
+                    st.markdown(f"<div class='metric-card'><p style='color: #64748B; font-size: 0.8rem; margin:0;'>{t['target']}</p><h2 style='color: {color}; margin:0;'>{p_fut:,.2f}€ ({cambio:+.2f}%)</h2></div>", unsafe_allow_html=True)
+                with col3:
+                    st.markdown(f"<div class='metric-card'><p style='color: #64748B; font-size: 0.8rem; margin:0;'>{t['shares']}</p><h2 style='color: #00F2FF; margin:0;'>{int(capital/p_act)} uds.</h2></div>", unsafe_allow_html=True)
 
-    if st.session_state.analizado:
-        c1, c2, c3 = st.columns(3)
-        with c1: st.markdown(f"<div class='metric-container'><p class='chat-label' style='color:#9CA3AF'>{t['price']}</p><h3 style='margin:0;color:#0A192F'>{st.session_state.p_act:.2f}€</h3></div>", unsafe_allow_html=True)
-        with c2: st.markdown(f"<div class='metric-container'><p class='chat-label' style='color:#9CA3AF'>{t['target']}</p><h3 style='margin:0;color:#3B82F6'>{st.session_state.p_pre:.2f}€ <small>({st.session_state.cambio:+.2f}%)</small></h3></div>", unsafe_allow_html=True)
-        with c3: st.markdown(f"<div class='metric-container'><p class='chat-label' style='color:#9CA3AF'>{t['shares']}</p><h3 style='margin:0;color:#0A192F'>{capital/st.session_state.p_act:.2f}</h3></div>", unsafe_allow_html=True)
+                # Gráfico Plotly
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(x=data.index, y=data['Close'], name="Real", line=dict(color='#00F2FF', width=2)))
+                fig.add_trace(go.Scatter(x=forecast['ds'], y=forecast['yhat'], name="IA Forecast", line=dict(color='#92FE9D', width=2, dash='dot')))
+                fig.update_layout(
+                    template="plotly_dark", 
+                    paper_bgcolor="rgba(0,0,0,0)", 
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    margin=dict(l=0, r=0, t=30, b=0),
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                )
+                st.plotly_chart(fig, use_container_width=True)
 
-        st.markdown(f"<h4 style='margin-top:30px; color:#0A192F;'>{t['hist_t']}</h4>", unsafe_allow_html=True)
-        fig_candles = go.Figure(data=[go.Candlestick(x=st.session_state.full_data.index, open=st.session_state.full_data['Open'], high=st.session_state.full_data['High'], low=st.session_state.full_data['Low'], close=st.session_state.full_data['Close'], name="Market")])
-        fig_candles.update_layout(xaxis_rangeslider_visible=False, template="plotly_white", margin=dict(l=0,r=0,t=0,b=0), height=400)
-        st.plotly_chart(fig_candles, use_container_width=True)
+                # Recomendación IA
+                st.markdown(f"### 🤖 {t['analysis']}")
+                analisis = generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)
+                st.markdown(f"<div class='rec-box'>{analisis}</div>", unsafe_allow_html=True)
+                
+                # Guardar en sesión para el chat
+                st.session_state.p_act = p_act
+                st.session_state.p_fut = p_fut
+                st.session_state.cambio = cambio
+                st.session_state.ticket = ticket
+                st.session_state.analizado = True
 
-        st.markdown(f"<h4 style='margin-top:30px; color:#0A192F;'>{t['pred_t']}</h4>", unsafe_allow_html=True)
-        fig_line = go.Figure()
-        fig_line.add_trace(go.Scatter(x=st.session_state.df_prophet['ds'], y=st.session_state.df_prophet['y'], name="Real", line=dict(color='#0A192F', width=2)))
-        fig_line.add_trace(go.Scatter(x=st.session_state.forecast_data['ds'], y=st.session_state.forecast_data['yhat'], name="IA", line=dict(color='#3B82F6', dash='dash')))
-        fig_line.update_layout(template="plotly_white", margin=dict(l=0,r=0,t=0,b=0), height=350)
-        st.plotly_chart(fig_line, use_container_width=True)
-
-        st.markdown(f"<div class='recommendation-box'><h3 style='margin-top:0; color:#0A192F;'>✨ {t['analysis']}</h3><p style='white-space: pre-wrap; color:#374151;'>{st.session_state.get('analisis', '')}</p></div>", unsafe_allow_html=True)
-
-# --- 📰 NOTICIAS ECONÓMICAS ---
-def obtener_noticias(categoria="Global"):
-    fuentes = {
-        "Global": "https://feeds.bbci.co.uk/news/business/rss.xml",
-        "EEUU": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
-        "Europa": "https://www.ft.com/rss/home/europe",
-        "Cripto": "https://cointelegraph.com/rss"
-    }
-
-    url = fuentes.get(categoria, fuentes["Global"])
-    feed = feedparser.parse(url)
-
-    noticias = []
-    for entry in feed.entries[:10]:
-        noticias.append({
-            "titulo": entry.title,
-            "link": entry.link,
-            "fecha": entry.get("published", "Sin fecha"),
-            "resumen": entry.get("summary", "")[:200]
-        })
-
-    return noticias
-# --- CHAT ---
 with tab2:
-    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-    for msg in st.session_state.chat_history:
-        is_u = msg['role'] == "user"
-        st.markdown(f'<div class="chat-row"><div class="bubble {"user-bubble" if is_u else "ai-bubble"}"><div class="chat-label {"label-user" if is_u else "label-ai"}">{"YOU" if is_u else "AI ADVISOR"}</div>{msg["content"]}</div></div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    if pr := st.chat_input(t["chat_placeholder"]):
-        st.session_state.chat_history.append({"role": "user", "content": pr})
-        res = generar_chat_ia(st.session_state.lang, st.session_state.get("ticket_act", "N/A"), st.session_state.get("p_act", 0), st.session_state.get("p_pre", 0), st.session_state.get("cambio", 0), perfil, capital, pr)
-        st.session_state.chat_history.append({"role": "assistant", "content": res})
-        st.rerun()
+    if st.session_state.analizado:
+        st.markdown(f"#### 💬 Consulting: {st.session_state.ticket}")
+        chat_container = st.container()
         
-# --- 📰 NOTICIAS ---
+        with chat_container:
+            for msg in st.session_state.chat_history:
+                role_class = "user-bubble" if msg["role"] == "user" else "ai-bubble"
+                st.markdown(f"<div class='chat-bubble {role_class}'>{msg['content']}</div>", unsafe_allow_html=True)
+
+        if prompt_chat := st.chat_input(t["chat_placeholder"]):
+            st.session_state.chat_history.append({"role": "user", "content": prompt_chat})
+            res = generar_analisis_ia(st.session_state.lang, st.session_state.ticket, st.session_state.p_act, st.session_state.p_fut, st.session_state.cambio, perfil, capital, pregunta=prompt_chat)
+            st.session_state.chat_history.append({"role": "assistant", "content": res})
+            st.rerun()
+    else:
+        st.info("⚠️ Ejecuta un análisis en la primera pestaña para activar el chat.")
+
 with tab3:
-    st.markdown("<h3 style='color:#0A192F;'>🌎</h3>", unsafe_allow_html=True)
-
-    categoria = st.selectbox(
-        ":",
-        ["Global", "EEUU", "Europa", "Cripto"]
-    )
-
-    noticias = obtener_noticias(categoria)
-# Cambia el título estático por la variable:
-with tab3:
-    st.subheader(t["news_sub"])
-
-    for noticia in noticias:
+    st.markdown(f"### {t['news_sub']}")
+    feed = feedparser.parse(f"https://news.google.com{ticket}+stock+finance&hl=en-US&gl=US&ceid=US:en")
+    for entry in feed.entries[:5]:
         st.markdown(f"""
-        <div style="
-            background:#FFFFFF;
-            border:1px solid #E5E7EB;
-            padding:20px;
-            border-radius:12px;
-            margin-bottom:15px;
-            box-shadow:0 2px 6px rgba(0,0,0,0.05);
-        ">
-            <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
-            <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
-            <p style='color:#374151;'>{noticia['resumen']}...</p>
-            <a href="{noticia['link']}" target="_blank" style="
-                color:#3B82F6;
-                font-weight:600;
-                text-decoration:none;
-            ">Leer más →</a>
+        <div style='background: #161B25; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 2px solid #00F2FF;'>
+            <a href='{entry.link}' target='_blank' style='color: #00F2FF; text-decoration: none; font-weight: 600;'>{entry.title}</a><br>
+            <small style='color: #64748B;'>{entry.published}</small>
         </div>
         """, unsafe_allow_html=True)
 
-        # 🔥 BOTÓN IA (BIEN INDENTADO)
-        if st.button("🧠 Resumir con IA", key=noticia['link']):
-            resumen_ia = generar_analisis_ia(
-                st.session_state.lang,
-                "",
-                0,
-                0,
-                0,
-                perfil,
-                capital,
-                f"Resume esta noticia en 3 líneas claras: {noticia['titulo']} {noticia['resumen']}"
-            )
-            st.info(resumen_ia)
 
-# --- IA MEJORADA (DISCUSIÓN TOTAL) ---
-def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
-    try:
-        client = Groq(api_key=GROQ_API_KEY)
-        idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
-        contexto_activo = f"Ticker: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€." if ticket else "Sin ticker analizado."
-        
-        prompt = f"""
-        Actúa como un Senior Investment Strategist. Responde en {idioma_inst}.
-        Contexto: Perfil {perfil}, Capital {capital}€. {contexto_activo}.
-        Puedes discutir sobre CUALQUIER accion incluso si no está siendo analizada. También cualquier tema de inversión, finanzas, ahorro o macroeconomía. ASume que el perfil seleccionado actual aplica a todas las preguntas y accione o activos.
-        Pregunta: {pregunta if pregunta else "Dame una recomendación general."}
-        """
-        response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile")
-        return response.choices[0].message.content
-    except Exception as e:
-        return f"Error IA: {e}"
