@@ -134,3 +134,51 @@ with tab3:
     for entry in feed.entries[:8]:
         st.markdown(f'<div style="background:white; padding:15px; border-radius:12px; border:1px solid #E2E8F0; margin-bottom:10px;"><h4>{entry.title}</h4><a href="{entry.link}" target="_blank">{t["read_more"]}</a></div>', unsafe_allow_html=True)
 
+# --- 📰 NOTICIAS ---
+with tab3:
+    st.markdown("<h3 style='color:#0A192F;'>🌎</h3>", unsafe_allow_html=True)
+
+    categoria = st.selectbox(
+        ":",
+        ["Global", "EEUU", "Europa", "Cripto"]
+    )
+
+    noticias = obtener_noticias(categoria)
+# Cambia el título estático por la variable:
+with tab3:
+    st.subheader(t["news_sub"])
+
+    for noticia in noticias:
+        st.markdown(f"""
+        <div style="
+            background:#FFFFFF;
+            border:1px solid #E5E7EB;
+            padding:20px;
+            border-radius:12px;
+            margin-bottom:15px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.05);
+        ">
+            <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
+            <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
+            <p style='color:#374151;'>{noticia['resumen']}...</p>
+            <a href="{noticia['link']}" target="_blank" style="
+                color:#3B82F6;
+                font-weight:600;
+                text-decoration:none;
+            ">Leer más →</a>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # 🔥 BOTÓN IA (BIEN INDENTADO)
+        if st.button("🧠 Resumir con IA", key=noticia['link']):
+            resumen_ia = generar_analisis_ia(
+                st.session_state.lang,
+                "",
+                0,
+                0,
+                0,
+                perfil,
+                capital,
+                f"Resume esta noticia en 3 líneas claras: {noticia['titulo']} {noticia['resumen']}"
+            )
+            st.info(resumen_ia)
