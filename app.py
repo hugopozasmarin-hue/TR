@@ -254,8 +254,28 @@ def obtener_noticias(categoria="Global"):
 with tab2:
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
     for msg in st.session_state.chat_history:
-        is_u = msg['role'] == "user"
-        st.markdown(f'<div class="chat-row"><div class="bubble {"user-bubble" if is_u else "ai-bubble"}"><div class="chat-label {"label-user" if is_u else "label-ai"}">{"YOU" if is_u else "AI ADVISOR"}</div>{msg["content"]}</div></div>', unsafe_allow_html=True)
+    # Seguridad: evitar errores si el formato no es correcto
+    if not isinstance(msg, dict):
+        continue
+
+    role = msg.get("role", "assistant")
+    content = msg.get("content", "")
+
+    is_u = role == "user"
+
+    st.markdown(
+        f'''
+        <div class="chat-row">
+            <div class="bubble {"user-bubble" if is_u else "ai-bubble"}">
+                <div class="chat-label {"label-user" if is_u else "label-ai"}">
+                    {"YOU" if is_u else "AI ADVISOR"}
+                </div>
+                {content}
+            </div>
+        </div>
+        ''',
+        unsafe_allow_html=True
+    )
     st.markdown('</div>', unsafe_allow_html=True)
 
     if pr := st.chat_input(t["chat_placeholder"]):
