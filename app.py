@@ -4,6 +4,7 @@ from prophet import Prophet
 import pandas as pd
 from groq import Groq
 import plotly.graph_objects as go
+import feedparser
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="InvestIA Elite | Pro Terminal", page_icon="💎", layout="wide")
@@ -164,6 +165,7 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
         return response.choices[0].message.content
     except Exception as e:
         return f"Error IA: {e}"
+        
 
 # --- SESIÓN ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
@@ -187,7 +189,7 @@ with st.sidebar:
 
 # --- UI ---
 st.markdown(f"<h2 style='text-align: center; color: #0A192F; font-weight: 700; letter-spacing: -1px; margin-bottom: 30px;'>{t['title']}</h2>", unsafe_allow_html=True)
-tab1, tab2 = st.tabs([f"📊 {t['btn']}", f"💬 Chat Advisor"])
+tab1, tab2, tab3 = st.tabs([f"📊 {t['btn']}", f"💬 Chat Advisor", "📰 Noticias"])
 
 # --- ANÁLISIS ---
 with tab1:
@@ -226,6 +228,28 @@ with tab1:
 
         st.markdown(f"<div class='recommendation-box'><h3 style='margin-top:0; color:#0A192F;'>✨ {t['analysis']}</h3><p style='white-space: pre-wrap; color:#374151;'>{st.session_state.get('analisis', '')}</p></div>", unsafe_allow_html=True)
 
+# --- 📰 NOTICIAS ECONÓMICAS ---
+def obtener_noticias(categoria="Global"):
+    fuentes = {
+        "Global": "https://feeds.bbci.co.uk/news/business/rss.xml",
+        "EEUU": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
+        "Europa": "https://www.ft.com/rss/home/europe",
+        "Cripto": "https://cointelegraph.com/rss"
+    }
+
+    url = fuentes.get(categoria, fuentes["Global"])
+    feed = feedparser.parse(url)
+
+    noticias = []
+    for entry in feed.entries[:10]:
+        noticias.append({
+            "titulo": entry.title,
+            "link": entry.link,
+            "fecha": entry.get("published", "Sin fecha"),
+            "resumen": entry.get("summary", "")[:200]
+        })
+
+    return noticias
 # --- CHAT ---
 with tab2:
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
@@ -236,12 +260,58 @@ with tab2:
 
     if pr := st.chat_input(t["chat_placeholder"]):
         st.session_state.chat_history.append({"role": "user", "content": pr})
-        res = generar_analisis_ia(st.session_state.lang, st.session_state.get("ticket_act", "N/A"), st.session_state.get("p_act", 0), st.session_state.get("p_pre", 0), st.session_state.get("cambio", 0), perfil, capital, pr)
+        res = generar_chat_ia(st.session_state.lang, st.session_state.get("ticket_act", "N/A"), st.session_state.get("p_act", 0), st.session_state.get("p_pre", 0), st.session_state.get("cambio", 0), perfil, capital, pr)
         st.session_state.chat_history.append({"role": "assistant", "content": res})
         st.rerun()
+        
+# --- 📰 NOTICIAS ---
+with tab3:
+    st.markdown("<h3 style='color:#0A192F;'>📰 Noticias Económicas Globales</h3>", unsafe_allow_html=True)
+
+    categoria = st.selectbox(
+        "Filtrar por mercado:",
+        ["Global", "EEUU", "Europa", "Cripto"]
+    )
+
+    noticias = obtener_noticias(categoria)
+
+    for noticia in noticias:
+        st.markdown(f"""
+        <div style="
+            background:#FFFFFF;
+            border:1px solid #E5E7EB;
+            padding:20px;
+            border-radius:12px;
+            margin-bottom:15px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.05);
+        ">
+            <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
+            <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
+            <p style='color:#374151;'>{noticia['resumen']}...</p>
+            <a href="{noticia['link']}" target="_blank" style="
+                color:#3B82F6;
+                font-weight:600;
+                text-decoration:none;
+            ">Leer más →</a>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # 🔥 BOTÓN IA (BIEN INDENTADO)
+        if st.button("🧠 Resumir con IA", key=noticia['link']):
+            resumen_ia = generar_analisis_ia(
+                st.session_state.lang,
+                "",
+                0,
+                0,
+                0,
+                perfil,
+                capital,
+                f"Resume esta noticia en 3 líneas claras: {noticia['titulo']} {noticia['resumen']}"
+            )
+            st.info(resumen_ia)
 
 # --- IA MEJORADA (DISCUSIÓN TOTAL) ---
-def generar_analisis_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
+def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
         idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
