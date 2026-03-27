@@ -402,7 +402,24 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
         Contexto: Perfil {perfil}, Capital {capital}EUR. {contexto_activo}.
         Puedes discutir sobre CUALQUIER accion incluso si no está siendo analizada. También cualquier tema de inversión, finanzas, ahorro o macroeconomía. ASume que el perfil seleccionado actual aplica a todas las preguntas y accione o activos.
         Pregunta: {pregunta if pregunta else "Dame una recomendación general."}
-        """
+      html = f"""
+<div style="
+    border:1px solid #E5E7EB;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:15px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+">
+    <a href="{noticia['link']}" target="_blank" style="
+        color:#1a73e8;
+        text-decoration:none;
+    ">
+        Leer más →
+    </a>
+</div>
+"""
+
+st.markdown(html, unsafe_allow_html=True)
         response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile")
         return response.choices[0].message.content
     except Exception as e:
