@@ -264,5 +264,4 @@ with tab2:
     perfil, # Se añadió el perfil de riesgo
     capital, # Se añadió el capital
     prompt_user
-)
 
