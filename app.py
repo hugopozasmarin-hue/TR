@@ -133,6 +133,7 @@ languages = {
          "news_tab": "Noticias",
     "news_sub": "Noticias Económicas Globales"
     },
+     }
     "English": { 
         "title":"INVESTIA TERMINAL", "lang_lab":"Language", "cap":"Budget", "risk_lab":"Risk Profile", "ass_lab":"Asset Ticker", 
         "btn":"ANALYZE ASSET", "wait":"Consulting markets...", "price":"Current Price", "target":"30-Day Target", 
