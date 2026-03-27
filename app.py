@@ -139,34 +139,6 @@ languages = {
     }
 }
 
-# --- IA MEJORADA (RECOMENDACIÓN) ---
-def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
-    try:
-        client = Groq(api_key=GROQ_API_KEY)
-        contexto = f"Ticker: {ticket}. Price: {p_act}€. Prediction: {p_fut}€ ({cambio:.2f}%)."
-        idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
-        
-        prompt = f"""
-        Act as a Senior Investment Strategist. Your goal is to give a CUSTOMIZED RECOMMENDATION in {idioma_inst}.
-        Data: {contexto}. Risk Profile: {perfil}. Capital: {capital}€.
-        
-        Structure:
-        1. Action: (Buy, Hold or Sell) based on the profile.
-        2. Rational: Why this makes sense.
-        3. Future Outlook: What to expect if the user follows this advice.
-        
-        Question: {pregunta if pregunta else "General recommendation."}
-        """
-        
-        response = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model="llama-3.3-70b-versatile"
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        return f"Error IA: {e}"
-        
-
 # --- SESIÓN ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
 if "analizado" not in st.session_state: st.session_state.analizado = False
@@ -295,6 +267,34 @@ with tab3:
             ">Leer más →</a>
         </div>
         """, unsafe_allow_html=True)
+
+# --- IA MEJORADA (RECOMENDACIÓN) ---
+def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
+    try:
+        client = Groq(api_key=GROQ_API_KEY)
+        contexto = f"Ticker: {ticket}. Price: {p_act}€. Prediction: {p_fut}€ ({cambio:.2f}%)."
+        idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
+        
+        prompt = f"""
+        Act as a Senior Investment Strategist. Your goal is to give a CUSTOMIZED RECOMMENDATION in {idioma_inst}.
+        Data: {contexto}. Risk Profile: {perfil}. Capital: {capital}€.
+        
+        Structure:
+        1. Action: (Buy, Hold or Sell) based on the profile.
+        2. Rational: Why this makes sense.
+        3. Future Outlook: What to expect if the user follows this advice.
+        
+        Question: {pregunta if pregunta else "General recommendation."}
+        """
+        
+        response = client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile"
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Error IA: {e}"
+        
 
         # 🔥 BOTÓN IA (BIEN INDENTADO)
         if st.button("🧠 Resumir con IA", key=noticia['link']):
