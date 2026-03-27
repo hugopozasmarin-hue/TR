@@ -250,7 +250,7 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=No
         prompt = f"""
         Actúa como un Senior Investment Strategist. Responde en {idioma_inst}.
         Contexto: Perfil {perfil}, Capital {capital}€. {contexto_activo}.
-        Puedes discutir sobre CUALQUIER tema de inversión, finanzas, ahorro o macroeconomía.
+        Puedes discutir sobre CUALQUIER accion incluso si no está siendo analizada. También cualquier tema de inversión, finanzas, ahorro o macroeconomía.
         Pregunta: {pregunta if pregunta else "Dame una recomendación general."}
         """
         response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile")
