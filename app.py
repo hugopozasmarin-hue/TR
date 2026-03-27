@@ -124,4 +124,91 @@ with tab3:
         st.markdown(f"**[{entry.title}]({entry.link})**")
         st.caption(f"Publicado: {entry.published}")
         st.divider()
+        
+# --- 📰 NOTICIAS ECONÓMICAS ---
+def obtener_noticias(categoria="Global"):
+    fuentes = {
+        "Global": "https://feeds.bbci.co.uk/news/business/rss.xml",
+        "EEUU": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
+        "Europa": "https://www.ft.com/rss/home/europe",
+        "Cripto": "https://cointelegraph.com/rss"
+    }
+
+    url = fuentes.get(categoria, fuentes["Global"])
+    feed = feedparser.parse(url)
+
+    noticias = []
+    for entry in feed.entries[:10]:
+        noticias.append({
+            "titulo": entry.title,
+            "link": entry.link,
+            "fecha": entry.get("published", "Sin fecha"),
+            "resumen": entry.get("summary", "")[:200]
+        })
+
+    return noticias
+    
+# --- 📰 NOTICIAS ---
+with tab3:
+    st.markdown("<h3 style='color:#0A192F;'>📰 Noticias Económicas Globales</h3>", unsafe_allow_html=True)
+
+    categoria = st.selectbox(
+        "Filtrar por mercado:",
+        ["Global", "EEUU", "Europa", "Cripto"]
+    )
+
+    noticias = obtener_noticias(categoria)
+
+    for noticia in noticias:
+        st.markdown(f"""
+        <div style="
+            background:#FFFFFF;
+            border:1px solid #E5E7EB;
+            padding:20px;
+            border-radius:12px;
+            margin-bottom:15px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.05);
+        ">
+            <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
+            <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
+            <p style='color:#374151;'>{noticia['resumen']}...</p>
+            <a href="{noticia['link']}" target="_blank" style="
+                color:#3B82F6;
+                font-weight:600;
+                text-decoration:none;
+            ">Leer más →</a>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # 🔥 BOTÓN IA (BIEN INDENTADO)
+        if st.button("🧠 Resumir con IA", key=noticia['link']):
+            resumen_ia = generar_analisis_ia(
+                st.session_state.lang,
+                "",
+                0,
+                0,
+                0,
+                perfil,
+                capital,
+                f"Resume esta noticia en 3 líneas claras: {noticia['titulo']} {noticia['resumen']}"
+            )
+            st.info(resumen_ia)
+
+# --- IA MEJORADA (DISCUSIÓN TOTAL) ---
+def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
+    try:
+        client = Groq(api_key=GROQ_API_KEY)
+        idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
+        contexto_activo = f"Ticker: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€." if ticket else "Sin ticker analizado."
+        
+        prompt = f"""
+        Actúa como un Senior Investment Strategist. Responde en {idioma_inst}.
+        Contexto: Perfil {perfil}, Capital {capital}€. {contexto_activo}.
+        Puedes discutir sobre CUALQUIER accion incluso si no está siendo analizada. También cualquier tema de inversión, finanzas, ahorro o macroeconomía. ASume que el perfil seleccionado actual aplica a todas las preguntas y accione o activos.
+        Pregunta: {pregunta if pregunta else "Dame una recomendación general."}
+        """
+        response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile")
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Error IA: {e}"
 
