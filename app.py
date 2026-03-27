@@ -138,6 +138,18 @@ languages = {
         "pred_t":"Algorithmic Projection", "chat_placeholder":"Type your financial query..."
     }
 }
+# Busca el bloque "Español" y añade estas dos líneas al final:
+"Español": { 
+    ...
+    "news_tab": "Noticias",
+    "news_sub": "Noticias Económicas Globales"
+},
+# Busca el bloque "English" y añade estas dos líneas al final:
+"English": { 
+    ...
+    "news_tab": "News",
+    "news_sub": "Global Economic News"
+}
 
 # --- IA MEJORADA (RECOMENDACIÓN) ---
 def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
@@ -191,7 +203,7 @@ with st.sidebar:
 
 # --- UI ---
 st.markdown(f"<h2 style='text-align: center; color: #0A192F; font-weight: 700; letter-spacing: -1px; margin-bottom: 30px;'>{t['title']}</h2>", unsafe_allow_html=True)
-tab1, tab2, tab3 = st.tabs([f"📊 {t['btn']}", f"💬 Chat Advisor", "📰 Noticias"])
+tab1, tab2, tab3 = st.tabs([f"📊 {t['btn']}", f"💬 Chat Advisor", f"📰 {t['news_tab']}"])
 
 # --- ANÁLISIS ---
 with tab1:
@@ -276,6 +288,9 @@ with tab3:
     )
 
     noticias = obtener_noticias(categoria)
+# Cambia el título estático por la variable:
+with tab3:
+    st.subheader(t["news_sub"])
 
     for noticia in noticias:
         st.markdown(f"""
