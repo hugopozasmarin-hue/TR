@@ -42,23 +42,21 @@ st.markdown("""
 
 # --- TRADUCCIONES ---
 languages = {
-    "Español": {
-        "title": "INVESTIA ELITE TERMINAL",
-        "lang_lab": "Idioma", "cap": "Presupuesto", "risk_lab": "Riesgo", "ass_lab": "Ticker",
-        "btn": "ANALIZAR ACTIVO", "wait": "Consultando mercados...", "price": "Precio Actual", "target": "Predicción 30d",
-        "shares": "Capacidad Compra", "analysis_title": "Dictamen Estratégico", "news_tab": "Noticias",
-        "chart_v": "Gráfico de Velas (Técnico)", "chart_l": "Gráfico de Línea (Proyección)",
-        "chat_placeholder": "Consulta con la IA...", "read_more": "Leer más",
-        "risk_options": ["Conservador", "Moderado", "Arriesgado"]
+    "Español": { 
+        "title":"INVESTIA TERMINAL", "lang_lab":"Idioma", "cap":"Presupuesto", "risk_lab":"Riesgo", "ass_lab":"Ticker", 
+        "btn":"ANALIZAR ACTIVO", "wait":"Consultando mercados...", "price":"Precio Actual", "target":"Objetivo 30d", 
+        "shares":"Capacidad Compra", "analysis":"Recomendación Estratégica", "hist_t":"Movimiento del Mercado", 
+        "pred_t":"Proyección Algorítmica", "chat_placeholder":"Escribe tu consulta financiera...",
+        "news_tab": "Noticias",
+        "news_sub": "Noticias Económicas Globales"
     },
-    "English": {
-        "title": "INVESTIA ELITE TERMINAL",
-        "lang_lab": "Language", "cap": "Budget", "risk_lab": "Risk Profile", "ass_lab": "Ticker",
-        "btn": "ANALYZE ASSET", "wait": "Consulting markets...", "price": "Current Price", "target": "30d Prediction",
-        "shares": "Buying Capacity", "analysis_title": "Strategic Opinion", "news_tab": "News",
-        "chart_v": "Candlestick Chart (Technical)", "chart_l": "Line Chart (Projection)",
-        "chat_placeholder": "Ask AI anything...", "read_more": "Read more",
-        "risk_options": ["Conservative", "Moderate", "Aggressive"]
+    "English": { 
+        "title":"INVESTIA TERMINAL", "lang_lab":"Language", "cap":"Budget", "risk_lab":"Risk Profile", "ass_lab":"Asset Ticker", 
+        "btn":"ANALYZE ASSET", "wait":"Consulting markets...", "price":"Current Price", "target":"30-Day Target", 
+        "shares":"Buying Capacity", "analysis":"Strategic Recommendation", "hist_t":"Market Movement", 
+        "pred_t":"Algorithmic Projection", "chat_placeholder":"Type your financial query...",
+        "news_tab": "News",
+        "news_sub": "Global Economic News"
     }
 }
 
@@ -148,7 +146,30 @@ with tab1:
                 fig_l.add_trace(go.Scatter(x=forecast['ds'], y=forecast['yhat'], name="Predicción", line=dict(color='#007BFF', dash='dot')))
                 fig_l.update_layout(template="plotly_white", height=400, margin=dict(l=0, r=0, t=10, b=10))
                 st.plotly_chart(fig_l, use_container_width=True)
+                
+# --- 📰 NOTICIAS ECONÓMICAS ---
+def obtener_noticias(categoria="Global"):
+    fuentes = {
+        "Global": "https://feeds.bbci.co.uk/news/business/rss.xml",
+        "EEUU": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
+        "Europa": "https://www.ft.com/rss/home/europe",
+        "Cripto": "https://cointelegraph.com/rss"
+    }
 
+    url = fuentes.get(categoria, fuentes["Global"])
+    feed = feedparser.parse(url)
+
+    noticias = []
+    for entry in feed.entries[:10]:
+        noticias.append({
+            "titulo": entry.title,
+            "link": entry.link,
+            "fecha": entry.get("published", "Sin fecha"),
+            "resumen": entry.get("summary", "")[:200]
+        })
+
+    return noticias
+    
                 # --- RECOMENDACIÓN IA ---
                 st.markdown(f"### 🛡️ {t['analysis_title']}")
                 analisis = generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)
@@ -179,3 +200,68 @@ with tab3:
     feed = feedparser.parse(url)
     for entry in feed.entries[:8]:
         st.markdown(f'<div style="background:white; padding:15px; border-radius:12px; border:1px solid #E2E8F0; margin-bottom:10px;"><h4 style="margin:0; color:#0A192F;">{entry.title}</h4><a href="{entry.link}" target="_blank" style="color:#007BFF; font-size:0.8rem; font-weight:600;">{t["read_more"]} →</a></div>', unsafe_allow_html=True)
+# --- 📰 NOTICIAS ---
+with tab3:
+    st.markdown("<h3 style='color:#0A192F;'>🌎</h3>", unsafe_allow_html=True)
+
+    categoria = st.selectbox(
+        ":",
+        ["Global", "EEUU", "Europa", "Cripto"]
+    )
+
+    noticias = obtener_noticias(categoria)
+# Cambia el título estático por la variable:
+with tab3:
+    st.subheader(t["news_sub"])
+
+    for noticia in noticias:
+        st.markdown(f"""
+        <div style="
+            background:#FFFFFF;
+            border:1px solid #E5E7EB;
+            padding:20px;
+            border-radius:12px;
+            margin-bottom:15px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.05);
+        ">
+            <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
+            <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
+            <p style='color:#374151;'>{noticia['resumen']}...</p>
+            <a href="{noticia['link']}" target="_blank" style="
+                color:#3B82F6;
+                font-weight:600;
+                text-decoration:none;
+            ">Leer más →</a>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # 🔥 BOTÓN IA (BIEN INDENTADO)
+        if st.button("🧠 Resumir con IA", key=noticia['link']):
+            resumen_ia = generar_analisis_ia(
+                st.session_state.lang,
+                "",
+                0,
+                0,
+                0,
+                perfil,
+                capital,
+                f"Resume esta noticia en 3 líneas claras: {noticia['titulo']} {noticia['resumen']}"
+            )
+            st.info(resumen_ia)
+# --- IA MEJORADA (DISCUSIÓN TOTAL) ---
+def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
+    try:
+        client = Groq(api_key=GROQ_API_KEY)
+        idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
+        contexto_activo = f"Ticker: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€." if ticket else "Sin ticker analizado."
+        
+        prompt = f"""
+        Actúa como un Senior Investment Strategist. Responde en {idioma_inst}.
+        Contexto: Perfil {perfil}, Capital {capital}€. {contexto_activo}.
+        Puedes discutir sobre CUALQUIER accion incluso si no está siendo analizada. También cualquier tema de inversión, finanzas, ahorro o macroeconomía. ASume que el perfil seleccionado actual aplica a todas las preguntas y accione o activos.
+        Pregunta: {pregunta if pregunta else "Dame una recomendación general."}
+        """
+        response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile")
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Error IA: {e}"
