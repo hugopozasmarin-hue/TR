@@ -251,7 +251,6 @@ def obtener_noticias(categoria="Global"):
 
     return noticias
 # --- CHAT ---
-def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
 with tab2:
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
     for msg in st.session_state.chat_history:
