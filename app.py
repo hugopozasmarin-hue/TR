@@ -28,7 +28,16 @@ st.markdown("""
     /* Barra lateral Azul Profundo Profesional */
     [data-testid="stSidebar"] {
         background-color: #0A192F !important;
-        border-right: 1px solid #E5E7EB;
+   html = """
+<div style="
+    border-right: 1px solid #E5E7EB;
+    padding:20px;
+">
+    Contenido aquí
+</div>
+"""
+
+st.markdown(html, unsafe_allow_html=True)
     }
 
     /* Títulos en la barra lateral */
