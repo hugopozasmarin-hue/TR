@@ -195,7 +195,7 @@ with st.sidebar:
 
 # --- UI ---
 st.markdown(f"<h2 style='text-align: center; color: #0A192F; font-weight: 700; letter-spacing: -1px; margin-bottom: 30px;'>{t['title']}</h2>", unsafe_allow_html=True)
-tab1, tab2, tab3 = st.tabs([f"📊 {t['btn']}", f"💬 Chat Advisor", f"📰 {t['news_tab']}"])
+tab1, tab2, tab3 = st.tabs([f"📊 {t['btn']}", f"💬 Chat", f"📰 {t['news_tab']}"])
 
 # --- ANÁLISIS ---
 with tab1:
@@ -272,7 +272,7 @@ with tab2:
         
 # --- 📰 NOTICIAS ---
 with tab3:
-    st.markdown("<h3 style='color:#0A192F;'>📰 Noticias Económicas Globales</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color:#0A192F;'>📰</h3>", unsafe_allow_html=True)
 
     categoria = st.selectbox(
         "Filtrar por mercado:",
