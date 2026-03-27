@@ -130,23 +130,17 @@ languages = {
         "btn":"ANALIZAR ACTIVO", "wait":"Consultando mercados...", "price":"Precio Actual", "target":"Objetivo 30d", 
         "shares":"Capacidad Compra", "analysis":"Recomendación Estratégica", "hist_t":"Movimiento del Mercado", 
         "pred_t":"Proyección Algorítmica", "chat_placeholder":"Escribe tu consulta financiera..."
+         "news_tab": "Noticias",
+    "news_sub": "Noticias Económicas Globales"
     },
     "English": { 
         "title":"INVESTIA TERMINAL", "lang_lab":"Language", "cap":"Budget", "risk_lab":"Risk Profile", "ass_lab":"Asset Ticker", 
         "btn":"ANALYZE ASSET", "wait":"Consulting markets...", "price":"Current Price", "target":"30-Day Target", 
         "shares":"Buying Capacity", "analysis":"Strategic Recommendation", "hist_t":"Market Movement", 
         "pred_t":"Algorithmic Projection", "chat_placeholder":"Type your financial query..."
-    }
-}
-# Busca el bloque "Español" y añade estas dos líneas al final:
-"Español": { 
-    "news_tab": "Noticias",
-    "news_sub": "Noticias Económicas Globales"
-},
-# Busca el bloque "English" y añade estas dos líneas al final:
-"English": { 
-    "news_tab": "News",
+         "news_tab": "News",
     "news_sub": "Global Economic News"
+    }
 }
 
 # --- IA MEJORADA (RECOMENDACIÓN) ---
