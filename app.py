@@ -120,7 +120,7 @@ languages = {
 
 def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
-       def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
+     def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
         idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
@@ -137,7 +137,11 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
             messages=[{"role": "user", "content": prompt}],
             model="llama-3.3-70b-versatile"
         )
+
         return response.choices[0].message.content
+
+    except Exception as e:
+        return f"Error IA: {e}"
 
     except Exception as e:
         return f"Error IA: {e}"
