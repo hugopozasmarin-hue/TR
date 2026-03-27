@@ -120,19 +120,25 @@ languages = {
 
 def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
+       def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
+    try:
         client = Groq(api_key=GROQ_API_KEY)
-        contexto = f"Ticker: {ticket}. Price: {p_act}€. Prediction: {p_fut}€ ({cambio:.2f}%)."
         idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
+        contexto_activo = f"Ticker: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€." if ticket else "Sin ticker analizado."
+        
         prompt = f"""
-        Act as a Senior Investment Strategist. Your goal is to give a CUSTOMIZED RECOMMENDATION in {idioma_inst}.
-        Data: {contexto}. Risk Profile: {perfil}. Capital: {capital}€.
-        Question: {pregunta if pregunta else "General recommendation."}
+        Actúa como un Senior Investment Strategist. Responde en {idioma_inst}.
+        Contexto: Perfil {perfil}, Capital {capital}€. {contexto_activo}.
+        Puedes discutir sobre CUALQUIER accion incluso si no está siendo analizada.
+        Pregunta: {pregunta if pregunta else "Dame una recomendación general."}
         """
+        
         response = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
             model="llama-3.3-70b-versatile"
         )
         return response.choices[0].message.content
+
     except Exception as e:
         return f"Error IA: {e}"
 
