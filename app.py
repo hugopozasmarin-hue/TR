@@ -244,3 +244,18 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=No
         return response.choices[0].message.content
     except Exception as e:
         return f"Error IA: {e}"
+
+
+# --- CHAT ---
+with tab2:
+    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+    for msg in st.session_state.chat_history:
+        is_u = msg['role'] == "user"
+        st.markdown(f'<div class="chat-row"><div class="bubble {"user-bubble" if is_u else "ai-bubble"}"><div class="chat-label {"label-user" if is_u else "label-ai"}">{"YOU" if is_u else "AI ADVISOR"}</div>{msg["content"]}</div></div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if pr := st.chat_input(t["chat_placeholder"]):
+        st.session_state.chat_history.append({"role": "user", "content": pr})
+        res = generar_analisis_ia(st.session_state.lang, st.session_state.get("ticket_act", "N/A"), st.session_state.get("p_act", 0), st.session_state.get("p_pre", 0), st.session_state.get("cambio", 0), perfil, capital, pr)
+        st.session_state.chat_history.append({"role": "assistant", "content": res})
+        st.rerun()
