@@ -140,13 +140,11 @@ languages = {
 }
 # Busca el bloque "Español" y añade estas dos líneas al final:
 "Español": { 
-    ...
     "news_tab": "Noticias",
     "news_sub": "Noticias Económicas Globales"
 },
 # Busca el bloque "English" y añade estas dos líneas al final:
 "English": { 
-    ...
     "news_tab": "News",
     "news_sub": "Global Economic News"
 }
