@@ -125,7 +125,7 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
         
         prompt = f"""
         Act as a Senior Investment Strategist. Your goal is to give a CUSTOMIZED RECOMMENDATION in {idioma_inst}.
-        Data: {contexto}. Risk Profile: {perfil}. Capital: {capital}€.
+        Data: {contexto}. Risk Profile: {perfil}. Capital: {capital}.
         
         Structure:
         1. Action: (Buy, Hold or Sell) based on the profile.
