@@ -334,7 +334,19 @@ st.markdown(html, unsafe_allow_html=True)
 """
 
 st.markdown(html, unsafe_allow_html=True)
-        ">
+        html = """
+<div style="
+    border:1px solid #E5E7EB;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:15px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+">
+    Contenido aquí
+</div>
+"""
+
+st.markdown(html, unsafe_allow_html=True)
             <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
             <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
             <p style='color:#374151;'>{noticia['resumen']}...</p>
