@@ -222,7 +222,7 @@ with tab1:
         fig_candles.update_layout(xaxis_rangeslider_visible=False, template="plotly_white", margin=dict(l=0,r=0,t=0,b=0), height=400)
         st.plotly_chart(fig_candles, use_container_width=True)
 
-        st.markdown(f"<h4 style='margin-top:30px; color:#0A192F;'>{t['pred_t']}</h4>", unsafe_allow_html=True)
+      
         fig_line = go.Figure()
         fig_line.add_trace(go.Scatter(x=st.session_state.df_prophet['ds'], y=st.session_state.df_prophet['y'], name="Real", line=dict(color='#0A192F', width=2)))
         fig_line.add_trace(go.Scatter(x=st.session_state.forecast_data['ds'], y=st.session_state.forecast_data['yhat'], name="IA", line=dict(color='#3B82F6', dash='dash')))
