@@ -308,9 +308,7 @@ with tab3:
 with tab3:
     st.subheader(t["news_sub"])
     st.subheader(t["news_sub"])
-  mercado = st.selectbox
-        t["filter_lab"], # <-- Cambia "Filtrar por mercado:" por esto
-        ["Global", "USA", "Europa", "Cripto"] 
+
     for noticia in noticias:
         st.markdown(f"""
         <div style="
