@@ -166,28 +166,6 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
     except Exception as e:
         return f"Error IA: {e}"
         
-# --- 📰 NOTICIAS ECONÓMICAS ---
-def obtener_noticias(categoria="Global"):
-    fuentes = {
-        "Global": "https://feeds.bbci.co.uk/news/business/rss.xml",
-        "EEUU": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
-        "Europa": "https://www.ft.com/rss/home/europe",
-        "Cripto": "https://cointelegraph.com/rss"
-    }
-
-    url = fuentes.get(categoria, fuentes["Global"])
-    feed = feedparser.parse(url)
-
-    noticias = []
-    for entry in feed.entries[:10]:
-        noticias.append({
-            "titulo": entry.title,
-            "link": entry.link,
-            "fecha": entry.get("published", "Sin fecha"),
-            "resumen": entry.get("summary", "")[:200]
-        })
-
-    return noticias
 
 # --- SESIÓN ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
@@ -327,3 +305,27 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
         return response.choices[0].message.content
     except Exception as e:
         return f"Error IA: {e}"
+
+# --- 📰 NOTICIAS ECONÓMICAS ---
+def obtener_noticias(categoria="Global"):
+    fuentes = {
+        "Global": "https://feeds.bbci.co.uk/news/business/rss.xml",
+        "EEUU": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
+        "Europa": "https://www.ft.com/rss/home/europe",
+        "Cripto": "https://cointelegraph.com/rss"
+    }
+
+    url = fuentes.get(categoria, fuentes["Global"])
+    feed = feedparser.parse(url)
+
+    noticias = []
+    for entry in feed.entries[:10]:
+        noticias.append({
+            "titulo": entry.title,
+            "link": entry.link,
+            "fecha": entry.get("published", "Sin fecha"),
+            "resumen": entry.get("summary", "")[:200]
+        })
+
+    return noticias
+
