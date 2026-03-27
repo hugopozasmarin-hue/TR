@@ -363,7 +363,16 @@ st.markdown(html, unsafe_allow_html=True)
                 color:#3B82F6;
                 font-weight:600;
                 text-decoration:none;
-            ">Leer más →</a>
+         html = f"""
+<a href="{noticia['link']}" target="_blank" style="
+    color:#1a73e8;
+    text-decoration:none;
+">
+    Leer más →
+</a>
+"""
+
+st.markdown(html, unsafe_allow_html=True)
         </div>
         """, unsafe_allow_html=True)
 
