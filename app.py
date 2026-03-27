@@ -132,6 +132,8 @@ languages = {
         "pred_t":"Proyección Algorítmica", "chat_placeholder":"Escribe tu consulta financiera...",
         "news_tab": "Noticias",
         "news_sub": "Noticias Económicas Globales"
+        "news_sub": "Noticias Económicas Globales",
+        "filter_lab": "Filtrar por mercado"
     },
     "English": { 
         "title":"INVESTIA TERMINAL", "lang_lab":"Language", "cap":"Budget", "risk_lab":"Risk Profile", "ass_lab":"Asset Ticker", 
@@ -140,6 +142,8 @@ languages = {
         "pred_t":"Algorithmic Projection", "chat_placeholder":"Type your financial query...",
         "news_tab": "News",
         "news_sub": "Global Economic News"
+        "news_sub": "Global Economic News",
+        "filter_lab": "Filter by market"
     }
 }
 
