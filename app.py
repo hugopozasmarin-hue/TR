@@ -10,7 +10,8 @@ import feedparser
 st.set_page_config(page_title="InvestIA Elite | Pro Terminal", page_icon="💎", layout="wide")
 
 # --- ⚠️ CONFIGURACIÓN API ---
-GROQ_API_KEY = st.secrets["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"]
+GROQ_API_KEY = "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" 
+
 # --- ESTILOS CSS DE ALTO NIVEL ---
 st.markdown("""
 <style>
@@ -310,7 +311,7 @@ with tab3:
             st.info(resumen_ia)
 
 # --- IA MEJORADA (DISCUSIÓN TOTAL) ---
-def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
+def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
         idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
