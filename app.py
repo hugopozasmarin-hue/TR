@@ -255,18 +255,8 @@ with tab2:
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
     for msg in st.session_state.chat_history:
         is_u = msg['role'] == "user"
-bubble_class = "user-bubble" if is_u else "ai-bubble"
-label_class = "label-user" if is_u else "label-ai"
-label_text = "YOU" if is_u else "AI ADVISOR"
-
-st.markdown(f'''
-<div class="chat-row">
-    <div class="bubble {bubble_class}">
-        <div class="chat-label {label_class}">{label_text}</div>
-        {msg["content"]}
-    </div>
-</div>
-''', unsafe_allow_html=True)    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="chat-row"><div class="bubble {"user-bubble" if is_u else "ai-bubble"}"><div class="chat-label {"label-user" if is_u else "label-ai"}">{"YOU" if is_u else "AI ADVISOR"}</div>{msg["content"]}</div></div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     if pr := st.chat_input(t["chat_placeholder"]):
         st.session_state.chat_history.append({"role": "user", "content": pr})
