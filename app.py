@@ -14,6 +14,10 @@ GROQ_API_KEY = "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"
 
 # --- ESTILOS CSS DE ALTO NIVEL ---
 st.markdown("""
+<div>
+    Contenido
+</div>
+""", unsafe_allow_html=True)
 <style>
     @import url('https://fonts.googleapis.com');
     
