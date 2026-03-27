@@ -75,7 +75,6 @@ with st.sidebar:
     lang_sel = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
     if lang_sel != st.session_state.lang: st.session_state.lang = lang_sel; st.rerun()
     capital = st.number_input(t["cap"], value=1000.0, step=100.0)
-    perfil = st.selectbox(t["risk_lab"], t["risk_options"])
     ticket = st.text_input(t["ass_lab"], value="NVDA").upper()
     btn_exec = st.button(t["btn"])
 
