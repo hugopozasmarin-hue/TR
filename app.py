@@ -131,7 +131,6 @@ languages = {
         "shares":"Capacidad Compra", "analysis":"Recomendación Estratégica", "hist_t":"Movimiento del Mercado", 
         "pred_t":"Proyección Algorítmica", "chat_placeholder":"Escribe tu consulta financiera...",
         "news_tab": "Noticias",
-        "news_sub": "Noticias Económicas Globales"
     },
     "English": { 
         "title":"INVESTIA TERMINAL", "lang_lab":"Language", "cap":"Budget", "risk_lab":"Risk Profile", "ass_lab":"Asset Ticker", 
@@ -272,7 +271,7 @@ with tab2:
         
 # --- 📰 NOTICIAS ---
 with tab3:
-    st.markdown("<h3 style='color:#0A192F;'>📰</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color:#0A192F;'>🌎</h3>", unsafe_allow_html=True)
 
     categoria = st.selectbox(
         "Filtrar por mercado:",
