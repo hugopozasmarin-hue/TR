@@ -228,6 +228,28 @@ with tab1:
 
         st.markdown(f"<div class='recommendation-box'><h3 style='margin-top:0; color:#0A192F;'>✨ {t['analysis']}</h3><p style='white-space: pre-wrap; color:#374151;'>{st.session_state.get('analisis', '')}</p></div>", unsafe_allow_html=True)
 
+# --- 📰 NOTICIAS ECONÓMICAS ---
+def obtener_noticias(categoria="Global"):
+    fuentes = {
+        "Global": "https://feeds.bbci.co.uk/news/business/rss.xml",
+        "EEUU": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
+        "Europa": "https://www.ft.com/rss/home/europe",
+        "Cripto": "https://cointelegraph.com/rss"
+    }
+
+    url = fuentes.get(categoria, fuentes["Global"])
+    feed = feedparser.parse(url)
+
+    noticias = []
+    for entry in feed.entries[:10]:
+        noticias.append({
+            "titulo": entry.title,
+            "link": entry.link,
+            "fecha": entry.get("published", "Sin fecha"),
+            "resumen": entry.get("summary", "")[:200]
+        })
+
+    return noticias
 # --- CHAT ---
 with tab2:
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
@@ -305,27 +327,3 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
         return response.choices[0].message.content
     except Exception as e:
         return f"Error IA: {e}"
-
-# --- 📰 NOTICIAS ECONÓMICAS ---
-def obtener_noticias(categoria="Global"):
-    fuentes = {
-        "Global": "https://feeds.bbci.co.uk/news/business/rss.xml",
-        "EEUU": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
-        "Europa": "https://www.ft.com/rss/home/europe",
-        "Cripto": "https://cointelegraph.com/rss"
-    }
-
-    url = fuentes.get(categoria, fuentes["Global"])
-    feed = feedparser.parse(url)
-
-    noticias = []
-    for entry in feed.entries[:10]:
-        noticias.append({
-            "titulo": entry.title,
-            "link": entry.link,
-            "fecha": entry.get("published", "Sin fecha"),
-            "resumen": entry.get("summary", "")[:200]
-        })
-
-    return noticias
-
