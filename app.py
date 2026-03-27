@@ -285,10 +285,20 @@ with tab3:
             f"Resume esta noticia en 3 líneas claras y directas: {noticia['titulo']} {noticia['resumen']}"
         )
         st.info(resumen_ia)
-        if st.button(f"🧠 Resumir", key=noticia['link'], use_container_width=True):
-# --- IA MEJORADA (DISCUSIÓN TOTAL) ---
-def generar_analisis_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
-    try:
+       for noticia in noticias:
+    st.markdown(...)
+
+    if st.button("🧠 Resumir con IA", key=noticia['link']):
+        resumen_ia = generar_analisis_ia(
+            st.session_state.lang,
+            "",
+            0,
+            0,
+            perfil,
+            capital,
+            f"Resume esta noticia en 3 líneas: {noticia['titulo']} {noticia['resumen']}"
+        )
+        st.info(resumen_ia)
         client = Groq(api_key=GROQ_API_KEY)
         idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
         contexto_activo = f"Ticker: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€." if ticket else "Sin ticker analizado."
