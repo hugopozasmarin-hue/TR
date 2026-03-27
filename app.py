@@ -256,10 +256,6 @@ with tab2:
     st.markdown('</div>', unsafe_allow_html=True)
 
     if pr := st.chat_input(t["chat_placeholder"]):
-        st.session_state.chat_history.append({"role": "user", "content": pr})
-        st.session_state.chat_history.append({"role": "assistant", "content": res})
-        st.rerun()
-        res = generar_analisis_ia(
     st.session_state.lang, 
     st.session_state.get("ticket_act", "N/A"), # Si no hay ticket, pone "N/A"
     st.session_state.get("p_act", 0), 
