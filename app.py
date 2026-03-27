@@ -142,12 +142,12 @@ languages = {
 # --- IA MEJORADA (RECOMENDACIÓN) ---
 def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
-def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pr):
-    return generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=pr)
-
         client = Groq(api_key=GROQ_API_KEY)
         contexto = f"Ticker: {ticket}. Price: {p_act}€. Prediction: {p_fut}€ ({cambio:.2f}%)."
         idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
+        
+def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pr):
+    return generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=pr)
         
         prompt = f"""
         Act as a Senior Investment Strategist. Your goal is to give a CUSTOMIZED RECOMMENDATION in {idioma_inst}.
