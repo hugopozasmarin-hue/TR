@@ -30,33 +30,13 @@ st.markdown("""
     }
     .stButton>button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(10, 25, 47, 0.3); }
 
-    .metric-card { background: white; border-radius: 16px; padding: 20px; border: 1px solid #E2E8F0; text-align: center; }
+    .metric-card { background: white; border-radius: 16px; padding: 20px; border: 1px solid #E2E8F0; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
 
-    /* --- ESTÉTICA DE CHAT MEJORADA --- */
-    .chat-bubble {
-        padding: 16px 20px;
-        border-radius: 18px;
-        margin-bottom: 15px;
-        max-width: 80%;
-        font-size: 0.95rem;
-        line-height: 1.6;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        position: relative;
-    }
-    .ai-bubble { 
-        background: #FFFFFF; 
-        border: 1px solid #E2E8F0;
-        border-left: 5px solid #0A192F; 
-        color: #1E293B; 
-        margin-right: auto;
-    }
-    .user-bubble { 
-        background: #0A192F; 
-        color: #FFFFFF; 
-        margin-left: auto;
-        border-bottom-right-radius: 2px;
-    }
-    .chat-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; display: block; opacity: 0.7; }
+    /* --- CHAT --- */
+    .chat-bubble { padding: 16px 22px; border-radius: 20px; max-width: 80%; font-size: 0.95rem; line-height: 1.6; box-shadow: 0 3px 10px rgba(0,0,0,0.04); margin-bottom: 15px; position: relative; }
+    .ai-bubble { background: #FFFFFF; color: #1E293B; border: 1px solid #E2E8F0; border-left: 5px solid #007BFF; margin-right: auto; }
+    .user-bubble { background: #0A192F; color: #FFFFFF; margin-left: auto; border-bottom-right-radius: 4px; }
+    .chat-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; display: block; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -64,18 +44,20 @@ st.markdown("""
 languages = {
     "Español": {
         "title": "INVESTIA ELITE TERMINAL",
-        "sidebar_lang": "Idioma", "sidebar_cap": "Presupuesto", "sidebar_risk": "Riesgo", "sidebar_ticker": "Ticker",
-        "btn_analyze": "ANALIZAR ACTIVO", "tab_analysis": "Análisis", "tab_chat": "Chat IA", "tab_news": "Noticias",
-        "m_price": "Precio Actual", "m_target": "Predicción 30d", "m_shares": "Capacidad Compra",
-        "chat_placeholder": "Escribe tu consulta financiera...", "read_more": "Leer más",
+        "lang_lab": "Idioma", "cap": "Presupuesto", "risk_lab": "Riesgo", "ass_lab": "Ticker",
+        "btn": "ANALIZAR ACTIVO", "wait": "Consultando mercados...", "price": "Precio Actual", "target": "Predicción 30d",
+        "shares": "Capacidad Compra", "analysis_title": "Dictamen Estratégico", "news_tab": "Noticias",
+        "chart_v": "Gráfico de Velas (Técnico)", "chart_l": "Gráfico de Línea (Proyección)",
+        "chat_placeholder": "Consulta con la IA...", "read_more": "Leer más",
         "risk_options": ["Conservador", "Moderado", "Arriesgado"]
     },
     "English": {
         "title": "INVESTIA ELITE TERMINAL",
-        "sidebar_lang": "Language", "sidebar_cap": "Budget", "sidebar_risk": "Risk Profile", "sidebar_ticker": "Ticker",
-        "btn_analyze": "ANALYZE ASSET", "tab_analysis": "Analysis", "tab_chat": "AI Chat", "tab_news": "News",
-        "m_price": "Current Price", "m_target": "30d Prediction", "m_shares": "Buying Capacity",
-        "chat_placeholder": "Type your financial query...", "read_more": "Read more",
+        "lang_lab": "Language", "cap": "Budget", "risk_lab": "Risk Profile", "ass_lab": "Ticker",
+        "btn": "ANALYZE ASSET", "wait": "Consulting markets...", "price": "Current Price", "target": "30d Prediction",
+        "shares": "Buying Capacity", "analysis_title": "Strategic Opinion", "news_tab": "News",
+        "chart_v": "Candlestick Chart (Technical)", "chart_l": "Line Chart (Projection)",
+        "chat_placeholder": "Ask AI anything...", "read_more": "Read more",
         "risk_options": ["Conservative", "Moderate", "Aggressive"]
     }
 }
@@ -83,10 +65,11 @@ languages = {
 def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
-        prompt = f"Act as Senior Strategist. Ticker: {ticket}. Price: {p_act}. Pred: {p_fut}. Risk: {perfil}. Lang: {lang}. Q: {pregunta if pregunta else 'General analysis.'}"
+        idioma = "ENGLISH" if lang == "English" else "ESPAÑOL"
+        prompt = f"Senior Analyst. Ticker: {ticket}. Price: {p_act}. Pred: {p_fut}. Risk: {perfil}. Lang: {idioma}. Q: {pregunta if pregunta else 'General report.'}"
         response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile")
-        return response.choices[0].message.content
-    except: return "Error IA"
+        return response.choices.message.content
+    except: return "Error AI"
 
 if "lang" not in st.session_state: st.session_state.lang = "Español"
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
@@ -95,56 +78,68 @@ if "last_data" not in st.session_state: st.session_state.last_data = None
 t = languages[st.session_state.lang]
 
 with st.sidebar:
-    st.markdown(f'<p class="sb-title">{t["sidebar_lang"]}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="sb-title">{t["lang_lab"]}</p>', unsafe_allow_html=True)
     lang_sel = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
     if lang_sel != st.session_state.lang: st.session_state.lang = lang_sel; st.rerun()
-    st.markdown(f'<p class="sb-title">{t["sidebar_cap"]}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="sb-title">{t["cap"]}</p>', unsafe_allow_html=True)
     capital = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
-    st.markdown(f'<p class="sb-title">{t["sidebar_risk"]}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="sb-title">{t["risk_lab"]}</p>', unsafe_allow_html=True)
     perfil = st.selectbox("", t["risk_options"], label_visibility="collapsed")
-    st.markdown(f'<p class="sb-title">{t["sidebar_ticker"]}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="sb-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
     ticket = st.text_input("", value="NVDA", label_visibility="collapsed").upper()
-    btn_exec = st.button(t["btn_analyze"])
+    btn_exec = st.button(t["btn"])
 
 st.markdown(f"<h1 style='text-align:center; color:#0A192F; font-weight:800;'>{t['title']}</h1>", unsafe_allow_html=True)
-tab1, tab2, tab3 = st.tabs([f"📊 {t['tab_analysis']}", f"🤖 {t['tab_chat']}", f"📰 {t['tab_news']}"])
+tab1, tab2, tab3 = st.tabs([f"📊 {t['btn']}", f"🤖 Chat", f"📰 {t['news_tab']}"])
 
 with tab1:
     if btn_exec:
-        df = yf.download(ticket, period="2y", interval="1d")
-        if not df.empty:
-            if isinstance(df.columns, pd.MultiIndex): df.columns = df.columns.get_level_values(0)
-            df_p = df.reset_index()[['Date', 'Close']].rename(columns={'Date': 'ds', 'Close': 'y'})
-            df_p['ds'] = df_p['ds'].dt.tz_localize(None)
-            m = Prophet(daily_seasonality=True).fit(df_p)
-            future = m.make_future_dataframe(periods=30)
-            forecast = m.predict(future)
-            p_act, p_fut = df['Close'].iloc[-1], forecast['yhat'].iloc[-1]
-            cambio = ((p_fut - p_act) / p_act) * 100
-            st.session_state.last_data = {"ticket": ticket, "p_act": p_act, "p_fut": p_fut, "cambio": cambio}
+        with st.spinner(t["wait"]):
+            df = yf.download(ticket, period="2y", interval="1d")
+            if not df.empty:
+                if isinstance(df.columns, pd.MultiIndex): df.columns = df.columns.get_level_values(0)
+                
+                # Prophet
+                df_p = df.reset_index()[['Date', 'Close']].rename(columns={'Date': 'ds', 'Close': 'y'})
+                df_p['ds'] = df_p['ds'].dt.tz_localize(None)
+                m = Prophet(daily_seasonality=True).fit(df_p)
+                future = m.make_future_dataframe(periods=30)
+                forecast = m.predict(future)
+                
+                p_act, p_fut = df['Close'].iloc[-1], forecast['yhat'].iloc[-1]
+                cambio = ((p_fut - p_act) / p_act) * 100
+                st.session_state.last_data = {"ticket": ticket, "p_act": p_act, "p_fut": p_fut, "cambio": cambio}
 
-            c1, c2, c3 = st.columns(3)
-            with c1: st.markdown(f'<div class="metric-card"><small>{t["m_price"]}</small><h2>{p_act:,.2f}€</h2></div>', unsafe_allow_html=True)
-            with c2: st.markdown(f'<div class="metric-card"><small>{t["m_target"]}</small><h2 style="color:{"#10B981" if cambio > 0 else "#EF4444"}">{p_fut:,.2f}€</h2></div>', unsafe_allow_html=True)
-            with c3: st.markdown(f'<div class="metric-card"><small>{t["m_shares"]}</small><h2>{int(capital // p_act)}</h2></div>', unsafe_allow_html=True)
+                # Metrics
+                c1, c2, c3 = st.columns(3)
+                with c1: st.markdown(f'<div class="metric-card"><small>{t["price"]}</small><h2>{p_act:,.2f}€</h2></div>', unsafe_allow_html=True)
+                with c2: st.markdown(f'<div class="metric-card"><small>{t["target"]}</small><h2 style="color:{"#10B981" if cambio > 0 else "#EF4444"}">{p_fut:,.2f}€</h2></div>', unsafe_allow_html=True)
+                with c3: st.markdown(f'<div class="metric-card"><small>{t["shares"]}</small><h2>{int(capital // p_act)}</h2></div>', unsafe_allow_html=True)
 
-            # --- GRÁFICO DE VELAS + PREDICCIÓN ---
-            fig = go.Figure()
-            fig.add_trace(go.Candlestick(x=df.index, open=df['Open'], high=df['High'], low=df['Low'], close=df['Close'], name="Market Data"))
-            fig.add_trace(go.Scatter(x=forecast['ds'], y=forecast['yhat'], name="Prophet Prediction", line=dict(color='#007BFF', width=2)))
-            fig.update_layout(template="plotly_white", xaxis_rangeslider_visible=False, height=500, margin=dict(l=0, r=0, t=30, b=0))
-            st.plotly_chart(fig, use_container_width=True)
+                # --- GRÁFICO 1: VELAS ---
+                st.markdown(f"#### {t['chart_v']}")
+                fig_v = go.Figure(data=[go.Candlestick(x=df.index, open=df['Open'], high=df['High'], low=df['Low'], close=df['Close'], name="Market")])
+                fig_v.update_layout(template="plotly_white", xaxis_rangeslider_visible=False, height=400, margin=dict(l=0, r=0, t=10, b=10))
+                st.plotly_chart(fig_v, use_container_width=True)
 
-            st.markdown(f"### 🛡️ Recomendación Estratégica")
-            st.info(generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital))
+                # --- GRÁFICO 2: LÍNEA PREDICCIÓN ---
+                st.markdown(f"#### {t['chart_l']}")
+                fig_l = go.Figure()
+                fig_l.add_trace(go.Scatter(x=df_p['ds'], y=df_p['y'], name="Historical", line=dict(color='#0A192F')))
+                fig_l.add_trace(go.Scatter(x=forecast['ds'], y=forecast['yhat'], name="Prediction", line=dict(color='#007BFF', dash='dot')))
+                fig_l.update_layout(template="plotly_white", height=400, margin=dict(l=0, r=0, t=10, b=10))
+                st.plotly_chart(fig_l, use_container_width=True)
+
+                # --- TÍTULO TRADUCIDO IA ---
+                st.markdown(f"### 🛡️ {t['analysis_title']}")
+                st.info(generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital))
 
 with tab2:
     if st.session_state.last_data:
         for msg in st.session_state.chat_history:
-            bubble_type = "user-bubble" if msg["role"] == "user" else "ai-bubble"
+            bubble = "user-bubble" if msg["role"] == "user" else "ai-bubble"
             label = "USER" if msg["role"] == "user" else "INVESTIA AI"
-            st.markdown(f'<div class="chat-bubble {bubble_type}"><span class="chat-label">{label}</span>{msg["content"]}</div>', unsafe_allow_html=True)
-        
+            st.markdown(f'<div class="chat-bubble {bubble}"><span class="chat-label">{"#94A3B8" if msg["role"]=="user" else "#007BFF"}">{label}</span>{msg["content"]}</div>', unsafe_allow_html=True)
         pregunta = st.chat_input(t["chat_placeholder"])
         if pregunta:
             st.session_state.chat_history.append({"role": "user", "content": pregunta})
@@ -158,6 +153,6 @@ with tab3:
     url = "https://www.eleconomista.es" if st.session_state.lang == "Español" else "https://rss.nytimes.com"
     feed = feedparser.parse(url)
     for entry in feed.entries[:8]:
-        st.markdown(f'<div style="background:white; padding:15px; border-radius:10px; margin-bottom:10px; border:1px solid #E2E8F0;"><h4 style="margin:0;">{entry.title}</h4><a href="{entry.link}" target="_blank" style="color:#007BFF; font-size:0.8rem;">{t["read_more"]} →</a></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="background:white; padding:15px; border-radius:12px; border:1px solid #E2E8F0; margin-bottom:10px;"><h4 style="margin:0;">{entry.title}</h4><a href="{entry.link}" target="_blank" style="color:#007BFF; font-size:0.8rem;">{t["read_more"]} →</a></div>', unsafe_allow_html=True)
 
 
