@@ -350,7 +350,16 @@ st.markdown(html, unsafe_allow_html=True)
             <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
             <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
             <p style='color:#374151;'>{noticia['resumen']}...</p>
-            <a href="{noticia['link']}" target="_blank" style="
+          html = f"""
+<a href="{noticia['link']}" target="_blank" style="
+    color:#1a73e8;
+    text-decoration:none;
+">
+    Ver noticia
+</a>
+"""
+
+st.markdown(html, unsafe_allow_html=True)
                 color:#3B82F6;
                 font-weight:600;
                 text-decoration:none;
