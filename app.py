@@ -229,7 +229,8 @@ with tab1:
         fig_line.update_layout(template="plotly_white", margin=dict(l=0,r=0,t=0,b=0), height=350)
         st.plotly_chart(fig_line, use_container_width=True)
 
-      
+      st.markdown('<div class="chat-container">', unsafe_allow_html=True) 
+ 
     # Input del chat
     if user_input := st.chat_input(t["chat_placeholder"]):
         st.session_state.chat_history.append({"role": "user", "content": user_input})
