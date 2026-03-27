@@ -15,23 +15,110 @@ GROQ_API_KEY = "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"
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com');
+    
+    /* Fondo principal blanco */
     .stApp { background-color: #FFFFFF; color: #1F2937; }
     * { font-family: 'Inter', sans-serif; }
-    [data-testid="stSidebar"] { background-color: #0A192F !important; border-right: 1px solid #E5E7EB; }
-    .field-title { color: #64FFDA; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; margin-top: 15px; }
-    .stButton>button { border: none; border-radius: 10px; background: linear-gradient(135deg, #0A192F 0%, #1F2937 100%); color: #FFFFFF !important; font-weight: 600; height: 48px; width: 100%; transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-    .stButton>button:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+
+    /* Barra lateral Azul Profundo Profesional */
+    [data-testid="stSidebar"] {
+        background-color: #0A192F !important;
+        border-right: 1px solid #E5E7EB;
+    }
+
+    /* Títulos en la barra lateral */
+    .field-title {
+        color: #64FFDA;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+        margin-top: 15px;
+    }
+
+    /* Botón Moderno */
+    .stButton>button {
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #0A192F 0%, #1F2937 100%);
+        color: #FFFFFF !important;
+        font-weight: 600;
+        height: 48px;
+        width: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Tabs minimalistas */
     .stTabs [data-baseweb="tab-list"] { gap: 10px; border-bottom: 1px solid #E5E7EB; }
-    .stTabs [data-baseweb="tab"] { background-color: transparent; color: #6B7280; font-weight: 500; padding: 12px 24px; }
+    .stTabs [data-baseweb="tab"] {
+        background-color: transparent; color: #6B7280;
+        font-weight: 500; padding: 12px 24px;
+    }
     .stTabs [aria-selected="true"] { color: #0A192F !important; border-bottom: 2px solid #0A192F !important; }
-    .metric-container { background: #FFFFFF; border: 1px solid #F3F4F6; border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-align: center; }
+
+    /* Métrica Cards Estilo Fintech */
+    .metric-container {
+        background: #FFFFFF;
+        border: 1px solid #F3F4F6;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+
+    /* --- CHAT MODERNO --- */
     .chat-container { display: flex; flex-direction: column; gap: 15px; padding: 10px; }
-    .bubble { padding: 16px 22px; border-radius: 18px; max-width: 80%; font-size: 15px; line-height: 1.6; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 10px; }
-    .user-bubble { background-color: #F8F9FA; color: #374151; border: 1px solid #F3F4F6; border-bottom-left-radius: 4px; align-self: flex-end; }
-    .ai-bubble { background-color: #F0F7FF; color: #1E3A8A; border: 1px solid #DBEAFE; border-bottom-left-radius: 4px; align-self: flex-start; }
-    .chat-label { font-size: 9px; font-weight: 800; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
-    .label-user { color: #9CA3AF; text-align: right; }
+    .chat-row { display: flex; width: 100%; justify-content: flex-start; margin-bottom: 5px; }
+    
+    .bubble {
+        padding: 16px 22px;
+        border-radius: 18px;
+        max-width: 80%;
+        font-size: 15px;
+        line-height: 1.6;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .user-bubble {
+        background-color: #F8F9FA;
+        color: #374151;
+        border: 1px solid #F3F4F6;
+        border-bottom-left-radius: 4px;
+    }
+
+    .ai-bubble {
+        background-color: #F0F7FF;
+        color: #1E3A8A;
+        border: 1px solid #DBEAFE;
+        border-bottom-left-radius: 4px;
+    }
+
+    .chat-label {
+        font-size: 9px;
+        font-weight: 800;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .label-user { color: #9CA3AF; }
     .label-ai { color: #3B82F6; }
+
+    /* Caja de recomendación */
+    .recommendation-box {
+        background-color: #FFFFFF;
+        border: 1px solid #E5E7EB;
+        border-left: 5px solid #0A192F;
+        padding: 25px;
+        border-radius: 12px;
+        margin-top: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
 </style>
 """, unsafe_allow_html=True)
 
