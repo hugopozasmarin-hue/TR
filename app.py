@@ -280,7 +280,14 @@ with tab3:
 
 st.markdown(html, unsafe_allow_html=True)
             background:#FFFFFF;
-            border:1px solid #E5E7EB;
+          st.markdown("""
+<div style="
+    border:1px solid #E5E7EB;
+    padding:20px;
+">
+    Contenido
+</div>
+""", unsafe_allow_html=True)
             padding:20px;
             border-radius:12px;
             margin-bottom:15px;
