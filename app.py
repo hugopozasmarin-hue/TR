@@ -193,46 +193,43 @@ with st.sidebar:
 st.markdown(f"<h2 style='text-align: center; color: #0A192F; font-weight: 700; letter-spacing: -1px; margin-bottom: 30px;'>{t['title']}</h2>", unsafe_allow_html=True)
 tab1, tab2 = st.tabs([f"📊 {t['btn']}", f"💬 Chat Advisor"])
 
+# --- ANÁLISIS ---
 with tab1:
     if st.button(t["btn"]):
         with st.spinner(t["wait"]):
             data = yf.download(ticket, period="2y", interval="1d")
             if not data.empty:
-                # Arreglo para MultiIndex de yfinance (Evita el TypeError)
                 if isinstance(data.columns, pd.MultiIndex): data.columns = data.columns.get_level_values(0)
-                
                 df = data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
                 df['ds'] = pd.to_datetime(df['ds']).dt.tz_localize(None)
-                
                 model = Prophet(daily_seasonality=True).fit(df)
                 forecast = model.predict(model.make_future_dataframe(periods=30))
-                
                 p_act, p_fut = float(df['y'].iloc[-1]), float(forecast['yhat'].iloc[-1])
-                st.session_state.update({"p_act": p_act, "p_pre": p_fut, "ticket_act": ticket, "analizado": True})
-                
-                col1, col2, col3 = st.columns(3)
-                col1.metric(t["price"], f"{p_act:.2f} €")
-                col2.metric(t["target"], f"{p_fut:.2f} €", f"{((p_fut-p_act)/p_act)*100:.2f}%")
-                col3.metric(t["shares"], f"{int(capital/p_act)}")
-                
-                fig = go.Figure()
-                fig.add_trace(go.Scatter(x=df['ds'], y=df['y'], name="Precio", line=dict(color='#0A192F', width=2)))
-                fig.add_trace(go.Scatter(x=forecast['ds'], y=forecast['yhat'], name="Proyección", line=dict(color='#3B82F6', dash='dash')))
-                fig.update_layout(template="plotly_white", margin=dict(l=0,r=0,t=20,b=0), height=400)
-                st.plotly_chart(fig, use_container_width=True)
+                cambio = ((p_fut - p_act) / p_act) * 100
+                st.session_state.update({"p_act": p_act, "p_pre": p_fut, "cambio": cambio, "ticket_act": ticket, "analizado": True, "full_data": data, "forecast_data": forecast, "df_prophet": df})
+                st.session_state.analisis = generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)
+            else: st.error("Ticker incorrecto.")
 
-with tab2:
-    # Renderizado del historial de chat
-    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-    for chat in st.session_state.chat_history:
-        is_user = chat["role"] == "user"
-        clase = "user-bubble" if is_user else "ai-bubble"
-        label = "TÚ" if is_user else "INVESTIA AI"
-        label_clase = "label-user" if is_user else "label-ai"
-        
-        st.markdown(f'<div class="chat-label {label_clase}">{label}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="bubble {clase}">{chat["content"]}</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    if st.session_state.analizado:
+        # Métricas Modernas
+        c1, c2, c3 = st.columns(3)
+        with c1: st.markdown(f"<div class='metric-container'><p class='chat-label' style='color:#9CA3AF'>{t['price']}</p><h3 style='margin:0;color:#0A192F'>{st.session_state.p_act:.2f}€</h3></div>", unsafe_allow_html=True)
+        with c2: st.markdown(f"<div class='metric-container'><p class='chat-label' style='color:#9CA3AF'>{t['target']}</p><h3 style='margin:0;color:#3B82F6'>{st.session_state.p_pre:.2f}€ <small>({st.session_state.cambio:+.2f}%)</small></h3></div>", unsafe_allow_html=True)
+        with c3: st.markdown(f"<div class='metric-container'><p class='chat-label' style='color:#9CA3AF'>{t['shares']}</p><h3 style='margin:0;color:#0A192F'>{capital/st.session_state.p_act:.2f}</h3></div>", unsafe_allow_html=True)
+
+        st.markdown(f"<h4 style='margin-top:30px; color:#0A192F;'>{t['hist_t']}</h4>", unsafe_allow_html=True)
+        fig_candles = go.Figure(data=[go.Candlestick(x=st.session_state.full_data.index, open=st.session_state.full_data['Open'], high=st.session_state.full_data['High'], low=st.session_state.full_data['Low'], close=st.session_state.full_data['Close'], name="Market")])
+        fig_candles.update_layout(xaxis_rangeslider_visible=False, template="plotly_white", margin=dict(l=0,r=0,t=0,b=0), height=400)
+        st.plotly_chart(fig_candles, use_container_width=True)
+
+        st.markdown(f"<h4 style='margin-top:30px; color:#0A192F;'>{t['pred_t']}</h4>", unsafe_allow_html=True)
+        fig_line = go.Figure()
+        fig_line.add_trace(go.Scatter(x=st.session_state.df_prophet['ds'], y=st.session_state.df_prophet['y'], name="Real", line=dict(color='#0A192F', width=2)))
+        fig_line.add_trace(go.Scatter(x=st.session_state.forecast_data['ds'], y=st.session_state.forecast_data['yhat'], name="IA", line=dict(color='#3B82F6', dash='dash')))
+        fig_line.update_layout(template="plotly_white", margin=dict(l=0,r=0,t=0,b=0), height=350)
+        st.plotly_chart(fig_line, use_container_width=True)
+
+        st.markdown(f"<div class='recommendation-box'><h3 style='margin-top:0; color:#0A192F;'>✨ {t['analysis']}</h3><p style='white-space: pre-wrap; color:#374151;'>{st.session_state.get('analisis', '')}</p></div>", unsafe_allow_html=True)
 
     # Input del chat
     if user_input := st.chat_input(t["chat_placeholder"]):
