@@ -117,7 +117,7 @@ with tab3:
         for item in st.session_state.news:
             st.markdown(f"""
             <div class="news-card">
-                <a href="{item['link']}" target="_blank" style="text-decoration:none; color:#0A192F; font-weight:600;">{item['title']}</a>
+    
                 <p style="font-size:12px; color:#6B7280; margin-top:5px;">Fuente: {item.get('publisher', 'N/A')}</p>
             </div>
             """, unsafe_allow_html=True)
