@@ -255,8 +255,7 @@ with tab2:
         st.markdown(f'<div class="chat-row"><div class="bubble {"user-bubble" if is_u else "ai-bubble"}"><div class="chat-label {"label-user" if is_u else "label-ai"}">{"YOU" if is_u else "AI ADVISOR"}</div>{msg["content"]}</div></div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    if pr := st.chat_input(t["chat_placeholder"]):
-    st.session_state.lang, 
+    if pr := st.chat_input(t["chat_placeholder"]): 
     st.session_state.get("ticket_act", "N/A"), # Si no hay ticket, pone "N/A"
     st.session_state.get("p_act", 0), 
     st.session_state.get("p_pre", 0), 
