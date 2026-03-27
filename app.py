@@ -272,10 +272,9 @@ with tab2:
         
 # --- 📰 NOTICIAS ---
 with tab3:
-    st.markdown("<h3 style='color:#0A192F;'>📰</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color:#0A192F;'>🌎</h3>", unsafe_allow_html=True)
 
     categoria = st.selectbox(
-        "Filtrar por mercado:",
         ["Global", "EEUU", "Europa", "Cripto"]
     )
 
