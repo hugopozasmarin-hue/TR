@@ -268,7 +268,17 @@ with tab3:
 
     for noticia in noticias:
         st.markdown(f"""
-        <div style="
+        html = f"""
+<div style="
+    background:#FFFFFF;
+    border:1px solid #E5E7EB;
+    padding:20px;
+">
+    Contenido aquí
+</div>
+"""
+
+st.markdown(html, unsafe_allow_html=True)
             background:#FFFFFF;
             border:1px solid #E5E7EB;
             padding:20px;
