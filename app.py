@@ -146,9 +146,6 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
         contexto = f"Ticker: {ticket}. Price: {p_act}€. Prediction: {p_fut}€ ({cambio:.2f}%)."
         idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
         
-def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pr):
-    return generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=pr)
-        
         prompt = f"""
         Act as a Senior Investment Strategist. Your goal is to give a CUSTOMIZED RECOMMENDATION in {idioma_inst}.
         Data: {contexto}. Risk Profile: {perfil}. Capital: {capital}€.
@@ -168,7 +165,10 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pr):
         return response.choices[0].message.content
     except Exception as e:
         return f"Error IA: {e}"
-
+        
+def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pr):
+    return generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=pr)
+    
 # --- SESIÓN ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
 if "analizado" not in st.session_state: st.session_state.analizado = False
