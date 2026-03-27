@@ -171,7 +171,7 @@ def obtener_noticias(categoria="Global"):
     return noticias
     
                 # --- RECOMENDACIÓN IA ---
-                st.markdown(f"### 🛡️ {t['analysis_title']}")
+                st.markdown(f"###{t['analysis_title']}")
                 analisis = generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)
                 st.info(analisis)
             else:
