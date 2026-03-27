@@ -281,8 +281,6 @@ with tab3:
     noticias = obtener_noticias(categoria)
 # Cambia el título estático por la variable:
 with tab3:
-    st.subheader(t["news_sub"])
-
     for noticia in noticias:
         st.markdown(f"""
         <div style="
