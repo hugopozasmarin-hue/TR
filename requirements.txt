@@ -4,3 +4,4 @@ prophet
 pandas
 groq
 plotly
+feedparser
