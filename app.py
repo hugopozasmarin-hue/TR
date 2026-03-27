@@ -204,6 +204,7 @@ with tab1:
                 cambio = ((p_fut - p_act) / p_act) * 100
                 st.session_state.update({"p_act": p_act, "p_pre": p_fut, "cambio": cambio, "ticket_act": ticket, "analizado": True, "full_data": data, "forecast_data": forecast, "df_prophet": df})
                 st.session_state.analisis = generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)
+                st.session_state.update({"p_act": p_act, "p_pre": p_fut, "cambio": cambio, "ticket_act": ticket})
             else: st.error("Ticker incorrecto.")
 
     if st.session_state.analizado:
@@ -259,3 +260,14 @@ with tab2:
         res = generar_analisis_ia(st.session_state.lang, st.session_state.get("ticket_act", "N/A"), st.session_state.get("p_act", 0), st.session_state.get("p_pre", 0), st.session_state.get("cambio", 0), perfil, capital, pr)
         st.session_state.chat_history.append({"role": "assistant", "content": res})
         st.rerun()
+        res = generar_analisis_ia(
+    st.session_state.lang, 
+    st.session_state.get("ticket_act", "N/A"), # Si no hay ticket, pone "N/A"
+    st.session_state.get("p_act", 0), 
+    st.session_state.get("p_pre", 0), 
+    st.session_state.get("cambio", 0), # Se añadió el cambio
+    perfil, # Se añadió el perfil de riesgo
+    capital, # Se añadió el capital
+    prompt_user
+)
+
