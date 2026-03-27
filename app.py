@@ -80,7 +80,7 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
 
     prompt = f"""
     Act as a Senior Investment Strategist in {idioma_inst}.
-    Data: {ticket}, Price {p_act}, Forecast {p_fut}, Change {cambio:.2f}%.
+    Data: {ticket}, Price {p_act}, Forecast {p_fut}, Change {cambio:.2f}.
     Profile: {perfil}, Capital: {capital}€.
     Question: {pregunta if pregunta else "General analysis"}
     """
