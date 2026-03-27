@@ -205,15 +205,25 @@ with tab2:
         st.session_state.chat_history.append({"role": "assistant", "content": res})
         st.rerun()
 
-def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
+def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
         idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
-        prompt = f"Responde como asesor financiero en {idioma_inst}. Pregunta: {pregunta}"
+        contexto_activo = f"Ticker: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€." if ticket else "Sin ticker analizado."
+        
+        prompt = f"""
+        Actúa como un Senior Investment Strategist. Responde en {idioma_inst}.
+        Contexto: Perfil {perfil}, Capital {capital}€. {contexto_activo}.
+        Puedes discutir sobre CUALQUIER accion incluso si no está siendo analizada.
+        Pregunta: {pregunta if pregunta else "Dame una recomendación general."}
+        """
+        
         response = client.chat.completions.create(
-            messages=[{"role": "user","content": prompt}],
+            messages=[{"role": "user", "content": prompt}],
             model="llama-3.3-70b-versatile"
         )
+
         return response.choices[0].message.content
+
     except Exception as e:
         return f"Error IA: {e}"
