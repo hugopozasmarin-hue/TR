@@ -394,31 +394,44 @@ with tab3:
     st.subheader(t["news_sub"])
 
     for noticia in noticias:
-        st.markdown(f"""
-        <div style="color: white; font-size: 16px;">
-            background:#FFFFFF;
-            border:1px solid #E5E7EB;
-            padding:20px;
-            border-radius:12px;
-            margin-bottom:15px;
-            box-shadow:0 2px 6px rgba(0,0,0,0.05);
+    st.markdown(f"""
+<div style="
+    background:#FFFFFF;
+    border:1px solid #E5E7EB;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:15px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+    color: #374151;
+">
+
+    <h4 style="margin-bottom:10px; color:#0A192F;">
+        {noticia['titulo']}
+    </h4>
+
+    <p style="font-size:12px; color:#6B7280;">
+        {noticia['fecha']}
+    </p>
+
+    <p>
+        {noticia['resumen']}...
+    </p>
+
+    <div style="display:flex; justify-content:flex-end;">
+        <a href="{noticia['link']}" target="_blank" style="
+            background:#0A192F;
+            color:white;
+            padding:6px 12px;
+            border-radius:8px;
+            font-size:12px;
+            text-decoration:none;
         ">
-            <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
-            <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
-            <p style='color:#374151;'>{noticia['resumen']}...</p>
-         <div style="display:flex; justify-content:flex-end;">
-    <a href="{noticia['link']}" target="_blank" style="
-        background:#0A192F;
-        color:white;
-        padding:6px 12px;
-        border-radius:8px;
-        font-size:12px;
-        text-decoration:none;
-    ">
-        {t["read_more"]}
-    </a>
-        </div>
-        """, unsafe_allow_html=True)
+            {t["read_more"]}
+        </a>
+    </div>
+
+</div>
+""", unsafe_allow_html=True)
 
         # 🔥 BOTÓN IA (BIEN INDENTADO)
         if st.button(t["summarize"], key=noticia['link']):
