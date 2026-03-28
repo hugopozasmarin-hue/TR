@@ -266,6 +266,12 @@ with st.sidebar:
     perfil = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"], label_visibility="collapsed")
     st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
     ticket = st.text_input("", value="NVDA", label_visibility="collapsed").upper()
+    if st.button("➕ Add to Watchlist"):
+    añadir_watchlist(ticket)
+
+st.markdown("### 📌 Watchlist")
+for tck in st.session_state.watchlist:
+    st.write("•", tck)
 
 # --- UI ---
 st.markdown(f"<h2 style='text-align: center; color: #0A192F; font-weight: 700; letter-spacing: -1px; margin-bottom: 30px;'>{t['title']}</h2>", unsafe_allow_html=True)
@@ -280,6 +286,8 @@ with tab1:
     if st.button(t["btn"]):
         with st.spinner(t["wait"]):
             data = yf.download(ticket, period="2y", interval="1d")
+            df_ind = calcular_indicadores(data)
+st.session_state["rsi"] = float(df_ind["RSI"].iloc[-1])
             if not data.empty:
                 if isinstance(data.columns, pd.MultiIndex): data.columns = data.columns.get_level_values(0)
                 df = data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
@@ -297,6 +305,17 @@ with tab1:
         with c1: st.markdown(f"<div class='metric-container'><p class='chat-label' style='color:#9CA3AF'>{t['price']}</p><h3 style='margin:0;color:#0A192F'>{st.session_state.p_act:.2f}€</h3></div>", unsafe_allow_html=True)
         with c2: st.markdown(f"<div class='metric-container'><p class='chat-label' style='color:#9CA3AF'>{t['target']}</p><h3 style='margin:0;color:#3B82F6'>{st.session_state.p_pre:.2f}€ <small>({st.session_state.cambio:+.2f}%)</small></h3></div>", unsafe_allow_html=True)
         with c3: st.markdown(f"<div class='metric-container'><p class='chat-label' style='color:#9CA3AF'>{t['shares']}</p><h3 style='margin:0;color:#0A192F'>{capital/st.session_state.p_act:.2f}</h3></div>", unsafe_allow_html=True)
+
+score = asset_score(cambio, st.session_state.get("rsi", 50))
+alerta = generar_alerta(ticket, cambio, st.session_state.get("rsi", 50))
+
+st.markdown(f"""
+<div class='recommendation-box'>
+    <h3>📊 Investment Intelligence</h3>
+    <p><b>Asset Score:</b> {score}/100</p>
+    <p><b>Alert:</b> {alerta}</p>
+</div>
+""", unsafe_allow_html=True)
 
         st.markdown(f"<h4 style='margin-top:30px; color:#0A192F;'>{t['hist_t']}</h4>", unsafe_allow_html=True)
         fig_candles = go.Figure(data=[go.Candlestick(x=st.session_state.full_data.index, open=st.session_state.full_data['Open'], high=st.session_state.full_data['High'], low=st.session_state.full_data['Low'], close=st.session_state.full_data['Close'], name="Market")])
@@ -358,6 +377,8 @@ with tab3:
     )
 
     noticias = obtener_noticias(categoria)
+    sent = sentimiento_mercado(noticias)
+st.metric("Market Sentiment", f"{sent:.0f}%")
 # Cambia el título estático por la variable:
 with tab3:
     st.subheader(t["news_sub"])
@@ -420,3 +441,142 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
         return response.choices[0].message.content
     except Exception as e:
         return f"Error IA: {e}"
+
+# =========================================================
+# 🚀 PREMIUM SAAS FUNCTIONS (NO MODIFICAN TU CORE APP)
+# =========================================================
+
+import numpy as np
+from datetime import datetime
+import json
+
+# --- 🧠 CACHE DE DATOS (mejora velocidad tipo SaaS real) ---
+@st.cache_data(ttl=300)
+def get_stock_data(ticket):
+    return yf.download(ticket, period="2y", interval="1d")
+
+
+# --- 📊 INDICADORES TÉCNICOS PRO (RSI + MEDIA MÓVIL) ---
+def calcular_indicadores(df):
+    df = df.copy()
+
+    # SMA
+    df["SMA_20"] = df["Close"].rolling(window=20).mean()
+    df["SMA_50"] = df["Close"].rolling(window=50).mean()
+
+    # RSI
+    delta = df["Close"].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+    rs = gain / loss
+    df["RSI"] = 100 - (100 / (1 + rs))
+
+    return df
+
+
+# --- 📈 SCORE DE CALIDAD DEL ACTIVO (tipo “rating institucional”) ---
+def asset_score(p_change, rsi):
+    score = 50
+
+    # tendencia
+    if p_change > 5:
+        score += 20
+    elif p_change < -5:
+        score -= 20
+
+    # RSI
+    if rsi < 30:
+        score += 15  # sobreventa
+    elif rsi > 70:
+        score -= 15  # sobrecompra
+
+    return max(0, min(100, score))
+
+
+# --- 🧠 RESUMEN IA DE NOTICIAS (GROQ) ---
+def resumir_noticia_ia(titulo, resumen):
+    try:
+        client = Groq(api_key=GROQ_API_KEY)
+
+        prompt = f"""
+        Resume esta noticia financiera en 3 líneas claras y analiza impacto en mercados:
+
+        TITULO: {titulo}
+        CONTENIDO: {resumen}
+        """
+
+        response = client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile"
+        )
+
+        return response.choices[0].message.content
+
+    except:
+        return "Resumen no disponible."
+
+
+# --- 📊 GENERADOR DE REPORTE EXPORTABLE (SaaS FEATURE CLAVE) ---
+def generar_reporte(ticket, precio, prediccion, cambio, score):
+    report = {
+        "ticker": ticket,
+        "precio_actual": precio,
+        "prediccion_30d": prediccion,
+        "cambio_%": cambio,
+        "score_activo": score,
+        "fecha": str(datetime.now())
+    }
+
+    return json.dumps(report, indent=4)
+
+
+# --- 🔔 SISTEMA DE ALERTAS INTELIGENTES ---
+def generar_alerta(ticket, cambio, rsi):
+    if cambio > 10:
+        return f"🚨 ALERTA: {ticket} fuerte tendencia alcista (+{cambio:.2f}%)"
+    if cambio < -10:
+        return f"⚠️ ALERTA: {ticket} caída fuerte ({cambio:.2f}%)"
+    if rsi > 75:
+        return f"⚠️ ALERTA: {ticket} sobrecompra (RSI alto)"
+    if rsi < 25:
+        return f"📈 ALERTA: {ticket} posible rebote (RSI bajo)"
+    return "📊 Sin señales críticas"
+
+
+# --- 💼 WATCHLIST (PORTFOLIO SIMULADO SaaS) ---
+if "watchlist" not in st.session_state:
+    st.session_state.watchlist = []
+
+def añadir_watchlist(ticket):
+    if ticket not in st.session_state.watchlist:
+        st.session_state.watchlist.append(ticket)
+
+
+# --- 🧮 RIESGO DE INVERSIÓN (MODELO SIMPLE PRO) ---
+def riesgo_score(perfil, volatilidad):
+    base = {"Conservador": 30, "Moderado": 60, "Arriesgado": 90}
+    return abs(base[perfil] - volatilidad)
+
+
+# --- 🌍 SENTIMIENTO DE MERCADO (NEWS SENTIMENT SIMULADO PRO) ---
+def sentimiento_mercado(noticias):
+    positivo = 0
+    total = len(noticias)
+
+    for n in noticias:
+        if any(word in n["titulo"].lower() for word in ["rise", "up", "gain", "bull", "growth", "sube"]):
+            positivo += 1
+
+    if total == 0:
+        return 50
+
+    return (positivo / total) * 100
+
+
+# --- ⚡ PERFORMANCE METRICS PARA DASHBOARD SaaS ---
+def metricas_saas(p_act, p_fut):
+    return {
+        "roi_estimado": ((p_fut - p_act) / p_act) * 100,
+        "volatilidad": abs(p_fut - p_act),
+        "ratio_riesgo": p_fut / p_act
+    }
