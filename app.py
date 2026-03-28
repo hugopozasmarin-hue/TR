@@ -432,7 +432,7 @@ def obtener_noticias(categoria="Global"):
     return noticias
 
         # 🧾 CARD ESTILO TERMINAL
-        st.markdown(f"""
+    st.markdown(f"""
         <div class="news-card">
             <h4 style="color:#0A192F; margin-bottom:6px;">
                 {noticia['titulo']}
