@@ -314,6 +314,25 @@ with tab1:
         with st.spinner(t["wait"]):
             data = yf.download(ticket, period="2y", interval="1d")
             if not data.empty:
+                # --- DENTRO DEL IF ST.BUTTON(T["BTN"]): ---
+with st.spinner(t["wait"]):
+    data = yf.download(ticket, period="2y", interval="1d")
+    if not data.empty:
+        # 1. Calculas el valor
+        p_actual_local = float(data['Close'].iloc[-1])
+        
+        # 2. LO GUARDAS EN LA SESIÓN (ESTO EVITA EL ERROR)
+        st.session_state.p_act = p_actual_local
+        
+        # 3. AHORA YA PUEDES USARLO EN EL MARKDOWN
+        with c1: 
+            st.markdown(f"""
+                <div class='metric-container'>
+                    <p class='chat-label' style='color:#9CA3AF'>{t['price']}</p>
+                    <h3 style='margin:0;color:#0A192F'>{st.session_state.p_act:.2f}€</h3>
+                </div>
+            """, unsafe_allow_html=True)
+
                 if isinstance(data.columns, pd.MultiIndex): data.columns = data.columns.get_level_values(0)
                 df = data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
                 df['ds'] = pd.to_datetime(df['ds']).dt.tz_localize(None)
