@@ -264,7 +264,7 @@ if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
 # --- SIDEBAR ---
 with st.sidebar:
-   st.markdown("""
+st.markdown("""
 <div style="
     background: linear-gradient(135deg, #0A192F, #1E293B);
     padding:15px;
@@ -277,11 +277,11 @@ with st.sidebar:
     </p>
 </div>
 """, unsafe_allow_html=True)
-st.markdown(f'<p class="field-title">{languages[st.session_state.lang]["lang_lab"]}</p>', unsafe_allow_html=True)
-lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
-if lang_temp != st.session_state.lang:
-    st.session_state.lang = lang_temp
-    st.rerun()
+    st.markdown(f'<p class="field-title">{languages[st.session_state.lang]["lang_lab"]}</p>', unsafe_allow_html=True)
+    lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
+    if lang_temp != st.session_state.lang:
+        st.session_state.lang = lang_temp
+        st.rerun()
     t = languages[st.session_state.lang]
     st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
     capital = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
