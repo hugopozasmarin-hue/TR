@@ -405,9 +405,31 @@ with tab3:
     )
 
 def obtener_noticias(categoria="Global"):
-    noticias = obtener_noticias(categoria)
 
-    for i, noticia in enumerate(noticias):
+    import feedparser
+
+    feeds = {
+        "Global": "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en",
+        "EEUU": "https://news.google.com/rss/search?q=usa+economy&hl=en-US&gl=US&ceid=US:en",
+        "Europa": "https://news.google.com/rss/search?q=europe+economy&hl=en-US&gl=US&ceid=US:en",
+        "Cripto": "https://news.google.com/rss/search?q=cryptocurrency&hl=en-US&gl=US&ceid=US:en"
+    }
+
+    url = feeds.get(categoria, feeds["Global"])
+    feed = feedparser.parse(url)
+
+    noticias = []
+
+    for entry in feed.entries[:10]:
+
+        noticias.append({
+            "titulo": entry.title,
+            "resumen": entry.title,
+            "link": entry.link,
+            "fecha": getattr(entry, "published", "N/A")
+        })
+
+    return noticias
 
         # 🧾 CARD ESTILO TERMINAL
         st.markdown(f"""
