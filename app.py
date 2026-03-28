@@ -288,7 +288,7 @@ with tab1:
             data = yf.download(ticket, period="2y", interval="1d")
             df_ind = calcular_indicadores(data)
 st.session_state["rsi"] = float(df_ind["RSI"].iloc[-1])
-            if not data.empty:
+if not data.empty:
                 if isinstance(data.columns, pd.MultiIndex): data.columns = data.columns.get_level_values(0)
                 df = data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
                 df['ds'] = pd.to_datetime(df['ds']).dt.tz_localize(None)
