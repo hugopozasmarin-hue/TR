@@ -290,14 +290,14 @@ with tab1:
 st.session_state["rsi"] = float(df_ind["RSI"].iloc[-1])
 if not data.empty:
                 if isinstance(data.columns, pd.MultiIndex): data.columns = data.columns.get_level_values(0)
-                df = data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
-                df['ds'] = pd.to_datetime(df['ds']).dt.tz_localize(None)
-                model = Prophet(daily_seasonality=True).fit(df)
-                forecast = model.predict(model.make_future_dataframe(periods=30))
-                p_act, p_fut = float(df['y'].iloc[-1]), float(forecast['yhat'].iloc[-1])
-                cambio = ((p_fut - p_act) / p_act) * 100
-                st.session_state.update({"p_act": p_act, "p_pre": p_fut, "cambio": cambio, "ticket_act": ticket, "analizado": True, "full_data": data, "forecast_data": forecast, "df_prophet": df})
-                st.session_state.analisis = generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)
+                 df = data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
+                 df['ds'] = pd.to_datetime(df['ds']).dt.tz_localize(None)
+                 model = Prophet(daily_seasonality=True).fit(df)
+                 forecast = model.predict(model.make_future_dataframe(periods=30))
+                 p_act, p_fut = float(df['y'].iloc[-1]), float(forecast['yhat'].iloc[-1])
+                 cambio = ((p_fut - p_act) / p_act) * 100
+                 st.session_state.update({"p_act": p_act, "p_pre": p_fut, "cambio": cambio, "ticket_act": ticket, "analizado": True, "full_data": data, "forecast_data": forecast, "df_prophet": df})
+                 st.session_state.analisis = generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)
                 else: 
                     st.error("Ticker incorrecto.")
 
