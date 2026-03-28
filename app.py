@@ -333,7 +333,7 @@ with tab1:
                 </div>
             """, unsafe_allow_html=True)
 
-                if isinstance(data.columns, pd.MultiIndex): data.columns = data.columns.get_level_values(0)
+               if isinstance(data.columns, pd.MultiIndex): data.columns = data.columns.get_level_values(0)
                 df = data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
                 df['ds'] = pd.to_datetime(df['ds']).dt.tz_localize(None)
                 model = Prophet(daily_seasonality=True).fit(df)
