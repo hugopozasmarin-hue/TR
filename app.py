@@ -52,7 +52,7 @@ html, body, [class*="css"] {
 .stApp {
     background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
     color: #111827;
-}""")
+}
 
 /* --- SIDEBAR PRO --- */
 [data-testid="stSidebar"] {
@@ -173,7 +173,7 @@ div[data-baseweb="popover"] {
 .ai-bubble {
     background: #EEF2FF;
     border-left: 4px solid #3B82F6;
-}
+}""")
 
 /* --- NEWS CARDS --- */
 .news-card {
