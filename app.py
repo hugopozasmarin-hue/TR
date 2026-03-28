@@ -52,7 +52,7 @@ html, body, [class*="css"] {
 .stApp {
     background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
     color: #111827;
-}
+}""")
 
 /* --- SIDEBAR PRO --- */
 [data-testid="stSidebar"] {
