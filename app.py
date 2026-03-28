@@ -360,19 +360,17 @@ with tab2:
         
 # --- 📰 NOTICIAS ---
 with tab3:
-    st.markdown("<h3 style='color:#0A192F;'>🌎</h3>", unsafe_allow_html=True)
+    st.subheader(t["news_sub"])
 
     categoria = st.selectbox(
         ":",
-        ["Global", "EEUU", "Europa", "Cripto"]
+        ["Global", "EEUU", "Europa", "Cripto"],
+        key="news_category"
     )
 
     noticias = obtener_noticias(categoria)
-# Cambia el título estático por la variable:
-with tab3:
-    st.subheader(t["news_sub"])
 
-    for noticia in noticias:
+    for i, noticia in enumerate(noticias):
         st.markdown(f"""
         <div style="
             background:#FFFFFF;
@@ -385,16 +383,18 @@ with tab3:
             <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
             <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
             <p style='color:#374151;'>{noticia['resumen']}...</p>
-          <a href="{noticia['link']}" target="_blank" style="
-    color:#3B82F6;
-    font-weight:600;
-    text-decoration:none;
-">{t["read_more"]}</a>
+            <a href="{noticia['link']}" target="_blank"
+               style="color:#3B82F6;font-weight:600;text-decoration:none;">
+               {t["read_more"]}
+            </a>
         </div>
         """, unsafe_allow_html=True)
 
-        # 🔥 BOTÓN IA (BIEN INDENTADO)
-        if st.button(t["summarize"], key=noticia['link']):
+        # ✅ FIX CLAVE: KEY ESTABLE
+        if st.button(
+            t["summarize"],
+            key=f"crypto_summary_{categoria}_{i}"
+        ):
             resumen_ia = generar_analisis_ia(
                 st.session_state.lang,
                 "",
@@ -403,10 +403,9 @@ with tab3:
                 0,
                 perfil,
                 capital,
-                f"Resume esta noticia en 3 líneas claras: {noticia['titulo']} {noticia['resumen']}"
+                f"Resume esta noticia en 3 líneas: {noticia['titulo']} {noticia['resumen']}"
             )
             st.info(resumen_ia)
-
 # --- IA MEJORADA (DISCUSIÓN TOTAL) ---
 def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
     try:
