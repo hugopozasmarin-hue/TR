@@ -254,18 +254,80 @@ if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
 # --- SIDEBAR ---
 with st.sidebar:
-    st.markdown(f'<p class="field-title">{languages[st.session_state.lang]["lang_lab"]}</p>', unsafe_allow_html=True)
-    lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
+
+    st.markdown("""
+    <div style="padding:8px 0 12px 0;">
+        <h2 style="margin:0; color:#64FFDA;">INVESTIA</h2>
+        <p style="margin:0; font-size:11px; color:#94A3B8;">
+            Bloomberg-Class Terminal
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("### 📡 MARKET CONTROL")
+
+    lang_temp = st.selectbox(
+        "Language",
+        list(languages.keys()),
+        index=list(languages.keys()).index(st.session_state.lang)
+    )
+
     if lang_temp != st.session_state.lang:
         st.session_state.lang = lang_temp
         st.rerun()
+
     t = languages[st.session_state.lang]
-    st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
-    capital = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
-    st.markdown(f'<p class="field-title">{t["risk_lab"]}</p>', unsafe_allow_html=True)
-    perfil = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"], label_visibility="collapsed")
-    st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
-    ticket = st.text_input("", value="NVDA", label_visibility="collapsed").upper()
+
+    st.markdown("---")
+
+    st.markdown("### 💼 PORTFOLIO ENGINE")
+
+    capital = st.number_input("Capital (€)", value=1000.0, step=100.0)
+
+    perfil = st.selectbox(
+        "Risk Profile",
+        ["Conservador", "Moderado", "Arriesgado"]
+    )
+
+    st.markdown("---")
+
+    st.markdown("### 📊 ACTIVE TICKER")
+
+    ticket = st.text_input("Symbol", value="NVDA").upper()
+
+    # BLOOMBERG STYLE CONTEXT BOX
+    st.markdown(f"""
+    <div style="
+        background:#0F172A;
+        padding:12px;
+        border-radius:12px;
+        border:1px solid rgba(255,255,255,0.08);
+        margin-top:10px;
+    ">
+        <p style="color:#64FFDA; font-size:11px; margin:0;">
+            ACTIVE POSITION
+        </p>
+        <p style="color:#E2E8F0; font-size:12px; margin:4px 0 0 0;">
+            {ticket} | Watch Mode: LIVE ANALYSIS
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    st.markdown("### ℹ TICKER SYSTEM")
+
+    with st.expander("What is a ticker?"):
+        st.markdown("""
+        A ticker is the market code of a company.
+
+        Examples:
+        • NVDA → NVIDIA  
+        • AAPL → Apple  
+        • TSLA → Tesla  
+
+        It is used globally in financial markets.
+        """)
 
 # --- UI ---
 st.markdown(f"<h2 style='text-align: center; color: #0A192F; font-weight: 700; letter-spacing: -1px; margin-bottom: 30px;'>{t['title']}</h2>", unsafe_allow_html=True)
