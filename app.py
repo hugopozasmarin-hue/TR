@@ -267,6 +267,7 @@ with st.sidebar:
     perfil = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"], label_visibility="collapsed")
     st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
     ticket = st.text_input("", value="NVDA", label_visibility="collapsed").upper()
+    analizar = st.button(t["btn"])
 
 # --- UI ---
 st.markdown(f"<h2 style='text-align: center; color: #0A192F; font-weight: 700; letter-spacing: -1px; margin-bottom: 30px;'>{t['title']}</h2>", unsafe_allow_html=True)
@@ -278,7 +279,7 @@ tab1, tab2, tab3 = st.tabs([
 
 # --- ANÁLISIS ---
 with tab1:
-    if st.button(t["btn"]):
+    if analizar:
         with st.spinner(t["wait"]):
             data = yf.download(ticket, period="2y", interval="1d")
             if not data.empty:
