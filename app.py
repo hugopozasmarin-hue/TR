@@ -76,27 +76,21 @@ div[data-baseweb="popover"] {
 /* --- BOTONES PREMIUM --- */
 .stButton>button {
     border-radius: 10px;
-    background: linear-gradient(135deg, #1E3A8A, #2563EB);
+    background: linear-gradient(135deg, #0A192F, #1E3A8A);
     color: white;
-    font-weight: 600;
-    height: 45px;
-    border: none;
-    transition: all 0.25s ease;
-    position: relative;
-    overflow: hidden;
+    font-weight: 700;
+    height: 48px;
+    width: 100%;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(100,255,218,0.2);
 }
 
-/* Hover efecto glow */
 .stButton>button:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 10px 25px rgba(37,99,235,0.3);
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 0 20px rgba(100,255,218,0.25);
+    border: 1px solid #64FFDA;
 }
-
-/* Click efecto */
-.stButton>button:active {
-    transform: scale(0.97);
-}
-
 /* --- TABS MODERNAS --- */
 .stTabs [data-baseweb="tab-list"] {
     gap: 8px;
@@ -115,6 +109,22 @@ div[data-baseweb="popover"] {
     color: white !important;
 }
 
+/* GLASS EFFECT GENERAL */
+.metric-container,
+.news-card,
+.recommendation-box {
+    backdrop-filter: blur(10px);
+}
+
+/* FADE IN ANIMATION */
+.stApp {
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
+}
 /* --- METRICS PRO --- */
 .metric-container {
     background: white;
@@ -259,40 +269,85 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pr):
     
 # --- SESIÓN ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
-t = languages[st.session_state.lang]
 if "analizado" not in st.session_state: st.session_state.analizado = False
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
-# --- SIDEBAR ---
 with st.sidebar:
-    analizar = st.button(t["btn"])
+
+    # --- HEADER SIDEBAR ---
+    st.markdown("""
+    <div style="padding:10px 0 20px 0;">
+        <h2 style="color:#64FFDA; font-size:14px; letter-spacing:2px; margin:0;">
+            INVESTIA TERMINAL
+        </h2>
+        <p style="color:#94A3B8; font-size:11px; margin-top:5px;">
+            Pro Trading Interface
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # --- LANGUAGE PANEL ---
+    st.markdown("### 🌐 SYSTEM")
+    lang_temp = st.selectbox(
+        "Language",
+        list(languages.keys()),
+        index=list(languages.keys()).index(st.session_state.lang),
+        label_visibility="collapsed"
+    )
+
+    if lang_temp != st.session_state.lang:
+        st.session_state.lang = lang_temp
+        st.rerun()
+
+    t = languages[st.session_state.lang]
+
+    st.markdown("---")
+
+    # --- CAPITAL PANEL ---
+    st.markdown("### 💰 PORTFOLIO")
+
+    capital = st.number_input(
+        "Capital",
+        value=1000.0,
+        step=100.0,
+        label_visibility="collapsed"
+    )
+
+    perfil = st.selectbox(
+        "Risk Profile",
+        ["Conservador", "Moderado", "Arriesgado"],
+        label_visibility="collapsed"
+    )
+
+    st.markdown("---")
+
+    # --- ASSET PANEL ---
+    st.markdown("### 📈 ASSET")
+
+    ticket = st.text_input(
+        "Ticker",
+        value="NVDA",
+        label_visibility="collapsed"
+    ).upper()
+
+    # 💡 mini explicación ticker (lo que pediste)
     st.markdown("""
     <div style="
-    background: linear-gradient(135deg, #0A192F, #1E293B);
-    padding:15px;
-    border-radius:12px;
-    margin-bottom:20px;
+        font-size:11px;
+        color:#94A3B8;
+        margin-top:-10px;
+        margin-bottom:10px;
+        line-height:1.4;
     ">
-    <h3 style="color:white; margin-bottom:5px;">💎 INVESTIA</h3>
-    <p style="color:#9CA3AF; font-size:12px;">
-    Terminal de análisis financiero profesional
-    </p>
+    A ticker is the market symbol of a company.<br>
+    Example: Apple → AAPL | Tesla → TSLA
     </div>
-""", unsafe_allow_html=True)
-st.markdown(f'<p class="field-title">{languages[st.session_state.lang]["lang_lab"]}</p>', unsafe_allow_html=True)
-lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
-if lang_temp != st.session_state.lang:
-    st.session_state.lang = lang_temp
-    st.rerun()
-    st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
-    capital = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
-    st.markdown(f'<p class="field-title">{t["risk_lab"]}</p>', unsafe_allow_html=True)
-    perfil = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"], label_visibility="collapsed")
-    st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
-    ticket = st.text_input("", value="NVDA", label_visibility="collapsed").upper()
-    analizar = st.button(t["btn"])
-   
+    """, unsafe_allow_html=True)
 
+    # --- ACTION ZONE ---
+    st.markdown("### ⚡ EXECUTION")
+
+    analizar = st.button("RUN ANALYSIS")
 # --- UI ---
 st.markdown(f"<h2 style='text-align: center; color: #0A192F; font-weight: 700; letter-spacing: -1px; margin-bottom: 30px;'>{t['title']}</h2>", unsafe_allow_html=True)
 tab1, tab2, tab3 = st.tabs([
@@ -415,34 +470,3 @@ with tab3:
         </div>
         """, unsafe_allow_html=True)
 
-        # 🔥 BOTÓN IA (BIEN INDENTADO)
-        if st.button(t["summarize"], key=noticia['link']):
-            resumen_ia = generar_analisis_ia(
-                st.session_state.lang,
-                "",
-                0,
-                0,
-                0,
-                perfil,
-                capital,
-                f"Resume esta noticia en 3 líneas claras: {noticia['titulo']} {noticia['resumen']}"
-            )
-            st.info(resumen_ia)
-
-# --- IA MEJORADA (DISCUSIÓN TOTAL) ---
-def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
-    try:
-        client = Groq(api_key=GROQ_API_KEY)
-        idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
-        contexto_activo = f"Ticker: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€." if ticket else "Sin ticker analizado."
-        
-        prompt = f"""
-        Actúa como un Senior Investment Strategist. Responde en {idioma_inst}.
-        Contexto: Perfil {perfil}, Capital {capital}€. {contexto_activo}.
-        Puedes discutir sobre CUALQUIER accion incluso si no está siendo analizada. También cualquier tema de inversión, finanzas, ahorro o macroeconomía. ASume que el perfil seleccionado actual aplica a todas las preguntas y accione o activos.
-        Pregunta: {pregunta if pregunta else "Dame una recomendación general."}
-        """
-        response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile")
-        return response.choices[0].message.content
-    except Exception as e:
-        return f"Error IA: {e}"
