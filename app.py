@@ -42,7 +42,32 @@ html, body, [class*="css"] {
 }
 
 /* --- INPUTS --- */
-.stTextInput input, .stNumberInput input, .stSelectbox div {
+/* INPUTS CORREGIDOS */
+.stTextInput input,
+.stNumberInput input {
+    border-radius: 10px !important;
+    border: 1px solid #E5E7EB !important;
+    padding: 10px !important;
+}
+
+/* SELECTBOX FIX REAL */
+.stSelectbox > div {
+    background-color: #FFFFFF !important;
+    border-radius: 10px !important;
+    border: 1px solid #E5E7EB !important;
+    padding: 5px !important;
+}
+
+/* TEXTO DEL SELECT */
+.stSelectbox div[data-baseweb="select"] {
+    color: #111827 !important;
+}
+
+/* DROPDOWN */
+div[data-baseweb="popover"] {
+    background-color: white !important;
+    border-radius: 10px !important;
+}
     border-radius: 10px !important;
     border: 1px solid #E5E7EB !important;
     padding: 10px;
