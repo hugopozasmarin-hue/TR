@@ -217,8 +217,7 @@ languages = {
         "summarize": "🧠 Summarize with AI"
     }
 }
-st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
-ticket = st.text_input("", value="NVDA", label_visibility="collapsed").upper()
+
 # --- IA MEJORADA (RECOMENDACIÓN) ---
 def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
