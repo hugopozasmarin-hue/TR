@@ -159,7 +159,7 @@ languages = {
         "chat_tab": "Chat",
         "read_more": "Leer más →",
         "summarize": "🧠 Resumir con IA",
-        "category": "Categoría",
+        "category": "Categoría"
     },
     "English": { 
         "title":"INVESTIA TERMINAL", "lang_lab":"Language", "cap":"Budget", "risk_lab":"Risk Profile", "ass_lab":"Asset Ticker", 
@@ -171,7 +171,7 @@ languages = {
         "chat_tab": "Chat",
         "read_more": "Read more →",
         "summarize": "🧠 Summarize with AI",
-        "category": "Category",
+        "category": "Category"
     }
 }
 
