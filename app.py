@@ -75,17 +75,26 @@ div[data-baseweb="popover"] {
 
 /* --- BOTONES PREMIUM --- */
 .stButton>button {
-    border-radius: 12px;
-    background: linear-gradient(135deg, #0A192F, #1E3A8A);
+    border-radius: 10px;
+    background: linear-gradient(135deg, #1E3A8A, #2563EB);
     color: white;
     font-weight: 600;
-    height: 50px;
+    height: 45px;
+    border: none;
     transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
 }
 
+/* Hover efecto glow */
 .stButton>button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 20px rgba(0,0,0,0.12);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 10px 25px rgba(37,99,235,0.3);
+}
+
+/* Click efecto */
+.stButton>button:active {
+    transform: scale(0.97);
 }
 
 /* --- TABS MODERNAS --- */
@@ -255,11 +264,24 @@ if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
 # --- SIDEBAR ---
 with st.sidebar:
-    st.markdown(f'<p class="field-title">{languages[st.session_state.lang]["lang_lab"]}</p>', unsafe_allow_html=True)
-    lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
-    if lang_temp != st.session_state.lang:
-        st.session_state.lang = lang_temp
-        st.rerun()
+   st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #0A192F, #1E293B);
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:20px;
+">
+    <h3 style="color:white; margin-bottom:5px;">💎 INVESTIA</h3>
+    <p style="color:#9CA3AF; font-size:12px;">
+    Terminal de análisis financiero profesional
+    </p>
+</div>
+""", unsafe_allow_html=True)
+st.markdown(f'<p class="field-title">{languages[st.session_state.lang]["lang_lab"]}</p>', unsafe_allow_html=True)
+lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
+if lang_temp != st.session_state.lang:
+    st.session_state.lang = lang_temp
+    st.rerun()
     t = languages[st.session_state.lang]
     st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
     capital = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
@@ -390,4 +412,36 @@ with tab3:
     </a>
         </div>
         """, unsafe_allow_html=True)
+
+        # 🔥 BOTÓN IA (BIEN INDENTADO)
+        if st.button(t["summarize"], key=noticia['link']):
+            resumen_ia = generar_analisis_ia(
+                st.session_state.lang,
+                "",
+                0,
+                0,
+                0,
+                perfil,
+                capital,
+                f"Resume esta noticia en 3 líneas claras: {noticia['titulo']} {noticia['resumen']}"
+            )
+            st.info(resumen_ia)
+
+# --- IA MEJORADA (DISCUSIÓN TOTAL) ---
+def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
+    try:
+        client = Groq(api_key=GROQ_API_KEY)
+        idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
+        contexto_activo = f"Ticker: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€." if ticket else "Sin ticker analizado."
+        
+        prompt = f"""
+        Actúa como un Senior Investment Strategist. Responde en {idioma_inst}.
+        Contexto: Perfil {perfil}, Capital {capital}€. {contexto_activo}.
+        Puedes discutir sobre CUALQUIER accion incluso si no está siendo analizada. También cualquier tema de inversión, finanzas, ahorro o macroeconomía. ASume que el perfil seleccionado actual aplica a todas las preguntas y accione o activos.
+        Pregunta: {pregunta if pregunta else "Dame una recomendación general."}
+        """
+        response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile")
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Error IA: {e}"
 
