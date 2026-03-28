@@ -443,7 +443,11 @@ with tab3:
 with tab3:
     st.subheader(t["news_sub"])
 
-    for noticia in noticias:
+   for noticia in noticias:
+
+    col1, col2 = st.columns([4,1])
+
+    with col1:
         st.markdown(f"""
         <div style="
             background:#FFFFFF;
@@ -451,22 +455,38 @@ with tab3:
             padding:20px;
             border-radius:12px;
             margin-bottom:15px;
-            box-shadow:0 2px 6px rgba(0,0,0,0.05);
         ">
-            <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
+            <h4 style='color:#0A192F;'>{noticia['titulo']}</h4>
             <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
             <p style='color:#374151;'>{noticia['resumen']}...</p>
-         <div style="display:flex; justify-content:flex-end;">
-    <a href="{noticia['link']}" target="_blank" style="
-        background:#0A192F;
-        color:white;
-        padding:6px 12px;
-        border-radius:8px;
-        font-size:12px;
-        text-decoration:none;
-    ">
-        {t["read_more"]}
-    </a>
         </div>
         """, unsafe_allow_html=True)
+
+        st.markdown(f"""
+        <a href="{noticia['link']}" target="_blank" style="
+            background:#0A192F;
+            color:white;
+            padding:6px 12px;
+            border-radius:8px;
+            font-size:12px;
+            text-decoration:none;
+        ">
+        {t["read_more"]}
+        </a>
+        """, unsafe_allow_html=True)
+
+    with col2:
+        if st.button(t["summarize"] + f" {noticia['titulo'][:10]}", key=noticia["link"]):
+
+            with st.spinner("Resumiendo..."):
+                resumen = generar_analisis_ia(
+                    st.session_state.lang,
+                    "NEWS",
+                    0, 0, 0,
+                    perfil,
+                    capital,
+                    pregunta=noticia["resumen"]
+                )
+
+            st.info(resumen)
 
