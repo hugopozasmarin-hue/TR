@@ -375,11 +375,17 @@ with tab3:
             <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
             <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
             <p style='color:#374151;'>{noticia['resumen']}...</p>
-          <a href="{noticia['link']}" target="_blank" style="
-    color:#3B82F6;
-    font-weight:600;
-    text-decoration:none;
-">{t["read_more"]}</a>
+         <div style="display:flex; justify-content:flex-end;">
+    <a href="{noticia['link']}" target="_blank" style="
+        background:#0A192F;
+        color:white;
+        padding:6px 12px;
+        border-radius:8px;
+        font-size:12px;
+        text-decoration:none;
+    ">
+        {t["read_more"]}
+    </a>
         </div>
         """, unsafe_allow_html=True)
 
