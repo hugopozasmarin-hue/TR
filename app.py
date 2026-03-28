@@ -149,32 +149,49 @@ html, body, [class*="css"] {
 
 # --- TRADUCCIONES ---
 languages = {
-    "Español": { 
-        "title":"INVESTIA TERMINAL", "lang_lab":"Idioma", "cap":"Presupuesto", "risk_lab":"Riesgo", "ass_lab":"Ticker", 
-        "btn":"ANALIZAR ACTIVO", "wait":"Consultando mercados...", "price":"Precio Actual", "target":"Objetivo 30d", 
-        "shares":"Capacidad Compra", "analysis":"Recomendación Estratégica", "hist_t":"Movimiento del Mercado", 
-        "pred_t":"Proyección Algorítmica", "chat_placeholder":"Escribe tu consulta financiera...",
+    "Español": {
+        "title": "INVESTIA TERMINAL",
+        "lang_lab": "Idioma",
+        "cap": "Presupuesto",
+        "risk_lab": "Riesgo",
+        "ass_lab": "Ticker",
+        "btn": "ANALIZAR ACTIVO",
+        "wait": "Consultando mercados...",
+        "price": "Precio Actual",
+        "target": "Objetivo 30d",
+        "shares": "Capacidad Compra",
+        "analysis": "Recomendación Estratégica",
+        "hist_t": "Movimiento del Mercado",
+        "pred_t": "Proyección Algorítmica",
+        "chat_placeholder": "Escribe tu consulta financiera...",
         "news_tab": "Noticias",
-        "news_sub": "Noticias Económicas Globales"
+        "news_sub": "Noticias Económicas Globales",
         "chat_tab": "Chat",
         "read_more": "Leer más →",
-        "summarize": "🧠 Resumir con IA",
-        "category": "Categoría"
-    }
-    "English": { 
-        "title":"INVESTIA TERMINAL", "lang_lab":"Language", "cap":"Budget", "risk_lab":"Risk Profile", "ass_lab":"Asset Ticker", 
-        "btn":"ANALYZE ASSET", "wait":"Consulting markets...", "price":"Current Price", "target":"30-Day Target", 
-        "shares":"Buying Capacity", "analysis":"Strategic Recommendation", "hist_t":"Market Movement", 
-        "pred_t":"Algorithmic Projection", "chat_placeholder":"Type your financial query...",
+        "summarize": "🧠 Resumir con IA"
+    },
+    "English": {
+        "title": "INVESTIA TERMINAL",
+        "lang_lab": "Language",
+        "cap": "Budget",
+        "risk_lab": "Risk Profile",
+        "ass_lab": "Asset Ticker",
+        "btn": "ANALYZE ASSET",
+        "wait": "Consulting markets...",
+        "price": "Current Price",
+        "target": "30-Day Target",
+        "shares": "Buying Capacity",
+        "analysis": "Strategic Recommendation",
+        "hist_t": "Market Movement",
+        "pred_t": "Algorithmic Projection",
+        "chat_placeholder": "Type your financial query...",
         "news_tab": "News",
-        "news_sub": "Global Economic News"
+        "news_sub": "Global Economic News",
         "chat_tab": "Chat",
         "read_more": "Read more →",
-        "summarize": "🧠 Summarize with AI",
-        "category": "Category"
+        "summarize": "🧠 Summarize with AI"
     }
 }
-
 # --- IA MEJORADA (RECOMENDACIÓN) ---
 def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
