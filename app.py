@@ -13,40 +13,65 @@ st.set_page_config(page_title="InvestIA Elite | Pro Terminal", page_icon="💎",
 GROQ_API_KEY = "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" 
 
 st.markdown("""
-/* --- NEWS CARDS --- */
-.news-card {
-    background: white;
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 20px; /* Mayor separación entre noticias */
-    transition: 0.2s;
-    border: 1px solid #E5E7EB;
-    display: flex;
-    flex-direction: column;
-    gap: 12px; /* Espaciado automático entre elementos internos */
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+
+/* --- GLOBAL --- */
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
 }
 
-.news-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+.stApp {
+    background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+    color: #111827;
 }
 
-/* ESTILO PARA EL BOTÓN LEER MÁS */
-.read-more-link {
-    color: #1E3A8A !important;
-    text-decoration: none !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
-    margin-top: 10px;
-    display: inline-block;
-    transition: color 0.2s;
+/* --- SIDEBAR PRO --- */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0A192F 0%, #020617 100%);
+    border-right: 1px solid rgba(255,255,255,0.05);
 }
 
-.read-more-link:hover {
-    color: #3B82F6 !important;
-    text-decoration: underline !important;
+.field-title {
+    color: #64FFDA;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    margin-top: 18px;
 }
 
+/* --- INPUTS --- */
+/* INPUTS CORREGIDOS */
+.stTextInput input,
+.stNumberInput input {
+    border-radius: 10px !important;
+    border: 1px solid #E5E7EB !important;
+    padding: 10px !important;
+}
+
+/* SELECTBOX FIX REAL */
+.stSelectbox > div {
+    background-color: #FFFFFF !important;
+    border-radius: 10px !important;
+    border: 1px solid #E5E7EB !important;
+    padding: 5px !important;
+}
+
+/* TEXTO DEL SELECT */
+.stSelectbox div[data-baseweb="select"] {
+    color: #111827 !important;
+}
+
+/* DROPDOWN */
+div[data-baseweb="popover"] {
+    background-color: white !important;
+    border-radius: 10px !important;
+}
+    border-radius: 10px !important;
+    border: 1px solid #E5E7EB !important;
+    padding: 10px;
+}
 
 /* --- BOTONES PREMIUM --- */
 .stButton>button {
@@ -389,4 +414,5 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
         return response.choices[0].message.content
     except Exception as e:
         return f"Error IA: {e}"
+
 
