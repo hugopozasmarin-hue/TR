@@ -427,6 +427,8 @@ def obtener_noticias(categoria="Global"):
             "resumen": entry.title,
             "link": entry.link,
             "fecha": getattr(entry, "published", "N/A")
+st.write("Categoría:", categoria)
+st.write("Noticias cargadas:", len(noticias))
         })
 
     return noticias
