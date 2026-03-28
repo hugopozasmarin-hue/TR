@@ -319,10 +319,10 @@ with tab1:
            data = yf.download(ticket, period="2y", interval="1d")
            if not data.empty:
         # 1. Calculas el valor
-        p_actual_local = float(data['Close'].iloc[-1])
+               p_actual_local = float(data['Close'].iloc[-1])
         
         # 2. LO GUARDAS EN LA SESIÓN (ESTO EVITA EL ERROR)
-        st.session_state.p_act = p_actual_local
+               st.session_state.p_act = p_actual_local
         
         # 3. AHORA YA PUEDES USARLO EN EL MARKDOWN
         with c1: 
