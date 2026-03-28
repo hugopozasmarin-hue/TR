@@ -14,6 +14,34 @@ GROQ_API_KEY = "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"
 
 st.markdown("""
 <style>
+/* =========================
+   CURSOR / CARET SYSTEM
+   (OPUESTO AL FONDO)
+========================= */
+
+/* Inputs de texto */
+.stTextInput input,
+.stNumberInput input,
+textarea {
+    caret-color: #10B981 !important;  /* verde fintech */
+    color: #E5E7EB !important;
+}
+
+/* Cuando el usuario selecciona texto */
+::selection {
+    background: rgba(16,185,129,0.35);
+    color: #0A0D10;
+}
+
+/* Cursor en modo oscuro de select / baseweb */
+div[data-baseweb="select"] input {
+    caret-color: #0EA5E9 !important;
+}
+
+/* Placeholder más suave */
+::placeholder {
+    color: rgba(229,231,235,0.4) !important;
+}
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
 
 /* --- GLOBAL --- */
