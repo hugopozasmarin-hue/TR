@@ -5,6 +5,7 @@ import pandas as pd
 from groq import Groq
 import plotly.graph_objects as go
 import feedparser
+def obtener_noticias(categoria="Global"):
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="InvestIA Elite | Pro Terminal", page_icon="💎", layout="wide")
