@@ -313,7 +313,7 @@ with tab1:
     if st.button(t["btn"]):
         with st.spinner(t["wait"]):
             data = yf.download(ticket, period="2y", interval="1d")
-            if not data.empty:
+    if not data.empty:
                 # --- DENTRO DEL IF ST.BUTTON(T["BTN"]): ---
 with st.spinner(t["wait"]):
       data = yf.download(ticket, period="2y", interval="1d")
