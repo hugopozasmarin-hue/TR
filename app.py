@@ -397,6 +397,7 @@ with tab3:
            noticia_id = abs(hash(noticia['titulo'] + noticia['link']))
            key=f"summary_{categoria}_{noticia_id}"
         ):
+        # noticia_id = abs(hash(noticia['titulo'] + noticia['link']))
             resumen_ia = generar_analisis_ia(
                 st.session_state.lang,
                 "",
