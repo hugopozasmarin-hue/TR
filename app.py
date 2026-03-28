@@ -259,6 +259,7 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pr):
     
 # --- SESIÓN ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
+    t = languages[st.session_state.lang]
 if "analizado" not in st.session_state: st.session_state.analizado = False
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
@@ -282,7 +283,6 @@ lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()
 if lang_temp != st.session_state.lang:
     st.session_state.lang = lang_temp
     st.rerun()
-    t = languages[st.session_state.lang]
     st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
     capital = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
     st.markdown(f'<p class="field-title">{t["risk_lab"]}</p>', unsafe_allow_html=True)
