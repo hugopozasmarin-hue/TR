@@ -168,40 +168,12 @@ div[data-baseweb="popover"] {
     padding: 25px;
     background: linear-gradient(135deg, #F8FAFC, #FFFFFF);
     border: 1px solid #E5E7EB;
-}
-/* --- ESTILO DEL CURSOR --- */
-html, body, [class*="css"] {
-    cursor: none !important; /* Oculta el cursor original */
-}
-
-#custom-cursor {
-    width: 20px;
-    height: 20px;
-    background-color: white;
-    border-radius: 50%;
-    position: fixed;
-    pointer-events: none;
-    z-index: 999999;
-    mix-blend-mode: difference; /* Aquí ocurre la inversión de color */
-    transition: transform 0.1s ease-out;
-    transform: translate(-50%, -50%);
-}
+st.markdown("""
+<style>
+   ... TU CSS ACTUAL ...
 </style>
-
-<div id="custom-cursor"></div>
-
-<script>
-    const cursor = document.getElementById('custom-cursor');
-    document.addEventListener('mousemove', (e) => {
-        cursor.style.left = e.clientX + 'px';
-        cursor.style.top = e.clientY + 'px';
-    });
-    
-    // Efecto al hacer click
-    document.addEventListener('mousedown', () => cursor.style.transform = 'translate(-50%, -50%) scale(0.7)');
-    document.addEventListener('mouseup', () => cursor.style.transform = 'translate(-50%, -50%) scale(1)');
-</script>
-
+""", unsafe_allow_html=True)
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -313,27 +285,8 @@ with tab1:
     if st.button(t["btn"]):
         with st.spinner(t["wait"]):
             data = yf.download(ticket, period="2y", interval="1d")
-    if not data.empty:
-                # --- DENTRO DEL IF ST.BUTTON(T["BTN"]): ---
-        with st.spinner(t["wait"]):
-           data = yf.download(ticket, period="2y", interval="1d")
-           if not data.empty:
-        # 1. Calculas el valor
-               p_actual_local = float(data['Close'].iloc[-1])
-        
-        # 2. LO GUARDAS EN LA SESIÓN (ESTO EVITA EL ERROR)
-               st.session_state.p_act = p_actual_local
-        
-        # 3. AHORA YA PUEDES USARLO EN EL MARKDOWN
-        with c1: 
-            st.markdown(f"""
-                <div class='metric-container'>
-                    <p class='chat-label' style='color:#9CA3AF'>{t['price']}</p>
-                    <h3 style='margin:0;color:#0A192F'>{st.session_state.p_act:.2f}€</h3>
-                </div>
-            """, unsafe_allow_html=True)
-
-               if isinstance(data.columns, pd.MultiIndex): data.columns = data.columns.get_level_values(0)
+            if not data.empty:
+                if isinstance(data.columns, pd.MultiIndex): data.columns = data.columns.get_level_values(0)
                 df = data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
                 df['ds'] = pd.to_datetime(df['ds']).dt.tz_localize(None)
                 model = Prophet(daily_seasonality=True).fit(df)
