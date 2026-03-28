@@ -460,7 +460,7 @@ def obtener_noticias(categoria="Global"):
         )
 
         # 🚀 BLOOMBERG ANALYSIS BUTTON
-        if st.button(
+    if st.button(
             "📊 Bloomberg AI Analysis",
             key=f"bb_{categoria}_{i}"
         ):
