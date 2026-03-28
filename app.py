@@ -258,28 +258,30 @@ tab1, tab2, tab3 = st.tabs([
 ])
 
 # --- ANÁLISIS ---
+# --- BUSCA ESTA SECCIÓN EN TU CÓDIGO (TAB1) Y REEMPLÁZALA ---
 with tab1:
     if st.button(t["btn"]):
         with st.spinner(t["wait"]):
+            # Descarga de datos
             data = yf.download(ticket, period="2y", interval="1d")
+            
             if not data.empty:
-                # Datos actuales
-                p_act = data['Close'].iloc[-1]
+                # FIX: Si yfinance devuelve MultiIndex (v0.2.51+), seleccionamos solo el ticker
+                if isinstance(data.columns, pd.MultiIndex):
+                    data = data.xs(ticket, axis=1, level=1)
                 
-                # Prophet Prediction
+                # Ahora 'data' es un DataFrame estándar con columnas: Open, High, Low, Close, etc.
+                p_act = float(data['Close'].iloc[-1])
+                
+                # Preparación para Prophet
                 df_p = data.reset_index()[['Date', 'Close']].rename(columns={'Date': 'ds', 'Close': 'y'})
                 df_p['ds'] = df_p['ds'].dt.tz_localize(None)
+                
+                # El resto de tu lógica de Prophet funcionará perfectamente ahora
                 model = Prophet(changepoint_prior_scale=0.05, daily_seasonality=True)
                 model.fit(df_p)
-                future = model.make_future_dataframe(periods=30)
-                forecast = model.predict(future)
-                p_fut = forecast['yhat'].iloc[-1]
-                cambio = ((p_fut - p_act) / p_act) * 100
-                
-                st.session_state.analizado = True
-                st.session_state.res = {
-                    "p_act": p_act, "p_fut": p_fut, "cambio": cambio, "ticket": ticket
-                }
+                # ... (continúa el código igual)
+
 
                 # Layout de Métricas
                 c1, c2, c3 = st.columns(3)
