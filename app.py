@@ -264,7 +264,7 @@ if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
 # --- SIDEBAR ---
 with st.sidebar:
-st.markdown("""
+   st.markdown("""
 <div style="
     background: linear-gradient(135deg, #0A192F, #1E293B);
     padding:15px;
