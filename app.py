@@ -12,114 +12,138 @@ st.set_page_config(page_title="InvestIA Elite | Pro Terminal", page_icon="💎",
 # --- ⚠️ CONFIGURACIÓN API ---
 GROQ_API_KEY = "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" 
 
-# --- ESTILOS CSS DE ALTO NIVEL ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com');
-    
-    /* Fondo principal blanco */
-    .stApp { background-color: #FFFFFF; color: #1F2937; }
-    * { font-family: 'Inter', sans-serif; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
 
-    /* Barra lateral Azul Profundo Profesional */
-    [data-testid="stSidebar"] {
-        background-color: #0A192F !important;
-        border-right: 1px solid #E5E7EB;
-    }
+/* --- GLOBAL --- */
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+}
 
-    /* Títulos en la barra lateral */
-    .field-title {
-        color: #64FFDA;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 1.5px;
-        text-transform: uppercase;
-        margin-bottom: 5px;
-        margin-top: 15px;
-    }
+.stApp {
+    background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+    color: #111827;
+}
 
-    /* Botón Moderno */
-    .stButton>button {
-        border: none;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #0A192F 0%, #1F2937 100%);
-        color: #FFFFFF !important;
-        font-weight: 600;
-        height: 48px;
-        width: 100%;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
+/* --- SIDEBAR PRO --- */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0A192F 0%, #020617 100%);
+    border-right: 1px solid rgba(255,255,255,0.05);
+}
 
-    /* Tabs minimalistas */
-    .stTabs [data-baseweb="tab-list"] { gap: 10px; border-bottom: 1px solid #E5E7EB; }
-    .stTabs [data-baseweb="tab"] {
-        background-color: transparent; color: #6B7280;
-        font-weight: 500; padding: 12px 24px;
-    }
-    .stTabs [aria-selected="true"] { color: #0A192F !important; border-bottom: 2px solid #0A192F !important; }
+.field-title {
+    color: #64FFDA;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    margin-top: 18px;
+}
 
-    /* Métrica Cards Estilo Fintech */
-    .metric-container {
-        background: #FFFFFF;
-        border: 1px solid #F3F4F6;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        text-align: center;
-    }
+/* --- INPUTS --- */
+.stTextInput input, .stNumberInput input, .stSelectbox div {
+    border-radius: 10px !important;
+    border: 1px solid #E5E7EB !important;
+    padding: 10px;
+}
 
-    /* --- CHAT MODERNO --- */
-    .chat-container { display: flex; flex-direction: column; gap: 15px; padding: 10px; }
-    .chat-row { display: flex; width: 100%; justify-content: flex-start; margin-bottom: 5px; }
-    
-    .bubble {
-        padding: 16px 22px;
-        border-radius: 18px;
-        max-width: 80%;
-        font-size: 15px;
-        line-height: 1.6;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
+/* --- BOTONES PREMIUM --- */
+.stButton>button {
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0A192F, #1E3A8A);
+    color: white;
+    font-weight: 600;
+    height: 50px;
+    transition: all 0.25s ease;
+}
 
-    .user-bubble {
-        background-color: #F8F9FA;
-        color: #374151;
-        border: 1px solid #F3F4F6;
-        border-bottom-left-radius: 4px;
-    }
+.stButton>button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.12);
+}
 
-    .ai-bubble {
-        background-color: #F0F7FF;
-        color: #1E3A8A;
-        border: 1px solid #DBEAFE;
-        border-bottom-left-radius: 4px;
-    }
+/* --- TABS MODERNAS --- */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 8px;
+    border-bottom: none;
+}
 
-    .chat-label {
-        font-size: 9px;
-        font-weight: 800;
-        margin-bottom: 6px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    .label-user { color: #9CA3AF; }
-    .label-ai { color: #3B82F6; }
+.stTabs [data-baseweb="tab"] {
+    background: #F1F5F9;
+    border-radius: 10px;
+    padding: 10px 18px;
+    transition: 0.2s;
+}
 
-    /* Caja de recomendación */
-    .recommendation-box {
-        background-color: #FFFFFF;
-        border: 1px solid #E5E7EB;
-        border-left: 5px solid #0A192F;
-        padding: 25px;
-        border-radius: 12px;
-        margin-top: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    }
+.stTabs [aria-selected="true"] {
+    background: #0A192F !important;
+    color: white !important;
+}
+
+/* --- METRICS PRO --- */
+.metric-container {
+    background: white;
+    border-radius: 18px;
+    padding: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: 0.2s;
+}
+
+.metric-container:hover {
+    transform: translateY(-4px);
+}
+
+/* --- CHARTS --- */
+.stPlotlyChart {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* --- CHAT --- */
+.chat-container {
+    padding: 10px;
+}
+
+.bubble {
+    padding: 16px 20px;
+    border-radius: 16px;
+    font-size: 14px;
+    max-width: 75%;
+}
+
+.user-bubble {
+    background: #F1F5F9;
+    align-self: flex-end;
+}
+
+.ai-bubble {
+    background: #EEF2FF;
+    border-left: 4px solid #3B82F6;
+}
+
+/* --- NEWS CARDS --- */
+.news-card {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: 0.2s;
+    border: 1px solid #E5E7EB;
+}
+
+.news-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+}
+
+/* --- RECOMMENDATION BOX --- */
+.recommendation-box {
+    border-radius: 16px;
+    padding: 25px;
+    background: linear-gradient(135deg, #F8FAFC, #FFFFFF);
+    border: 1px solid #E5E7EB;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -132,6 +156,10 @@ languages = {
         "pred_t":"Proyección Algorítmica", "chat_placeholder":"Escribe tu consulta financiera...",
         "news_tab": "Noticias",
         "news_sub": "Noticias Económicas Globales"
+        "chat_tab": "Chat",
+        "read_more": "Leer más →",
+        "summarize": "🧠 Resumir con IA",
+        "category": "Categoría",
     },
     "English": { 
         "title":"INVESTIA TERMINAL", "lang_lab":"Language", "cap":"Budget", "risk_lab":"Risk Profile", "ass_lab":"Asset Ticker", 
@@ -140,6 +168,10 @@ languages = {
         "pred_t":"Algorithmic Projection", "chat_placeholder":"Type your financial query...",
         "news_tab": "News",
         "news_sub": "Global Economic News"
+        "chat_tab": "Chat",
+        "read_more": "Read more →",
+        "summarize": "🧠 Summarize with AI",
+        "category": "Category",
     }
 }
 
@@ -195,7 +227,11 @@ with st.sidebar:
 
 # --- UI ---
 st.markdown(f"<h2 style='text-align: center; color: #0A192F; font-weight: 700; letter-spacing: -1px; margin-bottom: 30px;'>{t['title']}</h2>", unsafe_allow_html=True)
-tab1, tab2, tab3 = st.tabs([f"📊 {t['btn']}", f"💬 Chat", f"📰 {t['news_tab']}"])
+tab1, tab2, tab3 = st.tabs([
+    f"📊 {t['btn']}", 
+    f"💬 {t['chat_tab']}", 
+    f"📰 {t['news_tab']}"
+])
 
 # --- ANÁLISIS ---
 with tab1:
@@ -297,16 +333,16 @@ with tab3:
             <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
             <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
             <p style='color:#374151;'>{noticia['resumen']}...</p>
-            <a href="{noticia['link']}" target="_blank" style="
-                color:#3B82F6;
-                font-weight:600;
-                text-decoration:none;
-            ">Leer más →</a>
+          <a href="{noticia['link']}" target="_blank" style="
+    color:#3B82F6;
+    font-weight:600;
+    text-decoration:none;
+">{t["read_more"]}</a>
         </div>
         """, unsafe_allow_html=True)
 
         # 🔥 BOTÓN IA (BIEN INDENTADO)
-        if st.button("🧠 Resumir con IA", key=noticia['link']):
+        if st.button(t["summarize"], key=noticia['link']):
             resumen_ia = generar_analisis_ia(
                 st.session_state.lang,
                 "",
