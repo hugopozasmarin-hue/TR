@@ -317,8 +317,8 @@ def obtener_noticias(categoria="Global"):
     fuentes = {
         "Global": "https://feeds.bbci.co.uk/news/business/rss.xml",
         "EEUU": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
-        "Europa": "https://www.ft.com/rss/home/europe",
-        "Cripto": "https://cointelegraph.com/rss"
+        "Europa": "https://www.lemonde.fr/en/europe/rss_full.xml",
+        "Cripto": "https://www.coindesk.com/arc/outboundfeeds/rss/"
     }
 
     url = fuentes.get(categoria, fuentes["Global"])
