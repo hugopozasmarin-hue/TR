@@ -449,7 +449,7 @@ def obtener_noticias(categoria="Global"):
         """, unsafe_allow_html=True)
 
         # 🔗 LINK ORIGINAL
-        st.markdown(
+    st.markdown(
             f"""
             <a href="{noticia['link']}" target="_blank"
             style="color:#3B82F6; font-weight:600;">
