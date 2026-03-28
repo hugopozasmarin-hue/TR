@@ -169,6 +169,16 @@ div[data-baseweb="popover"] {
     background: linear-gradient(135deg, #F8FAFC, #FFFFFF);
     border: 1px solid #E5E7EB;
 }
+/* HOVER */
+.stSelectbox > div:hover {
+    border: 1px solid #3B82F6 !important;
+}
+
+/* FOCUS */
+.stSelectbox div:focus-within {
+    border: 1px solid #3B82F6 !important;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+}
 </style>
 """, unsafe_allow_html=True)
 
