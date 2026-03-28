@@ -5,6 +5,14 @@ import pandas as pd
 from groq import Groq
 import plotly.graph_objects as go
 import feedparser
+def calcular_indicadores(data):
+    df = data.copy()
+
+    # Ejemplo básico (puedes ampliarlo)
+    df["media_20"] = df["Close"].rolling(20).mean()
+    df["media_50"] = df["Close"].rolling(50).mean()
+
+    return df
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="InvestIA Elite | Pro Terminal", page_icon="💎", layout="wide")
