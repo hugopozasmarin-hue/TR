@@ -8,6 +8,8 @@ import feedparser
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="InvestIA Elite | Pro Terminal", page_icon="💎", layout="wide")
+if "watchlist" not in st.session_state:
+    st.session_state.watchlist = []
 
 # --- ⚠️ CONFIGURACIÓN API ---
 GROQ_API_KEY = "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" 
