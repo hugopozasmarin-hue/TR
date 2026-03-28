@@ -218,34 +218,6 @@ languages = {
     }
 }
 # --- IA MEJORADA (RECOMENDACIÓN) ---
-def resumir_noticia_impacto(lang, titulo, resumen):
-    try:
-        client = Groq(api_key=GROQ_API_KEY)
-
-        idioma = "ENGLISH" if lang == "English" else "ESPAÑOL"
-
-        prompt = f"""
-        Act as a financial analyst.
-
-        Language: {idioma}
-
-        1. Summarize the news in 3-4 lines
-        2. Explain how it affects financial markets (stocks, crypto, economy)
-        3. Predict short-term market reaction
-
-        Title: {titulo}
-        Content: {resumen}
-        """
-
-        response = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model="llama-3.3-70b-versatile"
-        )
-
-        return response.choices[0].message.content
-
-    except Exception as e:
-        return f"Error IA: {e}"
 def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
@@ -274,45 +246,6 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
         
 def generar_chat_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pr):
     return generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=pr)
-def analizar_noticia_bloomberg(lang, titulo, resumen):
-    try:
-        client = Groq(api_key=GROQ_API_KEY)
-
-        idioma = "ENGLISH" if lang == "English" else "ESPAÑOL"
-
-        prompt = f"""
-        You are a Bloomberg Terminal AI Analyst.
-
-        Language: {idioma}
-
-        Analyze this news like a professional trader.
-
-        Return in this format:
-
-        1. SUMMARY (max 4 lines)
-        2. MARKET IMPACT:
-           - S&P500:
-           - Nasdaq:
-           - Crypto:
-           - Forex:
-        3. SENTIMENT: Positive / Negative / Neutral
-        4. TRADING BIAS: Buy / Sell / Hold macro view
-        5. IMPORTANCE SCORE (0-100)
-
-        News:
-        Title: {titulo}
-        Content: {resumen}
-        """
-
-        response = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model="llama-3.3-70b-versatile"
-        )
-
-        return response.choices[0].message.content
-
-    except Exception as e:
-        return f"Error IA: {e}"
     
 # --- SESIÓN ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
@@ -379,7 +312,28 @@ with tab1:
 
         st.markdown(f"<div class='recommendation-box'><h3 style='margin-top:0; color:#0A192F;'>✨ {t['analysis']}</h3><p style='white-space: pre-wrap; color:#374151;'>{st.session_state.get('analisis', '')}</p></div>", unsafe_allow_html=True)
 
+# --- 📰 NOTICIAS ECONÓMICAS ---
+def obtener_noticias(categoria="Global"):
+    fuentes = {
+        "Global": "https://feeds.bbci.co.uk/news/business/rss.xml",
+        "EEUU": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
+        "Europa": "https://www.ft.com/rss/home/europe",
+        "Cripto": "https://cointelegraph.com/rss"
+    }
 
+    url = fuentes.get(categoria, fuentes["Global"])
+    feed = feedparser.parse(url)
+
+    noticias = []
+    for entry in feed.entries[:10]:
+        noticias.append({
+            "titulo": entry.title,
+            "link": entry.link,
+            "fecha": entry.get("published", "Sin fecha"),
+            "resumen": entry.get("summary", "")[:200]
+        })
+
+    return noticias
 # --- CHAT ---
 with tab2:
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
@@ -393,96 +347,55 @@ with tab2:
         res = generar_chat_ia(st.session_state.lang, st.session_state.get("ticket_act", "N/A"), st.session_state.get("p_act", 0), st.session_state.get("p_pre", 0), st.session_state.get("cambio", 0), perfil, capital, pr)
         st.session_state.chat_history.append({"role": "assistant", "content": res})
         st.rerun()
-# --- 📰 BLOOMBERG NEWS TERMINAL MODE ---
+        
+# --- 📰 NOTICIAS ---
 with tab3:
-
-    st.subheader(f"🌎 {t['news_sub']}")
+    st.markdown("<h3 style='color:#0A192F;'>🌎</h3>", unsafe_allow_html=True)
 
     categoria = st.selectbox(
-        " ",
-        ["Global", "EEUU", "Europa", "Cripto"],
-        key="news_category"
+        ":",
+        ["Global", "EEUU", "Europa", "Cripto"]
     )
 
-def obtener_noticias(categoria="Global"):
+    noticias = obtener_noticias(categoria)
+# Cambia el título estático por la variable:
+with tab3:
+    st.subheader(t["news_sub"])
 
-    import feedparser
-
-    feeds = {
-        "Global": "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en",
-        "EEUU": "https://news.google.com/rss/search?q=usa+economy&hl=en-US&gl=US&ceid=US:en",
-        "Europa": "https://news.google.com/rss/search?q=europe+economy&hl=en-US&gl=US&ceid=US:en",
-        "Cripto": "https://news.google.com/rss/search?q=cryptocurrency&hl=en-US&gl=US&ceid=US:en"
-    }
-
-    url = feeds.get(categoria, feeds["Global"])
-    feed = feedparser.parse(url)
-
-    noticias = []
-
-    for entry in feed.entries[:10]:
-
-        noticias.append({
-            "titulo": entry.title,
-            "resumen": entry.title,
-            "link": entry.link
-            "fecha": getattr(entry, "published", "N/A")
-        })
-
-    return noticias
-
-        # 🧾 CARD ESTILO TERMINAL
-    st.markdown(f"""
-        <div class="news-card">
-            <h4 style="color:#0A192F; margin-bottom:6px;">
-                {noticia['titulo']}
-            </h4>
-
-            <p style="font-size:12px; color:#6B7280;">
-                {noticia['fecha']}
-            </p>
-
-            <p style="color:#374151;">
-                {noticia['resumen'][:250]}...
-            </p>
+    for noticia in noticias:
+        st.markdown(f"""
+        <div style="
+            background:#FFFFFF;
+            border:1px solid #E5E7EB;
+            padding:20px;
+            border-radius:12px;
+            margin-bottom:15px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.05);
+        ">
+            <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
+            <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
+            <p style='color:#374151;'>{noticia['resumen']}...</p>
+          <a href="{noticia['link']}" target="_blank" style="
+    color:#3B82F6;
+    font-weight:600;
+    text-decoration:none;
+">{t["read_more"]}</a>
         </div>
         """, unsafe_allow_html=True)
 
-        # 🔗 LINK ORIGINAL
-    st.markdown(
-            f"""
-            <a href="{noticia['link']}" target="_blank"
-            style="color:#3B82F6; font-weight:600;">
-            {t["read_more"]}
-            </a>
-            """,
-            unsafe_allow_html=True
-        )
-
-        # 🚀 BLOOMBERG ANALYSIS BUTTON
-    if st.button(
-            "📊 Bloomberg AI Analysis",
-            key=f"bb_{categoria}_{i}"
-        ):
-
-            with st.spinner("Running Bloomberg AI analysis..."):
-
-                resultado = analizar_noticia_bloomberg(
-                    st.session_state.lang,
-                    noticia["titulo"],
-                    noticia["resumen"]
-                )
-
-                st.markdown(f"""
-                <div class="recommendation-box">
-                    <h4 style="color:#0A192F; margin-top:0;">
-                        📊 Bloomberg Terminal Analysis
-                    </h4>
-                    <pre style="white-space:pre-wrap; color:#111827;">
-{resultado}
-                    </pre>
-                </div>
-                """, unsafe_allow_html=True)
+        # 🔥 BOTÓN IA (BIEN INDENTADO)
+        if st.button(t["summarize"], key=noticia['link']):
+            resumen_ia = generar_analisis_ia(
+                st.session_state.lang,
+                "",
+                0,
+                0,
+                0,
+                perfil,
+                capital,
+                f"Resume esta noticia en 3 líneas claras: {noticia['titulo']} {noticia['resumen']}"
+            )
+            st.info(resumen_ia)
 
 # --- IA MEJORADA (DISCUSIÓN TOTAL) ---
 def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
@@ -501,5 +414,4 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
         return response.choices[0].message.content
     except Exception as e:
         return f"Error IA: {e}"
-
 
