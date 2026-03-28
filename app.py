@@ -7,129 +7,133 @@ import plotly.graph_objects as go
 import feedparser
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="InvestIA Elite | Pro Terminal", page_icon="💎", layout="wide")
+st.set_page_config(page_title="InvestIA Elite | Terminal", page_icon="💎", layout="wide")
 
-# --- ⚠️ CONFIGURACIÓN API (Asegúrate de usar variables de entorno en producción) ---
+# --- ⚠️ CONFIGURACIÓN API ---
 GROQ_API_KEY = "tu_api_key_aqui" 
 
-# --- ESTILOS CSS AVANZADOS ---
+# --- DISEÑO CSS PROFESIONAL (MINIMALISTA BLANCO) ---
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com');
 
 /* GLOBAL */
-html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0F172A; }
-.stApp { background: radial-gradient(circle at top right, #1E293B, #0F172A); color: #F8FAFC; }
-
-/* SIDEBAR REINVENTADO (Glassmorphism) */
-[data-testid="stSidebar"] {
-    background: rgba(15, 23, 42, 0.8) !important;
-    backdrop-filter: blur(15px);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
+html, body, [class*="css"] { 
+    font-family: 'Inter', sans-serif; 
+    background-color: #FFFFFF; 
+    color: #1E293B;
 }
-.sidebar-header {
-    padding: 20px 0px;
-    text-align: center;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    margin-bottom: 20px;
+.stApp { background-color: #FFFFFF; }
+
+/* SIDEBAR MINIMALISTA */
+[data-testid="stSidebar"] {
+    background-color: #F8FAFC !important;
+    border-right: 1px solid #E2E8F0 !important;
+    padding-top: 2rem;
 }
 .field-title {
-    color: #94A3B8;
-    font-size: 0.75rem;
+    color: #475569;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin: 1.5rem 0 0.5rem 0;
+    letter-spacing: 0.05em;
+    margin: 1.2rem 0 0.4rem 0;
 }
-.ticker-info {
-    font-size: 0.7rem;
-    color: #64748B;
-    font-style: italic;
-    margin-bottom: 10px;
+.ticker-hint {
+    font-size: 0.75rem;
+    color: #94A3B8;
+    line-height: 1.4;
+    margin-bottom: 8px;
 }
 
-/* TABS ESTILO NAVEGACIÓN MODERNA */
+/* TABS TIPO SEGMENTED CONTROL */
 .stTabs [data-baseweb="tab-list"] {
-    gap: 15px;
-    background-color: rgba(255,255,255,0.03);
-    padding: 10px 20px;
-    border-radius: 50px;
-    border: 1px solid rgba(255,255,255,0.05);
-    width: fit-content;
-    margin: 0 auto 30px auto;
+    gap: 0px;
+    background-color: #F1F5F9;
+    padding: 4px;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+    margin-bottom: 2rem;
 }
 .stTabs [data-baseweb="tab"] {
-    height: 40px;
+    height: 38px;
     background-color: transparent !important;
     border: none !important;
-    color: #94A3B8 !important;
-    font-weight: 600;
+    color: #64748B !important;
+    font-weight: 500;
+    border-radius: 8px !important;
+    padding: 0 24px !important;
 }
 .stTabs [aria-selected="true"] {
-    color: #38BDF8 !important;
-    background: rgba(56, 189, 248, 0.1) !important;
-    border-radius: 30px !important;
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-/* TARJETAS DE NOTICIAS */
+/* NOTICIAS & CARDS */
 .news-card {
-    background: rgba(30, 41, 59, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 20px;
-    padding: 20px;
-    margin-bottom: 15px;
-    transition: all 0.3s ease;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 16px;
+    transition: all 0.2s ease;
 }
 .news-card:hover {
-    border-color: #38BDF8;
-    background: rgba(30, 41, 59, 0.8);
-    transform: translateY(-2px);
+    border-color: #CBD5E1;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
 }
-.news-tag {
-    background: #0EA5E9;
-    color: white;
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: bold;
+.news-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0F172A;
+    margin-bottom: 8px;
+    text-decoration: none;
 }
 
-/* CHAT PRO */
-.chat-msg {
-    padding: 15px 20px;
-    border-radius: 20px;
-    margin-bottom: 12px;
-    max-width: 85%;
-    line-height: 1.6;
+/* CHAT BUBBLES */
+.chat-container { margin-top: 20px; }
+.bubble {
+    padding: 14px 18px;
+    border-radius: 18px;
+    font-size: 0.95rem;
+    max-width: 80%;
+    margin-bottom: 10px;
+    line-height: 1.5;
 }
-.user-msg {
-    background: #334155;
-    color: white;
+.user-bubble {
+    background: #F1F5F9;
+    color: #1E293B;
     margin-left: auto;
-    border-bottom-right-radius: 2px;
+    border-bottom-right-radius: 4px;
 }
-.ai-msg {
-    background: linear-gradient(135deg, #0284C7, #0369A1);
-    color: white;
+.ai-bubble {
+    background: #0F172A;
+    color: #FFFFFF;
     margin-right: auto;
-    border-bottom-left-radius: 2px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border-bottom-left-radius: 4px;
 }
 
-/* BOTÓN PREMIUM */
+/* BOTONES */
 .stButton>button {
-    width: 100%;
-    border-radius: 12px;
-    background: linear-gradient(90deg, #38BDF8, #2563EB);
+    border-radius: 10px;
+    font-weight: 600;
     border: none;
-    color: white;
-    font-weight: 700;
-    padding: 12px;
-    transition: 0.3s;
+    transition: 0.2s;
 }
-.stButton>button:hover {
-    opacity: 0.9;
-    box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+/* Botón principal Analizar */
+[data-testid="stSidebar"] .stButton>button {
+    background: #0F172A;
+    color: white;
+    width: 100%;
+}
+/* Botón Resumir (secundario) */
+.news-card .stButton>button {
+    background: #F8FAFC;
+    color: #475569;
+    border: 1px solid #E2E8F0;
+    font-size: 0.8rem;
+    height: 32px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -137,105 +141,107 @@ html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; backg
 # --- TRADUCCIONES ---
 languages = {
     "Español": {
-        "title": "INVESTIA ELITE",
-        "lang_lab": "Idioma / Language",
-        "cap": "Capital Disponible",
-        "risk_lab": "Perfil de Riesgo",
-        "ass_lab": "Símbolo (Ticker)",
-        "ticker_help": "Ej: AAPL (Apple), BTC-USD (Bitcoin), TSLA (Tesla). Es el código único del activo.",
-        "btn": "INICIAR ANÁLISIS PRO",
+        "title": "INVESTIA TERMINAL",
+        "lang_lab": "Idioma",
+        "cap": "Presupuesto",
+        "risk_lab": "Riesgo",
+        "ass_lab": "Símbolo Activo (Ticker)",
+        "ticker_help": "Un **Ticker** es el código único de una empresa o activo. Ej: 'AAPL' para Apple o 'BTC-USD' para Bitcoin.",
+        "btn": "ANALIZAR MERCADO",
+        "news_tab": "Noticias",
         "chat_tab": "Terminal IA",
-        "news_tab": "Global News",
-        "read_more": "Ver detalles",
-        "news_sub": "Última hora en mercados financieros"
+        "read_more": "Leer noticia original",
+        "summarize": "🧠 Resumir con IA"
     },
     "English": {
-        "title": "INVESTIA ELITE",
-        "lang_lab": "Language / Idioma",
-        "cap": "Available Capital",
-        "risk_lab": "Risk Profile",
+        "title": "INVESTIA TERMINAL",
+        "lang_lab": "Language",
+        "cap": "Budget",
+        "risk_lab": "Risk",
         "ass_lab": "Asset Ticker",
-        "ticker_help": "Ex: AAPL (Apple), BTC-USD (Bitcoin). A unique code for market assets.",
-        "btn": "START PRO ANALYSIS",
+        "ticker_help": "A **Ticker** is a unique code for a company or asset. Ex: 'AAPL' for Apple or 'BTC-USD' for Bitcoin.",
+        "btn": "ANALYZE MARKET",
+        "news_tab": "News",
         "chat_tab": "AI Terminal",
-        "news_tab": "Global News",
-        "read_more": "Details",
-        "news_sub": "Real-time global market updates"
+        "read_more": "Read original news",
+        "summarize": "🧠 AI Summary"
     }
 }
 
-# --- ESTADO DE SESIÓN ---
+# --- SESIÓN ---
 if "lang" not in st.session_state: st.session_state.lang = "Español"
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
-# --- SIDEBAR REDISEÑADO ---
+# --- SIDEBAR (MODERNO & EDUCATIVO) ---
 with st.sidebar:
-    st.markdown('<div class="sidebar-header"><h1>💎 InvestIA</h1></div>', unsafe_allow_html=True)
+    st.markdown(f"### 💎 InvestIA")
     
-    # Selector de Idioma
     st.markdown(f'<p class="field-title">{languages[st.session_state.lang]["lang_lab"]}</p>', unsafe_allow_html=True)
-    lang_temp = st.selectbox("", list(languages.keys()), label_visibility="collapsed")
+    lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
     if lang_temp != st.session_state.lang:
         st.session_state.lang = lang_temp
         st.rerun()
-    
+
     t = languages[st.session_state.lang]
-    
-    # Inputs
+
     st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
     capital = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
-    
+
     st.markdown(f'<p class="field-title">{t["risk_lab"]}</p>', unsafe_allow_html=True)
     perfil = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"], label_visibility="collapsed")
-    
+
     st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
-    st.markdown(f'<p class="ticker-info">{t["ticker_help"]}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="ticker-hint">{t["ticker_help"]}</p>', unsafe_allow_html=True)
     ticker = st.text_input("", value="AAPL", label_visibility="collapsed").upper()
-    
+
     st.markdown("<br>", unsafe_allow_html=True)
     analyze_btn = st.button(t["btn"])
 
-# --- CONTENIDO PRINCIPAL ---
-st.markdown(f"<h2 style='text-align: center; letter-spacing: -1px; font-weight: 800;'>{t['title']}</h2>", unsafe_allow_html=True)
+# --- CUERPO PRINCIPAL ---
+st.markdown(f"<h1 style='font-weight:800; color:#0F172A; margin-bottom:0.5rem;'>{t['title']}</h1>", unsafe_allow_html=True)
 
-# TABS REDISEÑADOS
-tab1, tab2 = st.tabs([f"📊 {t['chat_tab']}", f"🌍 {t['news_tab']}"])
+# TABS REDISEÑADOS (TIPO NAVEGACIÓN SaaS)
+tab1, tab2 = st.tabs([f"💬 {t['chat_tab']}", f"📰 {t['news_tab']}"])
 
 with tab1:
-    col_chat, col_info = st.columns([2, 1])
+    # Contenedor de Chat
+    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+    st.markdown('<div class="bubble ai-bubble">Bienvenido a la terminal. Indica un activo para comenzar el análisis financiero.</div>', unsafe_allow_html=True)
     
-    with col_chat:
-        st.markdown("<div style='height: 400px; overflow-y: auto; padding-right: 10px;'>", unsafe_allow_html=True)
-        # Simulación de historial
-        st.markdown('<div class="chat-msg ai-msg">Hola. Analicemos el mercado. ¿Qué te gustaría saber sobre este activo hoy?</div>', unsafe_allow_html=True)
-        for msg in st.session_state.chat_history:
-             role_class = "user-msg" if msg["role"] == "user" else "ai-msg"
-             st.markdown(f'<div class="chat-msg {role_class}">{msg["content"]}</div>', unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        st.text_input("", placeholder="Pregunta a la IA sobre estrategias...", key="chat_input", label_visibility="collapsed")
-
-    with col_info:
-        st.markdown(f"""
-        <div style='background: rgba(255,255,255,0.03); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.05)'>
-            <h4 style='margin-top:0'>{ticker} Stats</h4>
-            <p style='color: #94A3B8; font-size: 0.9rem'>Selecciona un ticker y haz clic en analizar para ver proyecciones avanzadas de Prophet y Groq.</p>
-        </div>
-        """, unsafe_allow_html=True)
+    # Historial (Simulación estética)
+    for msg in st.session_state.chat_history:
+        clase = "user-bubble" if msg["role"] == "user" else "ai-bubble"
+        st.markdown(f'<div class="bubble {clase}">{msg["content"]}</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Input de chat fijo abajo (simulado)
+    st.text_input("", placeholder="Pregunta sobre tendencias de mercado...", key="chat_in", label_visibility="collapsed")
 
 with tab2:
-    st.markdown(f"### {t['news_sub']}")
-    # Ejemplo de Card de Noticias Estética
-    for i in range(3):
+    st.markdown("<br>", unsafe_allow_html=True)
+    # Ejemplo de Noticia con todas las funciones mantenidas
+    for i in range(2):
         st.markdown(f"""
         <div class="news-card">
-            <span class="news-tag">MERCADOS</span>
-            <h4 style='margin: 10px 0;'>Impacto del Tesoro en el rendimiento de {ticker}</h4>
-            <p style='color: #94A3B8; font-size: 0.9rem;'>Los analistas sugieren una volatilidad alta para la próxima semana debido a los datos de inflación...</p>
-            <a href='#' style='color: #38BDF8; text-decoration: none; font-weight: 600; font-size: 0.8rem;'>{t['read_more']} →</a>
-        </div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <a class="news-title" href="#">Las acciones de {ticker} muestran señales de rebote técnico</a>
+                    <p style="color: #64748B; font-size: 0.9rem; margin-top: 8px;">
+                        Análisis detallado sobre el comportamiento de los mercados globales y el impacto en los sectores tecnológicos...
+                    </p>
+                </div>
+            </div>
         """, unsafe_allow_html=True)
+        
+        # Botones de función (Mantenidos)
+        c1, c2 = st.columns([1, 4])
+        with c1:
+            st.button(t["summarize"], key=f"sum_{i}")
+        with c2:
+            st.markdown(f"<small style='line-height:35px'><a href='#'>{t['read_more']}</a></small>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
-# --- LÓGICA DE ANALISIS (Para integrar con tus funciones de Yahoo Finance) ---
+# --- LÓGICA DE FONDO (Sin cambios en tus funciones originales) ---
 if analyze_btn:
-    st.toast(f"Analizando {ticker}...", icon="🚀")
+    st.success(f"Analizando {ticker}...")
+
