@@ -7,6 +7,34 @@ import plotly.graph_objects as go
 import feedparser
 def calcular_indicadores(data):
     df = data.copy()
+def calcular_indicadores(data):
+    df = data.copy()
+
+    # Media móvil
+    df["media_20"] = df["Close"].rolling(20).mean()
+
+    # RSI básico
+    delta = df["Close"].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
+
+    rs = gain / loss
+    df["RSI"] = 100 - (100 / (1 + rs))
+
+    return df
+
+    # Media móvil
+    df["media_20"] = df["Close"].rolling(20).mean()
+
+    # RSI básico
+    delta = df["Close"].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
+
+    rs = gain / loss
+    df["RSI"] = 100 - (100 / (1 + rs))
+
+    return df
 
     # Ejemplo básico (puedes ampliarlo)
     df["media_20"] = df["Close"].rolling(20).mean()
