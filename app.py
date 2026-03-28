@@ -264,6 +264,19 @@ if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
 # --- SIDEBAR ---
 with st.sidebar:
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #0A192F, #1E293B);
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:20px;
+">
+    <h3 style="color:white; margin-bottom:5px;">💎 INVESTIA</h3>
+    <p style="color:#9CA3AF; font-size:12px;">
+    Terminal de análisis financiero profesional
+    </p>
+</div>
+""", unsafe_allow_html=True)
     st.markdown(f'<p class="field-title">{languages[st.session_state.lang]["lang_lab"]}</p>', unsafe_allow_html=True)
     lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
     if lang_temp != st.session_state.lang:
