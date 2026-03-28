@@ -1,4 +1,5 @@
 import streamlit as st
+import re
 import yfinance as yf
 from prophet import Prophet
 import pandas as pd
@@ -340,8 +341,15 @@ def obtener_noticias(categoria="Global"):
             "titulo": entry.title,
             "link": entry.link,
             "fecha": entry.get("published", "Sin fecha"),
-            "resumen": entry.get("summary", "")[:200]
-        })
+           raw_summary = entry.get("summary", "")
+clean_summary = re.sub('<.*?>', '', raw_summary)  # elimina HTML
+
+noticias.append({
+    "titulo": entry.title,
+    "link": entry.link,
+    "fecha": entry.get("published", "Sin fecha"),
+    "resumen": clean_summary[:200]
+})
 
     return noticias
 # --- CHAT ---
