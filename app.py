@@ -325,7 +325,11 @@ with tab1:
         with st.spinner(t["wait"]):
             data = yf.download(ticket, period="2y", interval="1d")
             df_ind = calcular_indicadores(data)
-st.session_state["rsi"] = float(df_ind["RSI"].iloc[-1])
+if "RSI" in df_ind.columns and not df_ind["RSI"].dropna().empty:
+    st.session_state["rsi"] = float(df_ind["RSI"].iloc[-1])
+else:
+    st.session_state["rsi"] = None
+    st.warning("RSI no disponible")
 if not data.empty:
                 if isinstance(data.columns, pd.MultiIndex): data.columns = data.columns.get_level_values(0)
                 df = data.reset_index()[['Date', 'Close']].rename(columns={'Date':'ds', 'Close':'y'})
