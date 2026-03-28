@@ -267,7 +267,7 @@ with st.sidebar:
     st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
     ticket = st.text_input("", value="NVDA", label_visibility="collapsed").upper()
     if st.button("➕ Add to Watchlist"):
-    añadir_watchlist(ticket)
+        añadir_watchlist(ticket)
 
 st.markdown("### 📌 Watchlist")
 for tck in st.session_state.watchlist:
