@@ -225,9 +225,6 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
         client = Groq(api_key=GROQ_API_KEY)
         contexto = f"Ticker: {ticket}. Price: {p_act}€. Prediction: {p_fut}€ ({cambio:.2f}%)."
         idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
-
-# AÑADE ESTA LÍNEA AQUÍ:
-
         
         prompt = f"""
         Act as a Senior Investment Strategist. Your goal is to give a CUSTOMIZED RECOMMENDATION in {idioma_inst}.
