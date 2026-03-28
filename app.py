@@ -173,7 +173,7 @@ div[data-baseweb="popover"] {
 .ai-bubble {
     background: #EEF2FF;
     border-left: 4px solid #3B82F6;
-}""")
+}
 
 /* --- NEWS CARDS --- */
 .news-card {
@@ -462,3 +462,4 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
         return response.choices[0].message.content
     except Exception as e:
         return f"Error IA: {e}"
+""")
