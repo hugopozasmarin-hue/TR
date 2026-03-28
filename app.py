@@ -223,10 +223,10 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
         client = Groq(api_key=GROQ_API_KEY)
         contexto = f"Ticker: {ticket}. Price: {p_act}€. Prediction: {p_fut}€ ({cambio:.2f}%)."
         idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
-st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
-ticket = st.text_input("", value="NVDA", label_visibility="collapsed").upper()
 
 # AÑADE ESTA LÍNEA AQUÍ:
+st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
+ticket = st.text_input("", value="NVDA", label_visibility="collapsed").upper()
 st.markdown(f'<p style="color: #64FFDA; font-size: 11px; opacity: 0.8; margin-top: -10px;">Un ticker es el código único (letras) que identifica a una empresa en bolsa. Ej: AAPL (Apple), TSLA (Tesla) o BTC-USD (Bitcoin).</p>', unsafe_allow_html=True)
 
         
