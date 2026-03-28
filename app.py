@@ -461,5 +461,5 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
         response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile")
         return response.choices[0].message.content
     except Exception as e:
-        return f"Error IA: {e}"
-""")
+        return f"Error IA: {e}"""")
+
