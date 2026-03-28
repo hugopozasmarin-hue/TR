@@ -75,26 +75,17 @@ div[data-baseweb="popover"] {
 
 /* --- BOTONES PREMIUM --- */
 .stButton>button {
-    border-radius: 10px;
-    background: linear-gradient(135deg, #1E3A8A, #2563EB);
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0A192F, #1E3A8A);
     color: white;
     font-weight: 600;
-    height: 45px;
-    border: none;
+    height: 50px;
     transition: all 0.25s ease;
-    position: relative;
-    overflow: hidden;
 }
 
-/* Hover efecto glow */
 .stButton>button:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 10px 25px rgba(37,99,235,0.3);
-}
-
-/* Click efecto */
-.stButton>button:active {
-    transform: scale(0.97);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.12);
 }
 
 /* --- TABS MODERNAS --- */
@@ -226,7 +217,6 @@ languages = {
         "summarize": "🧠 Summarize with AI"
     }
 }
-
 # --- IA MEJORADA (RECOMENDACIÓN) ---
 def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
@@ -264,19 +254,6 @@ if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
 # --- SIDEBAR ---
 with st.sidebar:
-st.markdown("""
-<div style="
-    background: linear-gradient(135deg, #0A192F, #1E293B);
-    padding:15px;
-    border-radius:12px;
-    margin-bottom:20px;
-">
-    <h3 style="color:white; margin-bottom:5px;">💎 INVESTIA</h3>
-    <p style="color:#9CA3AF; font-size:12px;">
-    Terminal de análisis financiero profesional
-    </p>
-</div>
-""", unsafe_allow_html=True)
     st.markdown(f'<p class="field-title">{languages[st.session_state.lang]["lang_lab"]}</p>', unsafe_allow_html=True)
     lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
     if lang_temp != st.session_state.lang:
@@ -289,7 +266,6 @@ st.markdown("""
     perfil = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"], label_visibility="collapsed")
     st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
     ticket = st.text_input("", value="NVDA", label_visibility="collapsed").upper()
-    analizar = st.button(t["btn"])
 
 # --- UI ---
 st.markdown(f"<h2 style='text-align: center; color: #0A192F; font-weight: 700; letter-spacing: -1px; margin-bottom: 30px;'>{t['title']}</h2>", unsafe_allow_html=True)
@@ -301,7 +277,7 @@ tab1, tab2, tab3 = st.tabs([
 
 # --- ANÁLISIS ---
 with tab1:
-    if analizar:
+    if st.button(t["btn"]):
         with st.spinner(t["wait"]):
             data = yf.download(ticket, period="2y", interval="1d")
             if not data.empty:
@@ -444,4 +420,3 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
         return response.choices[0].message.content
     except Exception as e:
         return f"Error IA: {e}"
-
