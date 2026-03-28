@@ -394,8 +394,7 @@ with tab3:
 
     for noticia in noticias:
         st.markdown(f"""
-        <div style"
-            background:#FFFFFF;
+        <div style=" background:#FFFFFF;
             border:1px solid #E5E7EB;
             padding:20px;
             border-radius:12px;
