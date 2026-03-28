@@ -75,22 +75,19 @@ div[data-baseweb="popover"] {
 
 /* --- BOTONES PREMIUM --- */
 .stButton>button {
-    border-radius: 10px;
+    border-radius: 12px;
     background: linear-gradient(135deg, #0A192F, #1E3A8A);
     color: white;
-    font-weight: 700;
-    height: 48px;
-    width: 100%;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(100,255,218,0.2);
+    font-weight: 600;
+    height: 50px;
+    transition: all 0.25s ease;
 }
 
 .stButton>button:hover {
-    transform: translateY(-2px) scale(1.01);
-    box-shadow: 0 0 20px rgba(100,255,218,0.25);
-    border: 1px solid #64FFDA;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.12);
 }
+
 /* --- TABS MODERNAS --- */
 .stTabs [data-baseweb="tab-list"] {
     gap: 8px;
@@ -109,22 +106,6 @@ div[data-baseweb="popover"] {
     color: white !important;
 }
 
-/* GLASS EFFECT GENERAL */
-.metric-container,
-.news-card,
-.recommendation-box {
-    backdrop-filter: blur(10px);
-}
-
-/* FADE IN ANIMATION */
-.stApp {
-    animation: fadeIn 0.6s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from {opacity: 0; transform: translateY(10px);}
-    to {opacity: 1; transform: translateY(0);}
-}
 /* --- METRICS PRO --- */
 .metric-container {
     background: white;
@@ -272,82 +253,22 @@ if "lang" not in st.session_state: st.session_state.lang = "Español"
 if "analizado" not in st.session_state: st.session_state.analizado = False
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
+# --- SIDEBAR ---
 with st.sidebar:
-
-    # --- HEADER SIDEBAR ---
-    st.markdown("""
-    <div style="padding:10px 0 20px 0;">
-        <h2 style="color:#64FFDA; font-size:14px; letter-spacing:2px; margin:0;">
-            INVESTIA TERMINAL
-        </h2>
-        <p style="color:#94A3B8; font-size:11px; margin-top:5px;">
-            Pro Trading Interface
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # --- LANGUAGE PANEL ---
-    st.markdown("### 🌐 SYSTEM")
-    lang_temp = st.selectbox(
-        "Language",
-        list(languages.keys()),
-        index=list(languages.keys()).index(st.session_state.lang),
-        label_visibility="collapsed"
-    )
-
+    st.markdown(f'<p class="field-title">{languages[st.session_state.lang]["lang_lab"]}</p>', unsafe_allow_html=True)
+    lang_temp = st.selectbox("", list(languages.keys()), index=list(languages.keys()).index(st.session_state.lang), label_visibility="collapsed")
     if lang_temp != st.session_state.lang:
         st.session_state.lang = lang_temp
         st.rerun()
-
     t = languages[st.session_state.lang]
+    st.markdown(f'<p class="field-title">{t["cap"]}</p>', unsafe_allow_html=True)
+    capital = st.number_input("", value=1000.0, step=100.0, label_visibility="collapsed")
+    st.markdown(f'<p class="field-title">{t["risk_lab"]}</p>', unsafe_allow_html=True)
+    perfil = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"], label_visibility="collapsed")
+    st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
+    ticket = st.text_input("", value="NVDA", label_visibility="collapsed").upper()
+    analizar = st.button(t["btn"])
 
-    st.markdown("---")
-
-    # --- CAPITAL PANEL ---
-    st.markdown("### 💰 PORTFOLIO")
-
-    capital = st.number_input(
-        "Capital",
-        value=1000.0,
-        step=100.0,
-        label_visibility="collapsed"
-    )
-
-    perfil = st.selectbox(
-        "Risk Profile",
-        ["Conservador", "Moderado", "Arriesgado"],
-        label_visibility="collapsed"
-    )
-
-    st.markdown("---")
-
-    # --- ASSET PANEL ---
-    st.markdown("### 📈 ASSET")
-
-    ticket = st.text_input(
-        "Ticker",
-        value="NVDA",
-        label_visibility="collapsed"
-    ).upper()
-
-    # 💡 mini explicación ticker (lo que pediste)
-    st.markdown("""
-    <div style="
-        font-size:11px;
-        color:#94A3B8;
-        margin-top:-10px;
-        margin-bottom:10px;
-        line-height:1.4;
-    ">
-    A ticker is the market symbol of a company.<br>
-    Example: Apple → AAPL | Tesla → TSLA
-    </div>
-    """, unsafe_allow_html=True)
-
-    # --- ACTION ZONE ---
-    st.markdown("### ⚡ EXECUTION")
-
-    analizar = st.button("RUN ANALYSIS")
 # --- UI ---
 st.markdown(f"<h2 style='text-align: center; color: #0A192F; font-weight: 700; letter-spacing: -1px; margin-bottom: 30px;'>{t['title']}</h2>", unsafe_allow_html=True)
 tab1, tab2, tab3 = st.tabs([
@@ -443,11 +364,7 @@ with tab3:
 with tab3:
     st.subheader(t["news_sub"])
 
-   for noticia in noticias:
-
-    col1, col2 = st.columns([4,1])
-
-    with col1:
+    for noticia in noticias:
         st.markdown(f"""
         <div style="
             background:#FFFFFF;
@@ -455,38 +372,160 @@ with tab3:
             padding:20px;
             border-radius:12px;
             margin-bottom:15px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.05);
         ">
-            <h4 style='color:#0A192F;'>{noticia['titulo']}</h4>
+            <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
             <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
             <p style='color:#374151;'>{noticia['resumen']}...</p>
+         <div style="display:flex; justify-content:flex-end;">
+    <a href="{noticia['link']}" target="_blank" style="
+        background:#0A192F;
+        color:white;
+        padding:6px 12px;
+        border-radius:8px;
+        font-size:12px;
+        text-decoration:none;
+    ">
+        {t["read_more"]}
+    </a>
         </div>
         """, unsafe_allow_html=True)
+# =========================================================
+# 🚀 PREMIUM SAAS FUNCTIONS (NO MODIFICAN TU CORE APP)
+# =========================================================
 
-        st.markdown(f"""
-        <a href="{noticia['link']}" target="_blank" style="
-            background:#0A192F;
-            color:white;
-            padding:6px 12px;
-            border-radius:8px;
-            font-size:12px;
-            text-decoration:none;
-        ">
-        {t["read_more"]}
-        </a>
-        """, unsafe_allow_html=True)
+import numpy as np
+from datetime import datetime
+import json
 
-    with col2:
-        if st.button(t["summarize"] + f" {noticia['titulo'][:10]}", key=noticia["link"]):
+# --- 🧠 CACHE DE DATOS (mejora velocidad tipo SaaS real) ---
+@st.cache_data(ttl=300)
+def get_stock_data(ticket):
+    return yf.download(ticket, period="2y", interval="1d")
 
-            with st.spinner("Resumiendo..."):
-                resumen = generar_analisis_ia(
-                    st.session_state.lang,
-                    "NEWS",
-                    0, 0, 0,
-                    perfil,
-                    capital,
-                    pregunta=noticia["resumen"]
-                )
 
-            st.info(resumen)
+# --- 📊 INDICADORES TÉCNICOS PRO (RSI + MEDIA MÓVIL) ---
+def calcular_indicadores(df):
+    df = df.copy()
+
+    # SMA
+    df["SMA_20"] = df["Close"].rolling(window=20).mean()
+    df["SMA_50"] = df["Close"].rolling(window=50).mean()
+
+    # RSI
+    delta = df["Close"].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+    rs = gain / loss
+    df["RSI"] = 100 - (100 / (1 + rs))
+
+    return df
+
+
+# --- 📈 SCORE DE CALIDAD DEL ACTIVO (tipo “rating institucional”) ---
+def asset_score(p_change, rsi):
+    score = 50
+
+    # tendencia
+    if p_change > 5:
+        score += 20
+    elif p_change < -5:
+        score -= 20
+
+    # RSI
+    if rsi < 30:
+        score += 15  # sobreventa
+    elif rsi > 70:
+        score -= 15  # sobrecompra
+
+    return max(0, min(100, score))
+
+
+# --- 🧠 RESUMEN IA DE NOTICIAS (GROQ) ---
+def resumir_noticia_ia(titulo, resumen):
+    try:
+        client = Groq(api_key=GROQ_API_KEY)
+
+        prompt = f"""
+        Resume esta noticia financiera en 3 líneas claras y analiza impacto en mercados:
+
+        TITULO: {titulo}
+        CONTENIDO: {resumen}
+        """
+
+        response = client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile"
+        )
+
+        return response.choices[0].message.content
+
+    except:
+        return "Resumen no disponible."
+
+
+# --- 📊 GENERADOR DE REPORTE EXPORTABLE (SaaS FEATURE CLAVE) ---
+def generar_reporte(ticket, precio, prediccion, cambio, score):
+    report = {
+        "ticker": ticket,
+        "precio_actual": precio,
+        "prediccion_30d": prediccion,
+        "cambio_%": cambio,
+        "score_activo": score,
+        "fecha": str(datetime.now())
+    }
+
+    return json.dumps(report, indent=4)
+
+
+# --- 🔔 SISTEMA DE ALERTAS INTELIGENTES ---
+def generar_alerta(ticket, cambio, rsi):
+    if cambio > 10:
+        return f"🚨 ALERTA: {ticket} fuerte tendencia alcista (+{cambio:.2f}%)"
+    if cambio < -10:
+        return f"⚠️ ALERTA: {ticket} caída fuerte ({cambio:.2f}%)"
+    if rsi > 75:
+        return f"⚠️ ALERTA: {ticket} sobrecompra (RSI alto)"
+    if rsi < 25:
+        return f"📈 ALERTA: {ticket} posible rebote (RSI bajo)"
+    return "📊 Sin señales críticas"
+
+
+# --- 💼 WATCHLIST (PORTFOLIO SIMULADO SaaS) ---
+if "watchlist" not in st.session_state:
+    st.session_state.watchlist = []
+
+def añadir_watchlist(ticket):
+    if ticket not in st.session_state.watchlist:
+        st.session_state.watchlist.append(ticket)
+
+
+# --- 🧮 RIESGO DE INVERSIÓN (MODELO SIMPLE PRO) ---
+def riesgo_score(perfil, volatilidad):
+    base = {"Conservador": 30, "Moderado": 60, "Arriesgado": 90}
+    return abs(base[perfil] - volatilidad)
+
+
+# --- 🌍 SENTIMIENTO DE MERCADO (NEWS SENTIMENT SIMULADO PRO) ---
+def sentimiento_mercado(noticias):
+    positivo = 0
+    total = len(noticias)
+
+    for n in noticias:
+        if any(word in n["titulo"].lower() for word in ["rise", "up", "gain", "bull", "growth", "sube"]):
+            positivo += 1
+
+    if total == 0:
+        return 50
+
+    return (positivo / total) * 100
+
+
+# --- ⚡ PERFORMANCE METRICS PARA DASHBOARD SaaS ---
+def metricas_saas(p_act, p_fut):
+    return {
+        "roi_estimado": ((p_fut - p_act) / p_act) * 100,
+        "volatilidad": abs(p_fut - p_act),
+        "ratio_riesgo": p_fut / p_act
+    }
 
