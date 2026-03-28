@@ -10,7 +10,7 @@ import feedparser
 st.set_page_config(page_title="InvestIA Elite | Pro Terminal", page_icon="💎", layout="wide")
 
 # --- ⚠️ CONFIGURACIÓN API ---
-GROQ_API_KEY = "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" 
+GROQ_API_KEY = "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" 
 
 st.markdown("""
 <style>
