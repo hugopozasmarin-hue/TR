@@ -265,6 +265,7 @@ if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
 # --- SIDEBAR ---
 with st.sidebar:
+    analizar = st.button(t["btn"])
    st.markdown("""
 <div style="
     background: linear-gradient(135deg, #0A192F, #1E293B);
@@ -290,6 +291,7 @@ if lang_temp != st.session_state.lang:
     st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
     ticket = st.text_input("", value="NVDA", label_visibility="collapsed").upper()
     analizar = st.button(t["btn"])
+   
 
 # --- UI ---
 st.markdown(f"<h2 style='text-align: center; color: #0A192F; font-weight: 700; letter-spacing: -1px; margin-bottom: 30px;'>{t['title']}</h2>", unsafe_allow_html=True)
