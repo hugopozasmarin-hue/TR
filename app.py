@@ -317,7 +317,7 @@ with tab1:
                 # --- DENTRO DEL IF ST.BUTTON(T["BTN"]): ---
 with st.spinner(t["wait"]):
     data = yf.download(ticket, period="2y", interval="1d")
-    if not data.empty:
+if not data.empty:
         # 1. Calculas el valor
         p_actual_local = float(data['Close'].iloc[-1])
         
