@@ -169,16 +169,6 @@ div[data-baseweb="popover"] {
     background: linear-gradient(135deg, #F8FAFC, #FFFFFF);
     border: 1px solid #E5E7EB;
 }
-/* HOVER */
-.stSelectbox > div:hover {
-    border: 1px solid #3B82F6 !important;
-}
-
-/* FOCUS */
-.stSelectbox div:focus-within {
-    border: 1px solid #3B82F6 !important;
-    box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -323,7 +313,6 @@ with tab1:
         st.markdown(f"<div class='recommendation-box'><h3 style='margin-top:0; color:#0A192F;'>✨ {t['analysis']}</h3><p style='white-space: pre-wrap; color:#374151;'>{st.session_state.get('analisis', '')}</p></div>", unsafe_allow_html=True)
 
 # --- 📰 NOTICIAS ECONÓMICAS ---
-@st.cache_data(ttl=300)
 def obtener_noticias(categoria="Global"):
     fuentes = {
         "Global": "https://feeds.bbci.co.uk/news/business/rss.xml",
@@ -361,17 +350,19 @@ with tab2:
         
 # --- 📰 NOTICIAS ---
 with tab3:
-    st.subheader(t["news_sub"])
+    st.markdown("<h3 style='color:#0A192F;'>🌎</h3>", unsafe_allow_html=True)
 
     categoria = st.selectbox(
         ":",
-        ["Global", "EEUU", "Europa", "Cripto"],
-        key="news_category"
+        ["Global", "EEUU", "Europa", "Cripto"]
     )
 
     noticias = obtener_noticias(categoria)
+# Cambia el título estático por la variable:
+with tab3:
+    st.subheader(t["news_sub"])
 
-    for i, noticia in enumerate(noticias):
+    for noticia in noticias:
         st.markdown(f"""
         <div style="
             background:#FFFFFF;
@@ -384,20 +375,16 @@ with tab3:
             <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
             <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
             <p style='color:#374151;'>{noticia['resumen']}...</p>
-            <a href="{noticia['link']}" target="_blank"
-               style="color:#3B82F6;font-weight:600;text-decoration:none;">
-               {t["read_more"]}
-            </a>
+          <a href="{noticia['link']}" target="_blank" style="
+    color:#3B82F6;
+    font-weight:600;
+    text-decoration:none;
+">{t["read_more"]}</a>
         </div>
         """, unsafe_allow_html=True)
 
-        # ✅ FIX CLAVE: KEY ESTABLE
-        if st.button(
-            t["summarize"],
-           noticia_id = abs(hash(noticia['titulo'] + noticia['link']))
-           key=f"summary_{categoria}_{noticia_id}"
-        ):
-        # noticia_id = abs(hash(noticia['titulo'] + noticia['link']))
+        # 🔥 BOTÓN IA (BIEN INDENTADO)
+        if st.button(t["summarize"], key=noticia['link']):
             resumen_ia = generar_analisis_ia(
                 st.session_state.lang,
                 "",
@@ -406,9 +393,10 @@ with tab3:
                 0,
                 perfil,
                 capital,
-                f"Resume esta noticia en 3 líneas: {noticia['titulo']} {noticia['resumen']}"
+                f"Resume esta noticia en 3 líneas claras: {noticia['titulo']} {noticia['resumen']}"
             )
             st.info(resumen_ia)
+
 # --- IA MEJORADA (DISCUSIÓN TOTAL) ---
 def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
     try:
@@ -426,3 +414,4 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
         return response.choices[0].message.content
     except Exception as e:
         return f"Error IA: {e}"
+
