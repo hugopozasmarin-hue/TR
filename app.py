@@ -75,17 +75,26 @@ div[data-baseweb="popover"] {
 
 /* --- BOTONES PREMIUM --- */
 .stButton>button {
-    border-radius: 12px;
-    background: linear-gradient(135deg, #0A192F, #1E3A8A);
+    border-radius: 10px;
+    background: linear-gradient(135deg, #1E3A8A, #2563EB);
     color: white;
     font-weight: 600;
-    height: 50px;
+    height: 45px;
+    border: none;
     transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
 }
 
+/* Hover efecto glow */
 .stButton>button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 20px rgba(0,0,0,0.12);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 10px 25px rgba(37,99,235,0.3);
+}
+
+/* Click efecto */
+.stButton>button:active {
+    transform: scale(0.97);
 }
 
 /* --- TABS MODERNAS --- */
