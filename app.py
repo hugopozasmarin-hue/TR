@@ -395,7 +395,7 @@ with tab2:
         st.rerun()
 # --- 📰 BLOOMBERG NEWS TERMINAL MODE ---
 with tab3:
-def obtener_noticias(categoria="Global"):
+
     st.subheader(f"🌎 {t['news_sub']}")
 
     categoria = st.selectbox(
@@ -404,7 +404,7 @@ def obtener_noticias(categoria="Global"):
         key="news_category"
     )
 
-
+def obtener_noticias(categoria="Global"):
     noticias = obtener_noticias(categoria)
 
     for i, noticia in enumerate(noticias):
