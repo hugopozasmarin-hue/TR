@@ -298,7 +298,8 @@ if not data.empty:
                 cambio = ((p_fut - p_act) / p_act) * 100
                 st.session_state.update({"p_act": p_act, "p_pre": p_fut, "cambio": cambio, "ticket_act": ticket, "analizado": True, "full_data": data, "forecast_data": forecast, "df_prophet": df})
                 st.session_state.analisis = generar_analisis_ia(st.session_state.lang, ticket, p_act, p_fut, cambio, perfil, capital)
-                else: st.error("Ticker incorrecto.")
+                else: 
+                    st.error("Ticker incorrecto.")
 
     if st.session_state.analizado:
         c1, c2, c3 = st.columns(3)
