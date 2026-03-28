@@ -160,7 +160,7 @@ languages = {
         "read_more": "Leer más →",
         "summarize": "🧠 Resumir con IA",
         "category": "Categoría"
-    },
+    }
     "English": { 
         "title":"INVESTIA TERMINAL", "lang_lab":"Language", "cap":"Budget", "risk_lab":"Risk Profile", "ass_lab":"Asset Ticker", 
         "btn":"ANALYZE ASSET", "wait":"Consulting markets...", "price":"Current Price", "target":"30-Day Target", 
