@@ -337,7 +337,7 @@ def obtener_noticias(categoria="Global"):
 
     noticias = []
     for entry in feed.entries[:10]:
-        noticias.append
+        noticias.append({
             "titulo": entry.title,
             "link": entry.link,
             "fecha": entry.get("published", "Sin fecha"),
