@@ -323,6 +323,7 @@ with tab1:
         st.markdown(f"<div class='recommendation-box'><h3 style='margin-top:0; color:#0A192F;'>✨ {t['analysis']}</h3><p style='white-space: pre-wrap; color:#374151;'>{st.session_state.get('analisis', '')}</p></div>", unsafe_allow_html=True)
 
 # --- 📰 NOTICIAS ECONÓMICAS ---
+@st.cache_data(ttl=300)
 def obtener_noticias(categoria="Global"):
     fuentes = {
         "Global": "https://feeds.bbci.co.uk/news/business/rss.xml",
@@ -393,7 +394,8 @@ with tab3:
         # ✅ FIX CLAVE: KEY ESTABLE
         if st.button(
             t["summarize"],
-            key=f"crypto_summary_{categoria}_{i}"
+           noticia_id = abs(hash(noticia['titulo'] + noticia['link']))
+           key=f"summary_{categoria}_{noticia_id}"
         ):
             resumen_ia = generar_analisis_ia(
                 st.session_state.lang,
