@@ -429,7 +429,7 @@ with tab3:
             </div>
 
         </div>
-        """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True()
 
         # 🔥 BOTÓN IA (BIEN INDENTADO)
         if st.button(t["summarize"], key=noticia['link']):
