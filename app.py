@@ -5,64 +5,61 @@ import pandas as pd
 from groq import Groq
 import plotly.graph_objects as go
 import feedparser
-
-# --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="InvestIA Elite | Pro Terminal", page_icon="💎", layout="wide")
 import streamlit.components.v1 as components
 
-# Inyectamos el cursor en el nivel "Padre" (fuera del iframe de Streamlit)
+# --- CURSOR DE ALTO NIVEL (INYECCIÓN DIRECTA) ---
 components.html(
     """
-    <style>
-        /* Estilo del cursor inyectado en la raíz */
-        #custom-cursor {
-            width: 24px;
-            height: 24px;
-            background-color: white;
-            border-radius: 50%;
-            position: fixed;
-            pointer-events: none;
-            z-index: 999999;
-            mix-blend-mode: difference;
-            transition: transform 0.15s ease-out;
-            transform: translate(-50%, -50%);
-            display: none;
-        }
-        /* Ocultar cursor real en toda la web */
-        body, html { cursor: none !important; }
-    </style>
-
-    <div id="custom-cursor"></div>
-
     <script>
-        const cursor = document.getElementById('custom-cursor');
         const mainDoc = window.parent.document;
         
-        // Añadimos el cursor directamente al cuerpo de la página principal
-        mainDoc.body.appendChild(cursor);
+        // 1. Creamos el elemento del cursor en la página principal
+        const cursor = mainDoc.createElement('div');
+        cursor.id = 'custom-cursor-pro';
+        Object.assign(cursor.style, {
+            width: '20px',
+            height: '20px',
+            backgroundColor: 'white',
+            borderRadius: '50%',
+            position: 'fixed',
+            pointerEvents: 'none',
+            zIndex: '999999',
+            mixBlendMode: 'difference',
+            display: 'none',
+            transition: 'transform 0.1s ease-out',
+            transform: 'translate(-50%, -50%)'
+        });
         
-        // Ocultamos el cursor original de la página principal
-        const style = mainDoc.createElement('style');
-        style.innerHTML = '*{ cursor: none !important; }';
-        mainDoc.head.appendChild(style);
+        // Solo lo añadimos si no existe ya (para evitar duplicados al refrescar)
+        if (!mainDoc.getElementById('custom-cursor-pro')) {
+            mainDoc.body.appendChild(cursor);
+            
+            // 2. Ocultamos el cursor real en TODA la ventana
+            const style = mainDoc.createElement('style');
+            style.innerHTML = 'html, body, * { cursor: none !important; }';
+            mainDoc.head.appendChild(style);
+        }
 
+        const activeCursor = mainDoc.getElementById('custom-cursor-pro');
+
+        // 3. Lógica de movimiento
         mainDoc.addEventListener('mousemove', (e) => {
-            cursor.style.display = 'block';
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
+            activeCursor.style.display = 'block';
+            activeCursor.style.left = e.clientX + 'px';
+            activeCursor.style.top = e.clientY + 'px';
         });
 
-        mainDoc.addEventListener('mousedown', () => {
-            cursor.style.transform = 'translate(-50%, -50%) scale(0.6)';
-        });
-        
-        mainDoc.addEventListener('mouseup', () => {
-            cursor.style.transform = 'translate(-50%, -50%) scale(1)';
-        });
+        // 4. Efecto de click
+        mainDoc.addEventListener('mousedown', () => activeCursor.style.transform = 'translate(-50%, -50%) scale(0.7)');
+        mainDoc.addEventListener('mouseup', () => activeCursor.style.transform = 'translate(-50%, -50%) scale(1)');
     </script>
     """,
     height=0,
 )
+
+
+# --- CONFIGURACIÓN DE PÁGINA ---
+st.set_page_config(page_title="InvestIA Elite | Pro Terminal", page_icon="💎", layout="wide")
 
 # --- ⚠️ CONFIGURACIÓN API ---
 GROQ_API_KEY = "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" 
