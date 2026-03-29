@@ -169,15 +169,43 @@ div[data-baseweb="popover"] {
     background: linear-gradient(135deg, #F8FAFC, #FFFFFF);
     border: 1px solid #E5E7EB;
 }
-/* --- FORCE CURSOR STREAMLIT --- */
-html, body, * ,
-[data-testid="stAppViewContainer"],
-[data-testid="stAppViewContainer"] * ,
-[data-testid="stSidebar"],
-[data-testid="stSidebar"] * {
-    cursor: url("https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Arrow_cursor.svg/32px-Arrow_cursor.svg.png") 16 0, auto !important;
+/* --- CURSOR PERSONALIZADO --- */
+#custom-cursor {
+    width: 20px;
+    height: 20px;
+    background-color: white; /* Se verá negro en fondo blanco y viceversa */
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none; /* Importante: para que el cursor no bloquee los clics */
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transition: transform 0.1s ease-out;
+    transform: translate(-50%, -50%);
+    display: none; /* Se oculta por defecto hasta que el ratón se mueva */
 }
+
+/* Ocultar el cursor original en toda la app para un look más pro */
+html, body, a, button {
+    cursor: none !important;
+}
+
 </style>
+<div id="custom-cursor"></div>
+
+<script>
+    const cursor = document.getElementById('custom-cursor');
+    
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.display = 'block';
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+    });
+
+    document.addEventListener('mouseleave', () => {
+        cursor.style.display = 'none';
+    });
+</script>
+
 """, unsafe_allow_html=True)
 
 # --- TRADUCCIONES ---
@@ -430,4 +458,3 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
         return response.choices[0].message.content
     except Exception as e:
         return f"Error IA: {e}"
-
