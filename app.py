@@ -169,9 +169,9 @@ div[data-baseweb="popover"] {
     background: linear-gradient(135deg, #F8FAFC, #FFFFFF);
     border: 1px solid #E5E7EB;
 }
-/* --- CUSTOM CURSOR REAL --- */
-* {
-    cursor: url('https://cur.cursors-4u.net/cursors/cur-13/cur1160.cur'), auto;
+/* --- CUSTOM CURSOR (FUNCIONA SIEMPRE) --- */
+html, body, * {
+    cursor: url("https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Arrow_cursor.svg/32px-Arrow_cursor.svg.png") 16 0, auto !important;
 }
 </style>
 """, unsafe_allow_html=True)
