@@ -8,6 +8,61 @@ import feedparser
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="InvestIA Elite | Pro Terminal", page_icon="💎", layout="wide")
+import streamlit.components.v1 as components
+
+# Inyectamos el cursor en el nivel "Padre" (fuera del iframe de Streamlit)
+components.html(
+    """
+    <style>
+        /* Estilo del cursor inyectado en la raíz */
+        #custom-cursor {
+            width: 24px;
+            height: 24px;
+            background-color: white;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 999999;
+            mix-blend-mode: difference;
+            transition: transform 0.15s ease-out;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+        /* Ocultar cursor real en toda la web */
+        body, html { cursor: none !important; }
+    </style>
+
+    <div id="custom-cursor"></div>
+
+    <script>
+        const cursor = document.getElementById('custom-cursor');
+        const mainDoc = window.parent.document;
+        
+        // Añadimos el cursor directamente al cuerpo de la página principal
+        mainDoc.body.appendChild(cursor);
+        
+        // Ocultamos el cursor original de la página principal
+        const style = mainDoc.createElement('style');
+        style.innerHTML = '*{ cursor: none !important; }';
+        mainDoc.head.appendChild(style);
+
+        mainDoc.addEventListener('mousemove', (e) => {
+            cursor.style.display = 'block';
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        mainDoc.addEventListener('mousedown', () => {
+            cursor.style.transform = 'translate(-50%, -50%) scale(0.6)';
+        });
+        
+        mainDoc.addEventListener('mouseup', () => {
+            cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+        });
+    </script>
+    """,
+    height=0,
+)
 
 # --- ⚠️ CONFIGURACIÓN API ---
 GROQ_API_KEY = "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" 
