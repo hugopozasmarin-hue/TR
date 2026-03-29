@@ -5,6 +5,8 @@ import pandas as pd
 from groq import Groq
 import plotly.graph_objects as go
 import feedparser
+import streamlit.components.v1 as components
+
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="InvestIA Elite | Pro Terminal", page_icon="💎", layout="wide")
@@ -169,44 +171,51 @@ div[data-baseweb="popover"] {
     background: linear-gradient(135deg, #F8FAFC, #FFFFFF);
     border: 1px solid #E5E7EB;
 }
-/* --- CURSOR PERSONALIZADO --- */
-#custom-cursor {
-    width: 20px;
-    height: 20px;
-    background-color: white; /* Se verá negro en fondo blanco y viceversa */
-    border-radius: 50%;
-    position: fixed;
-    pointer-events: none; /* Importante: para que el cursor no bloquee los clics */
-    z-index: 9999;
-    mix-blend-mode: difference;
-    transition: transform 0.1s ease-out;
-    transform: translate(-50%, -50%);
-    display: none; /* Se oculta por defecto hasta que el ratón se mueva */
-}
-
-/* Ocultar el cursor original en toda la app para un look más pro */
-html, body, a, button {
+/* --- OCULTAR CURSOR ORIGINAL --- */
+html, body, [data-testid="stAppViewContainer"], a, button {
     cursor: none !important;
 }
 
 </style>
-<div id="custom-cursor"></div>
-
-<script>
-    const cursor = document.getElementById('custom-cursor');
-    
-    document.addEventListener('mousemove', (e) => {
-        cursor.style.display = 'block';
-        cursor.style.left = e.clientX + 'px';
-        cursor.style.top = e.clientY + 'px';
-    });
-
-    document.addEventListener('mouseleave', () => {
-        cursor.style.display = 'none';
-    });
-</script>
-
 """, unsafe_allow_html=True)
+# --- INYECCIÓN DEL CURSOR DINÁMICO ---
+components.html(
+    """
+    <div id="dot" style="
+        position: fixed;
+        width: 20px;
+        height: 20px;
+        background-color: white;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 999999;
+        mix-blend-mode: difference;
+        transition: transform 0.1s ease-out;
+        transform: translate(-50%, -50%);
+        left: -100px;
+        top: -100px;
+    "></div>
+
+    <script>
+        const dot = document.getElementById('dot');
+        
+        // Escuchar el movimiento en la ventana principal de Streamlit
+        window.parent.document.addEventListener('mousemove', (e) => {
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+        });
+
+        // Efecto visual al hacer click
+        window.parent.document.addEventListener('mousedown', () => {
+            dot.style.transform = 'translate(-50%, -50%) scale(0.7)';
+        });
+        window.parent.document.addEventListener('mouseup', () => {
+            dot.style.transform = 'translate(-50%, -50%) scale(1)';
+        });
+    </script>
+    """,
+    height=0,
+)
 
 # --- TRADUCCIONES ---
 languages = {
