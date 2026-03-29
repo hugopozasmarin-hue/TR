@@ -169,7 +169,52 @@ div[data-baseweb="popover"] {
     background: linear-gradient(135deg, #F8FAFC, #FFFFFF);
     border: 1px solid #E5E7EB;
 }
+/* --- CUSTOM CURSOR --- */
+
+/* Oculta cursor original */
+body {
+    cursor: none;
+}
+
+/* Cursor personalizado */
+.custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    background-color: black;
+    mix-blend-mode: difference;
+    transform: translate(-50%, -50%);
+    transition: transform 0.08s ease;
+}
 </style>
+""", unsafe_allow_html=True)
+st.markdown("""
+<script>
+// Crear cursor
+const cursor = document.createElement("div");
+cursor.classList.add("custom-cursor");
+document.body.appendChild(cursor);
+
+// Mover cursor
+document.addEventListener("mousemove", (e) => {
+    cursor.style.top = e.clientY + "px";
+    cursor.style.left = e.clientX + "px";
+});
+
+// Click efecto
+document.addEventListener("mousedown", () => {
+    cursor.style.transform = "translate(-50%, -50%) scale(0.7)";
+});
+
+document.addEventListener("mouseup", () => {
+    cursor.style.transform = "translate(-50%, -50%) scale(1)";
+});
+</script>
 """, unsafe_allow_html=True)
 
 # --- TRADUCCIONES ---
