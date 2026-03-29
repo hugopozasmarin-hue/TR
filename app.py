@@ -169,8 +169,12 @@ div[data-baseweb="popover"] {
     background: linear-gradient(135deg, #F8FAFC, #FFFFFF);
     border: 1px solid #E5E7EB;
 }
-/* --- CUSTOM CURSOR (FUNCIONA SIEMPRE) --- */
-html, body, * {
+/* --- FORCE CURSOR STREAMLIT --- */
+html, body, * ,
+[data-testid="stAppViewContainer"],
+[data-testid="stAppViewContainer"] * ,
+[data-testid="stSidebar"],
+[data-testid="stSidebar"] * {
     cursor: url("https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Arrow_cursor.svg/32px-Arrow_cursor.svg.png") 16 0, auto !important;
 }
 </style>
