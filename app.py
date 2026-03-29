@@ -14,34 +14,6 @@ GROQ_API_KEY = "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"
 
 st.markdown("""
 <style>
-/* =========================
-   CURSOR / CARET SYSTEM
-   (OPUESTO AL FONDO)
-========================= */
-
-/* Inputs de texto */
-.stTextInput input,
-.stNumberInput input,
-textarea {
-    caret-color: #10B981 !important;  /* verde fintech */
-    color: #E5E7EB !important;
-}
-
-/* Cuando el usuario selecciona texto */
-::selection {
-    background: rgba(16,185,129,0.35);
-    color: #0A0D10;
-}
-
-/* Cursor en modo oscuro de select / baseweb */
-div[data-baseweb="select"] input {
-    caret-color: #0EA5E9 !important;
-}
-
-/* Placeholder más suave */
-::placeholder {
-    color: rgba(229,231,235,0.4) !important;
-}
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
 
 /* --- GLOBAL --- */
@@ -196,12 +168,9 @@ div[data-baseweb="popover"] {
     padding: 25px;
     background: linear-gradient(135deg, #F8FAFC, #FFFFFF);
     border: 1px solid #E5E7EB;
-st.markdown("""
-<style>
-   ... TU CSS ACTUAL ...
+}
 </style>
 """, unsafe_allow_html=True)
-}
 
 # --- TRADUCCIONES ---
 languages = {
@@ -248,6 +217,7 @@ languages = {
         "summarize": "🧠 Summarize with AI"
     }
 }
+
 # --- IA MEJORADA (RECOMENDACIÓN) ---
 def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
@@ -257,7 +227,7 @@ def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pre
         
         prompt = f"""
         Act as a Senior Investment Strategist. Your goal is to give a CUSTOMIZED RECOMMENDATION in {idioma_inst}.
-        Data: {contexto}. Risk Profile: {perfil}. Capital: {capital}EUR.
+        Data: {contexto}. Risk Profile: {perfil}. Capital: {capital}€.
         
         Structure:
         1. Action: (Buy, Hold or Sell) based on the profile.
@@ -297,6 +267,7 @@ with st.sidebar:
     perfil = st.selectbox("", ["Conservador", "Moderado", "Arriesgado"], label_visibility="collapsed")
     st.markdown(f'<p class="field-title">{t["ass_lab"]}</p>', unsafe_allow_html=True)
     ticket = st.text_input("", value="NVDA", label_visibility="collapsed").upper()
+    analizar = st.button(t["btn"])
 
 # --- UI ---
 st.markdown(f"<h2 style='text-align: center; color: #0A192F; font-weight: 700; letter-spacing: -1px; margin-bottom: 30px;'>{t['title']}</h2>", unsafe_allow_html=True)
@@ -308,7 +279,7 @@ tab1, tab2, tab3 = st.tabs([
 
 # --- ANÁLISIS ---
 with tab1:
-    if st.button(t["btn"]):
+    if analizar:
         with st.spinner(t["wait"]):
             data = yf.download(ticket, period="2y", interval="1d")
             if not data.empty:
@@ -389,47 +360,36 @@ with tab3:
     )
 
     noticias = obtener_noticias(categoria)
-
+# Cambia el título estático por la variable:
+with tab3:
     st.subheader(t["news_sub"])
 
     for noticia in noticias:
         st.markdown(f"""
-        <div style="""
+        <div style="
             background:#FFFFFF;
             border:1px solid #E5E7EB;
             padding:20px;
             border-radius:12px;
             margin-bottom:15px;
             box-shadow:0 2px 6px rgba(0,0,0,0.05);
-            color: #374151;
         ">
-            <h4 style="margin-bottom:10px; color:#0A192F;">
-                {noticia['titulo']}
-            </h4>
-
-            <p style="font-size:12px; color:#6B7280;">
-                {noticia['fecha']}
-            </p>
-
-            <p>
-                {noticia['resumen']}...
-            </p>
-
-            <div style="display:flex; justify-content:flex-end;">
-                <a href="{noticia['link']}" target="_blank" style="
-                    background:#0A192F;
-                    color:white;
-                    padding:6px 12px;
-                    border-radius:8px;
-                    font-size:12px;
-                    text-decoration:none;
-                ">
-                    {t["read_more"]}
-                </a>
-            </div>
-
+            <h4 style='margin-bottom:10px; color:#0A192F;'>{noticia['titulo']}</h4>
+            <p style='font-size:12px; color:#6B7280;'>{noticia['fecha']}</p>
+            <p style='color:#374151;'>{noticia['resumen']}...</p>
+         <div style="display:flex; justify-content:flex-end;">
+    <a href="{noticia['link']}" target="_blank" style="
+        background:#0A192F;
+        color:white;
+        padding:6px 12px;
+        border-radius:8px;
+        font-size:12px;
+        text-decoration:none;
+    ">
+        {t["read_more"]}
+    </a>
         </div>
-        """, unsafe_allow_html=True()
+        """, unsafe_allow_html=True)
 
         # 🔥 BOTÓN IA (BIEN INDENTADO)
         if st.button(t["summarize"], key=noticia['link']):
@@ -461,5 +421,5 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
         response = client.chat.completions.create(messages=[{"role": "user", "content": prompt}], model="llama-3.3-70b-versatile")
         return response.choices[0].message.content
     except Exception as e:
-        return f"Error IA: {e}"""")
+        return f"Error IA: {e}"
 
