@@ -180,52 +180,36 @@ body {
 body {
     cursor: none;
 }
+</style>
+""", unsafe_allow_html=True)
+import streamlit.components.v1 as components
 
-.custom-cursor {
+components.html("""
+<div id="cursor"></div>
+
+<style>
+#cursor {
     position: fixed;
-    top: 0;
-    left: 0;
     width: 18px;
     height: 18px;
     border-radius: 50%;
+    background: white;
+    mix-blend-mode: difference;
     pointer-events: none;
     z-index: 9999;
-    background-color: white;
-    mix-blend-mode: difference;
     transform: translate(-50%, -50%);
-    transition: transform 0.08s ease;
 }
 </style>
-""", unsafe_allow_html=True)
-st.markdown("""
-st.markdown("""
+
 <script>
-function initCursor() {
-    if (document.querySelector(".custom-cursor")) return;
+const cursor = document.getElementById("cursor");
 
-    const cursor = document.createElement("div");
-    cursor.classList.add("custom-cursor");
-    document.body.appendChild(cursor);
-
-    document.addEventListener("mousemove", (e) => {
-        cursor.style.top = e.clientY + "px";
-        cursor.style.left = e.clientX + "px";
-    });
-
-    document.addEventListener("mousedown", () => {
-        cursor.style.transform = "translate(-50%, -50%) scale(0.7)";
-    });
-
-    document.addEventListener("mouseup", () => {
-        cursor.style.transform = "translate(-50%, -50%) scale(1)";
-    });
-}
-
-window.addEventListener("load", () => {
-    setTimeout(initCursor, 500);
+document.addEventListener("mousemove", (e) => {
+    cursor.style.top = e.clientY + "px";
+    cursor.style.left = e.clientX + "px";
 });
 </script>
-""", unsafe_allow_html=True)
+""", height=0)
 
 # --- TRADUCCIONES ---
 languages = {
