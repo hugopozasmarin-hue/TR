@@ -176,7 +176,11 @@ body {
     cursor: none;
 }
 
-/* Cursor personalizado */
+/* --- CUSTOM CURSOR --- */
+body {
+    cursor: none;
+}
+
 .custom-cursor {
     position: fixed;
     top: 0;
@@ -186,7 +190,7 @@ body {
     border-radius: 50%;
     pointer-events: none;
     z-index: 9999;
-    background-color: black;
+    background-color: white;
     mix-blend-mode: difference;
     transform: translate(-50%, -50%);
     transition: transform 0.08s ease;
@@ -194,25 +198,31 @@ body {
 </style>
 """, unsafe_allow_html=True)
 st.markdown("""
+st.markdown("""
 <script>
-// Crear cursor
-const cursor = document.createElement("div");
-cursor.classList.add("custom-cursor");
-document.body.appendChild(cursor);
+function initCursor() {
+    if (document.querySelector(".custom-cursor")) return;
 
-// Mover cursor
-document.addEventListener("mousemove", (e) => {
-    cursor.style.top = e.clientY + "px";
-    cursor.style.left = e.clientX + "px";
-});
+    const cursor = document.createElement("div");
+    cursor.classList.add("custom-cursor");
+    document.body.appendChild(cursor);
 
-// Click efecto
-document.addEventListener("mousedown", () => {
-    cursor.style.transform = "translate(-50%, -50%) scale(0.7)";
-});
+    document.addEventListener("mousemove", (e) => {
+        cursor.style.top = e.clientY + "px";
+        cursor.style.left = e.clientX + "px";
+    });
 
-document.addEventListener("mouseup", () => {
-    cursor.style.transform = "translate(-50%, -50%) scale(1)";
+    document.addEventListener("mousedown", () => {
+        cursor.style.transform = "translate(-50%, -50%) scale(0.7)";
+    });
+
+    document.addEventListener("mouseup", () => {
+        cursor.style.transform = "translate(-50%, -50%) scale(1)";
+    });
+}
+
+window.addEventListener("load", () => {
+    setTimeout(initCursor, 500);
 });
 </script>
 """, unsafe_allow_html=True)
