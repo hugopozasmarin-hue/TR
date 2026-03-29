@@ -277,12 +277,12 @@ languages = {
 def generar_analisis_ia(lang, ticket, p_act, p_fut, cambio, perfil, capital, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
-        contexto = f"Ticker: {ticket}. Price: {p_act}€. Prediction: {p_fut}€ ({cambio:.2f}%)."
+        contexto = f"Ticker: {ticket}. Price: {p_act}EUR. Prediction: {p_fut}EUR ({cambio:.2f}%)."
         idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
         
         prompt = f"""
         Act as a Senior Investment Strategist. Your goal is to give a CUSTOMIZED RECOMMENDATION in {idioma_inst}.
-        Data: {contexto}. Risk Profile: {perfil}. Capital: {capital}€.
+        Data: {contexto}. Risk Profile: {perfil}. Capital: {capital}EUR.
         
         Structure:
         1. Action: (Buy, Hold or Sell) based on the profile.
@@ -351,8 +351,8 @@ with tab1:
 
     if st.session_state.analizado:
         c1, c2, c3 = st.columns(3)
-        with c1: st.markdown(f"<div class='metric-container'><p class='chat-label' style='color:#9CA3AF'>{t['price']}</p><h3 style='margin:0;color:#0A192F'>{st.session_state.p_act:.2f}€</h3></div>", unsafe_allow_html=True)
-        with c2: st.markdown(f"<div class='metric-container'><p class='chat-label' style='color:#9CA3AF'>{t['target']}</p><h3 style='margin:0;color:#3B82F6'>{st.session_state.p_pre:.2f}€ <small>({st.session_state.cambio:+.2f}%)</small></h3></div>", unsafe_allow_html=True)
+        with c1: st.markdown(f"<div class='metric-container'><p class='chat-label' style='color:#9CA3AF'>{t['price']}</p><h3 style='margin:0;color:#0A192F'>{st.session_state.p_act:.2f}EUR</h3></div>", unsafe_allow_html=True)
+        with c2: st.markdown(f"<div class='metric-container'><p class='chat-label' style='color:#9CA3AF'>{t['target']}</p><h3 style='margin:0;color:#3B82F6'>{st.session_state.p_pre:.2f}EUR <small>({st.session_state.cambio:+.2f}%)</small></h3></div>", unsafe_allow_html=True)
         with c3: st.markdown(f"<div class='metric-container'><p class='chat-label' style='color:#9CA3AF'>{t['shares']}</p><h3 style='margin:0;color:#0A192F'>{capital/st.session_state.p_act:.2f}</h3></div>", unsafe_allow_html=True)
 
         st.markdown(f"<h4 style='margin-top:30px; color:#0A192F;'>{t['hist_t']}</h4>", unsafe_allow_html=True)
@@ -465,11 +465,11 @@ def generar_chat_ia(lang, ticket, p_act, p_fut, perfil, capital, pregunta=None):
     try:
         client = Groq(api_key=GROQ_API_KEY)
         idioma_inst = "ENGLISH" if lang == "English" else "ESPAÑOL"
-        contexto_activo = f"Ticker: {ticket}. Precio: {p_act}€. Predicción: {p_fut}€." if ticket else "Sin ticker analizado."
+        contexto_activo = f"Ticker: {ticket}. Precio: {p_act}EUR. Predicción: {p_fut}EUR." if ticket else "Sin ticker analizado."
         
         prompt = f"""
         Actúa como un Senior Investment Strategist. Responde en {idioma_inst}.
-        Contexto: Perfil {perfil}, Capital {capital}€. {contexto_activo}.
+        Contexto: Perfil {perfil}, Capital {capital}EUR. {contexto_activo}.
         Puedes discutir sobre CUALQUIER accion incluso si no está siendo analizada. También cualquier tema de inversión, finanzas, ahorro o macroeconomía. ASume que el perfil seleccionado actual aplica a todas las preguntas y accione o activos.
         Pregunta: {pregunta if pregunta else "Dame una recomendación general."}
         """
